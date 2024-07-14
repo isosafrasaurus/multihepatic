@@ -4,6 +4,7 @@ from xii import *
 from graphnics import *
 import vtk
 import pyvista as pv
+import meshio
 
 def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3, E=[]):
     def boundary_3d(x, on_boundary):
@@ -46,10 +47,6 @@ def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, 
     xl, yl, zl = (np.max(node_coords, axis=0)-np.min(node_coords, axis=0))
     c[:,:] *= [xl+3, yl+3, zl]
     
-    
-    for node in G.nodes():
-        G.nodes[node]['pos'] = d[mf[node]].tolist()
-
     
     kappa = Constant(kappa)
     gamma = Constant(gamma)
@@ -112,55 +109,40 @@ def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, 
 
     
     os.makedirs(directory_path, exist_ok=True)
-    output_file_1d = os.path.join(directory_path, "pressure1d.pvd")
+    output_file_1d = os.path.join(directory_path, "pressure1d.vtk")
     output_file_3d = os.path.join(directory_path, "pressure3d.pvd")
-    File(output_file_1d) << uh1d
+    save_mesh_as_vtk(Lambda, output_file_1d, radius_function, uh1d)
     File(output_file_3d) << uh3d
     
-    test_path = os.path.join(directory_path, "mygraph.vtk")
-    save_graph_as_vtk(G, test_path)
-        
-    return output_file_1d, output_file_3d, uh1d, uh3d, test_path
+    return output_file_1d, output_file_3d, uh1d, uh3d
 
-def save_graph_as_vtk(G, filename):
-    
-    points = vtk.vtkPoints()
-    
-    
-    radii = vtk.vtkFloatArray()
-    radii.SetName("radius")
+def save_mesh_as_vtk(Lambda, test_path, radius_function, uh1d):
+    points = Lambda.coordinates()
+    cells = {"line": Lambda.cells()}
     
     
-    lines = vtk.vtkCellArray()
+    radius_values = np.array([radius_function(point) for point in points])
+
+    
+    uh1d_values = np.array([uh1d(point) for point in points])
+    
+    mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values, "uh1d": uh1d_values})
+    mesh.write(test_path)
     
     
-    node_to_id = {}
-    for i, (node, data) in enumerate(G.nodes(data=True)):
-        pos = data["pos"]
-        radius = data["radius"]
-        
-        point_id = points.InsertNextPoint(pos)
-        node_to_id[node] = point_id
-        
-        radii.InsertNextValue(radius)
+    reader = vtk.vtkUnstructuredGridReader()
+    reader.SetFileName(test_path)
+    reader.Update()
+
     
-    
-    for edge in G.edges():
-        line = vtk.vtkLine()
-        line.GetPointIds().SetId(0, node_to_id[edge[0]])
-        line.GetPointIds().SetId(1, node_to_id[edge[1]])
-        lines.InsertNextCell(line)
-    
-    
-    polydata = vtk.vtkPolyData()
-    polydata.SetPoints(points)
-    polydata.SetLines(lines)
-    
-    
-    polydata.GetPointData().AddArray(radii)
-    
+    geometryFilter = vtk.vtkGeometryFilter()
+    geometryFilter.SetInputData(reader.GetOutput())
+    geometryFilter.Update()
+
+    polydata = geometryFilter.GetOutput()
+
     
     writer = vtk.vtkPolyDataWriter()
-    writer.SetFileName(filename)
+    writer.SetFileName(test_path)
     writer.SetInputData(polydata)
     writer.Write()
