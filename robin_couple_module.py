@@ -69,7 +69,7 @@ def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, 
     v3, v1 = list(map(TestFunction, W))
 
     radius_function = RadiusFunction(G, mf)
-    cylinder = Circle(radius=radius_function, degree=10)
+    cylinder = Circle(radius=radius_function, degree=5)
     u3_avg = Average(u3, Lambda, cylinder)
     v3_avg = Average(v3, Lambda, cylinder)
 
@@ -111,12 +111,12 @@ def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, 
     os.makedirs(directory_path, exist_ok=True)
     output_file_1d = os.path.join(directory_path, "pressure1d.vtk")
     output_file_3d = os.path.join(directory_path, "pressure3d.pvd")
-    save_mesh_as_vtk(Lambda, output_file_1d, radius_function, uh1d)
+    save_mesh_as_vtk(Lambda, output_file_1d, radius_function, uh1d=uh1d)
     File(output_file_3d) << uh3d
     
     return output_file_1d, output_file_3d, uh1d, uh3d
 
-def save_mesh_as_vtk(Lambda, test_path, radius_function, uh1d):
+def save_mesh_as_vtk(Lambda, file_path, radius_function, uh1d=None):
     points = Lambda.coordinates()
     cells = {"line": Lambda.cells()}
     
@@ -126,12 +126,15 @@ def save_mesh_as_vtk(Lambda, test_path, radius_function, uh1d):
     # Evaluate the uh1d function at each node in the mesh
     uh1d_values = np.array([uh1d(point) for point in points])
     
-    mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values, "uh1d": uh1d_values})
-    mesh.write(test_path)
+    if uh1d != None:
+        mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values, "uh1d": uh1d_values})
+    else:
+        mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values})
+    mesh.write(file_path)
     
     # Convert the mesh to Polydata using VTK
     reader = vtk.vtkUnstructuredGridReader()
-    reader.SetFileName(test_path)
+    reader.SetFileName(file_path)
     reader.Update()
 
     # Convert unstructured grid to polydata
@@ -143,6 +146,6 @@ def save_mesh_as_vtk(Lambda, test_path, radius_function, uh1d):
 
     # Write the polydata to a new VTK file
     writer = vtk.vtkPolyDataWriter()
-    writer.SetFileName(test_path)
+    writer.SetFileName(file_path)
     writer.SetInputData(polydata)
     writer.Write()
