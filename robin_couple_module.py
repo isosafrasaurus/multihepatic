@@ -5,6 +5,7 @@ from graphnics import *
 import vtk
 import pyvista as pv
 import meshio
+from scipy.spatial import cKDTree
 
 def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3, E=[]):
     def boundary_3d(x, on_boundary):
@@ -176,7 +177,7 @@ def save_mesh_as_vtk(Lambda, file_path, radius_function, uh1d=None):
     uh1d_values = np.array([uh1d(point) for point in points])
     
     if uh1d != None:
-        mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values, "Pressure 1D": uh1d_values})
+        mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values, "Pressure1D": uh1d_values})
     else:
         mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values})
     mesh.write(file_path)
@@ -208,7 +209,7 @@ def run_perfusion_univ(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.4
             self.G = G
             self.mf = mf
             super().__init__(**kwargs)
-
+        """
         def eval(self, value, x):
             p = Point(x[0], x[1], x[2])
             tree = BoundingBoxTree()
@@ -218,14 +219,24 @@ def run_perfusion_univ(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.4
             edge_ix = self.mf[cell]
             edge = list(G.edges())[edge_ix]
             value[0] = self.G.nodes()[edge[0]]['radius']
-
+        """
+        
+        def eval(self, value, x):
+            p = (x[0], x[1], x[2])
+            _, nearest_control_point_index = kdtree.query(p)
+            nearest_control_point = list(G.nodes)[nearest_control_point_index]
+            value[0] = G.nodes[nearest_control_point]['radius']
+        
         def value_shape(self):
             return ()
-
+            
     # Create \Lambda
     G.make_mesh()
     Lambda, mf = G.get_mesh()
-
+    
+    # Reference copy
+    H = G.copy()
+    
     # Create \Omega
     Omega = UnitCubeMesh(16, 16, 16)
 
@@ -235,6 +246,10 @@ def run_perfusion_univ(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.4
 
     d = Lambda.coordinates()
     d[:, :] += [-xmin, -ymin, -zmin]
+    for node in H.nodes:
+        H.nodes[node]['pos'] = np.array(H.nodes[node]['pos']) + [-xmin, -ymin, -zmin]
+    
+    kdtree = cKDTree(np.array(list(nx.get_node_attributes(H, 'pos').values())))
 
     c = Omega.coordinates()
     xl, yl, zl = (np.max(node_coords, axis=0)-np.min(node_coords, axis=0))
@@ -253,23 +268,7 @@ def run_perfusion_univ(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.4
     u3, u1 = list(map(TrialFunction, W))
     v3, v1 = list(map(TestFunction, W))
     
-    # Precompute radius values at all mesh nodes
     radius_function = RadiusFunction(G, mf)
-    
-    total_points = len(Lambda.coordinates())
-    radius_values = []
-    update_interval = max(1, total_points // 10)  # Adjust interval as needed
-
-    for i, point in enumerate(Lambda.coordinates()):
-        radius_values.append(radius_function(point))
-
-        if (i + 1) % update_interval == 0 or (i + 1) == total_points:
-            progress = (i + 1) / total_points * 100
-            print(f"Computed radius for {i + 1} out of {total_points} points ({progress:.1f}%)")
-
-    radius_values = np.array(radius_values)
-
-    # radius_function = RadiusFunction(G, mf)
     cylinder = Circle(radius=radius_function, degree=5)
     u3_avg = Average(u3, Lambda, cylinder)
     v3_avg = Average(v3, Lambda, cylinder)
@@ -279,41 +278,9 @@ def run_perfusion_univ(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.4
     dxLambda = Measure("dx", domain=Lambda)
     dsLambda = Measure("ds", domain=Lambda)
     
-    class DAreaFunction(UserExpression):
-        def __init__(self, radius_values, mf, **kwargs):
-            self.radius_values = radius_values
-            self.mf = mf
-            super().__init__(**kwargs)
-
-        def eval(self, value, x):
-            p = Point(x[0], x[1], x[2])
-            tree = BoundingBoxTree()
-            tree.build(Lambda)
-            cell = tree.compute_first_entity_collision(p)
-            value[0] = np.pi * self.radius_values[self.mf[cell]] ** 2
-
-        def value_shape(self):
-            return ()
-
-    class DPerimeterFunction(UserExpression):
-        def __init__(self, radius_values, mf, **kwargs):
-            self.radius_values = radius_values
-            self.mf = mf
-            super().__init__(**kwargs)
-
-        def eval(self, value, x):
-            p = Point(x[0], x[1], x[2])
-            tree = BoundingBoxTree()
-            tree.build(Lambda)
-            cell = tree.compute_first_entity_collision(p)
-            value[0] = 2 * np.pi * self.radius_values[self.mf[cell]]
-
-        def value_shape(self):
-            return ()
-
     # Instantiate D_area and D_perimeter objects
-    D_area = DAreaFunction(radius_values, mf)
-    D_perimeter = DPerimeterFunction(radius_values, mf)
+    D_area = np.pi * radius_function ** 2
+    D_perimeter = 2 * np.pi * radius_function
     
     # Blocks
     a00 = perf3 * inner(grad(u3), grad(v3)) * dx + kappa * inner(u3_avg, v3_avg) * D_perimeter * dxLambda
