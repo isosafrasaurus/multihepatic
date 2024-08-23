@@ -1,5 +1,4 @@
 import vtk
-import pyvista as pv
 import meshio
 from dolfin import *
 from vtk.util.numpy_support import vtk_to_numpy
@@ -14,33 +13,33 @@ class RadiusFunction(UserExpression):
         self.mf = mf
         self.kdtree = kdtree
         super().__init__(**kwargs)
-    
+
     def eval(self, value, x):
         p = (x[0], x[1], x[2])
         _, nearest_control_point_index = self.kdtree.query(p)
         nearest_control_point = list(self.G.nodes)[nearest_control_point_index]
         value[0] = self.G.nodes[nearest_control_point]['radius']
-    
+
     def value_shape(self):
         return ()
-        
-def save_mesh_as_vtk(Lambda, file_path, radius_function, uh1d=None):
+
+def saveMeshVTK(Lambda, file_path, radius_map_G, uh1d=None):
     
     points = Lambda.coordinates()
     cells = {"line": Lambda.cells()}
+
     
-    
-    radius_values = np.array([radius_function(point) for point in points])
+    radius_values = np.array([radius_map_G(point) for point in points])
 
     
     uh1d_values = np.array([uh1d(point) for point in points])
-    
+
     if uh1d != None:
         mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values, "Pressure1D": uh1d_values})
     else:
         mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values})
     mesh.write(file_path)
-    
+
     
     reader = vtk.vtkUnstructuredGridReader()
     reader.SetFileName(file_path)
@@ -58,16 +57,16 @@ def save_mesh_as_vtk(Lambda, file_path, radius_function, uh1d=None):
     writer.SetFileName(file_path)
     writer.SetInputData(polydata)
     writer.Write()
-        
-def run_perfusion_univ(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3):        
-        
+
+def runPerfusionUniv(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3):
+    
     
     G.make_mesh()
     Lambda, mf = G.get_mesh()
-    
+
     
     H = G.copy()
-    
+
     
     Omega = UnitCubeMesh(16, 16, 16)
 
@@ -79,7 +78,7 @@ def run_perfusion_univ(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.4
     d[:, :] += [-xmin, -ymin, -zmin]
     for node in H.nodes:
         H.nodes[node]['pos'] = np.array(H.nodes[node]['pos']) + [-xmin, -ymin, -zmin]
-    
+
     
     kdtree = cKDTree(np.array(list(nx.get_node_attributes(H, 'pos').values())))
 
@@ -87,10 +86,10 @@ def run_perfusion_univ(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.4
     c = Omega.coordinates()
     xl, yl, zl = (np.max(node_coords, axis=0)-np.min(node_coords, axis=0))
     c[:,:] *= [xl+3, yl+3, zl]
-    
+
     def boundary_Omega(x, on_boundary):
         return on_boundary and not near(x[2], 0) and not near(x[2], zl)
-        
+
     
     kappa = Constant(kappa)
     gamma = Constant(gamma)
@@ -103,9 +102,9 @@ def run_perfusion_univ(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.4
     W = [V3, V1]
     u3, u1 = list(map(TrialFunction, W))
     v3, v1 = list(map(TestFunction, W))
-    
-    radius_function = RadiusFunction(G, mf, kdtree)
-    cylinder = Circle(radius=radius_function, degree=5)
+
+    radius_map_G = RadiusFunction(G, mf, kdtree)
+    cylinder = Circle(radius=radius_map_G, degree=5)
     u3_avg = Average(u3, Lambda, cylinder)
     v3_avg = Average(v3, Lambda, cylinder)
 
@@ -113,17 +112,17 @@ def run_perfusion_univ(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.4
     dxOmega = Measure("dx", domain=Omega)
     dxLambda = Measure("dx", domain=Lambda)
     dsLambda = Measure("ds", domain=Lambda)
+
     
-    
-    D_area = np.pi * radius_function ** 2
-    D_perimeter = 2 * np.pi * radius_function
-    
+    D_area = np.pi * radius_map_G ** 2
+    D_perimeter = 2 * np.pi * radius_map_G
+
     
     a00 = perf3 * inner(grad(u3), grad(v3)) * dx + kappa * inner(u3_avg, v3_avg) * D_perimeter * dxLambda
     a01 = -kappa * inner(u1, v3_avg) * D_perimeter * dxLambda
     a10 = -kappa * inner(u3_avg, v1) * D_perimeter * dxLambda
     a11 = perf1 * inner(grad(u1), grad(v1)) * D_area * dxLambda + kappa * inner(u1, v1) * D_perimeter * dxLambda - gamma * inner(u1, v1) * dsLambda
-    
+
     
     L0 = inner(Constant(0), v3_avg) * dxLambda
     L1 = -gamma * inner(P_infty, v1) * dsLambda
@@ -148,20 +147,20 @@ def run_perfusion_univ(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.4
     os.makedirs(directory_path, exist_ok=True)
     output_file_1d = os.path.join(directory_path, "pressure1d.vtk")
     output_file_3d = os.path.join(directory_path, "pressure3d.pvd")
-    save_mesh_as_vtk(Lambda, output_file_1d, radius_function, uh1d=uh1d)
+    saveMeshVTK(Lambda, output_file_1d, radius_map_G, uh1d=uh1d)
     File(output_file_3d) << uh3d
-    
+
     return output_file_1d, output_file_3d, uh1d, uh3d
 
-def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3, E=[]):
-        
+def runPerfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3, E=[]):
+    
     
     G.make_mesh()
     Lambda, mf = G.get_mesh()
-    
+
     
     H = G.copy()
-    
+
     
     Omega = UnitCubeMesh(16, 16, 16)
 
@@ -173,7 +172,7 @@ def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, 
     d[:, :] += [-xmin, -ymin, -zmin]
     for node in H.nodes:
         H.nodes[node]['pos'] = np.array(H.nodes[node]['pos']) + [-xmin, -ymin, -zmin]
-    
+
     
     kdtree = cKDTree(np.array(list(nx.get_node_attributes(H, 'pos').values())))
 
@@ -181,7 +180,7 @@ def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, 
     c = Omega.coordinates()
     xl, yl, zl = (np.max(node_coords, axis=0)-np.min(node_coords, axis=0))
     c[:,:] *= [xl+3, yl+3, zl]
-    
+
     
     subdomains_lambda = MeshFunction("size_t", Lambda, Lambda.topology().dim(), 0)
     for index in E:
@@ -189,7 +188,7 @@ def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, 
     B = [i for i in range(Lambda.num_entities(0)) if i not in E]
     for index in B:
         subdomains_lambda[index] = 2
-        
+
     
     kappa = Constant(kappa)
     gamma = Constant(gamma)
@@ -202,9 +201,9 @@ def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, 
     W = [V3, V1]
     u3, u1 = list(map(TrialFunction, W))
     v3, v1 = list(map(TestFunction, W))
-    
-    radius_function = RadiusFunction(G, mf)
-    cylinder = Circle(radius=radius_function, degree=5)
+
+    radius_map_G = RadiusFunction(G, mf)
+    cylinder = Circle(radius=radius_map_G, degree=5)
     u3_avg = Average(u3, Lambda, cylinder)
     v3_avg = Average(v3, Lambda, cylinder)
 
@@ -212,17 +211,17 @@ def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, 
     dxOmega = Measure("dx", domain=Omega)
     dxLambda = Measure("dx", domain=Lambda)
     dsLambda = Measure("ds", domain=Lambda)
+
     
-    
-    D_area = np.pi * radius_function ** 2
-    D_perimeter = 2 * np.pi * radius_function
-    
+    D_area = np.pi * radius_map_G ** 2
+    D_perimeter = 2 * np.pi * radius_map_G
+
     
     a00 = perf3 * inner(grad(u3), grad(v3)) * dxOmega + kappa * inner(u3_avg, v3_avg) * D_perimeter * dxLambda
     a01 = -kappa * inner(u1, v3_avg) * D_perimeter * dxLambda
     a10 = -kappa * inner(u3_avg, v1) * D_perimeter * dxLambda
     a11 = perf1 * inner(grad(u1), grad(v1)) * D_area * dxLambda + kappa * inner(u1, v1) * D_perimeter * dxLambda - gamma * inner(u1, v1) * dsLambda(1)
-    
+
     
     L0 = inner(Constant(0), v3_avg) * dxLambda
     L1 = -gamma * inner(P_infty, v1) * dsLambda(1)
@@ -247,22 +246,22 @@ def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, 
     os.makedirs(directory_path, exist_ok=True)
     output_file_1d = os.path.join(directory_path, "pressure1d.vtk")
     output_file_3d = os.path.join(directory_path, "pressure3d.pvd")
-    save_mesh_as_vtk(Lambda, output_file_1d, radius_function, uh1d=uh1d)
+    saveMeshVTK(Lambda, output_file_1d, radius_map_G, uh1d=uh1d)
     File(output_file_3d) << uh3d
-    
+
     return output_file_1d, output_file_3d, uh1d, uh3d
 
-def run_perfusion_univ_time(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3, dt=1e-2, num_steps=10):        
-        
+def runPerfusionUnivTime(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3, dt=0.1, num_steps=20, time_dampen=1.0e-2):
+    
     
     G.make_mesh()
     Lambda, mf = G.get_mesh()
-    
+
     
     H = G.copy()
+
     
-    
-    Omega = UnitCubeMesh(16, 16, 16)
+    Omega = UnitCubeMesh(32, 32, 32)
 
     
     pos = nx.get_node_attributes(G, "pos")
@@ -272,7 +271,7 @@ def run_perfusion_univ_time(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf
     d[:, :] += [-xmin, -ymin, -zmin]
     for node in H.nodes:
         H.nodes[node]['pos'] = np.array(H.nodes[node]['pos']) + [-xmin, -ymin, -zmin]
-    
+
     
     kdtree = cKDTree(np.array(list(nx.get_node_attributes(H, 'pos').values())))
 
@@ -280,10 +279,10 @@ def run_perfusion_univ_time(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf
     c = Omega.coordinates()
     xl, yl, zl = (np.max(node_coords, axis=0)-np.min(node_coords, axis=0))
     c[:,:] *= [xl+3, yl+3, zl]
-    
+
     def boundary_Omega(x, on_boundary):
         return on_boundary and not near(x[2], 0) and not near(x[2], zl)
-        
+
     
     kappa = Constant(kappa)
     gamma = Constant(gamma)
@@ -299,9 +298,11 @@ def run_perfusion_univ_time(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf
     W = [V3, V1]
     u3, u1 = list(map(TrialFunction, W))
     v3, v1 = list(map(TestFunction, W))
-    
-    radius_function = RadiusFunction(G, mf, kdtree)
-    cylinder = Circle(radius=radius_function, degree=5)
+
+    u3_n, u1_n = Function(V3), Function(V1)
+
+    radius_map_G = RadiusFunction(G, mf, kdtree)
+    cylinder = Circle(radius=radius_map_G, degree=5)
     u3_avg = Average(u3, Lambda, cylinder)
     v3_avg = Average(v3, Lambda, cylinder)
 
@@ -309,30 +310,37 @@ def run_perfusion_univ_time(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf
     dxOmega = Measure("dx", domain=Omega)
     dxLambda = Measure("dx", domain=Lambda)
     dsLambda = Measure("ds", domain=Lambda)
+
     
+    D_area = np.pi * radius_map_G ** 2
+    D_perimeter = 2 * np.pi * radius_map_G
+
     
-    D_area = np.pi * radius_function ** 2
-    D_perimeter = 2 * np.pi * radius_function
+    os.makedirs(directory_path, exist_ok=True)
+    output_file_1d = os.path.join(directory_path, "pressure1d")
+    output_file_3d = os.path.join(directory_path, "pressure3d")
+
     
-    
-    u3_n = Function(V3)
-    u1_n = Function(V1)
+    pvd_1d = File(f"{output_file_1d}.pvd")
+    pvd_3d = File(f"{output_file_3d}.pvd")
 
     
     for n in range(num_steps):
+        current_time = n * float(dt)
+
         
-        a00 = (1/dt) * inner(u3, v3) * dxOmega + perf3 * inner(grad(u3), grad(v3)) * dxOmega + kappa * inner(u3_avg, v3_avg) * D_perimeter * dxLambda
+        a00 = Constant(time_dampen) * (1/dt) * inner(u3, v3) * dxOmega + perf3 * inner(grad(u3), grad(v3)) * dxOmega + kappa * inner(u3_avg, v3_avg) * D_perimeter * dxLambda
         a01 = -kappa * inner(u1, v3_avg) * D_perimeter * dxLambda
         a10 = -kappa * inner(u3_avg, v1) * D_perimeter * dxLambda
-        a11 = (1/dt) * inner(u1, v1) * dxLambda + perf1 * inner(grad(u1), grad(v1)) * D_area * dxLambda + kappa * inner(u1, v1) * D_perimeter * dxLambda
+        a11 = Constant(time_dampen) * (1/dt) * inner(u1, v1) * dxLambda + perf1 * inner(grad(u1), grad(v1)) * D_area * dxLambda + kappa * inner(u1, v1) * D_perimeter * dxLambda - gamma * inner(u1, v1) * dsLambda
+
         
-        
-        L0 = (1/dt) * inner(u3_n, v3) * dxOmega + inner(Constant(0), v3_avg) * dxOmega
-        L1 = (1/dt) * inner(u1_n, v1) * dxLambda + inner(Constant(0), v1) * dxLambda
-        
+        L0 = Constant(time_dampen) * (1/dt) * inner(u3_n, v3) * dxOmega + inner(Constant(0), v3_avg) * dxOmega
+        L1 = Constant(time_dampen) * (1/dt) * inner(u1_n, v1) * dxLambda + inner(Constant(0), v1) * dxLambda - gamma * inner(P_infty, v1) * dsLambda
+
         a = [[a00, a01], [a10, a11]]
         L = [L0, L1]
-    
+
         W_bcs = [[DirichletBC(V3, del_Omega, boundary_Omega)], []]
 
         A, b = map(ii_assemble, (a, L))
@@ -347,14 +355,11 @@ def run_perfusion_univ_time(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf
         uh1d.rename("1D Pressure", "1D Pressure Distribution")
         
         
+        pvd_3d << (uh3d, n)
+        pvd_1d << (uh1d, n)
+
+        
         u3_n.assign(uh3d)
         u1_n.assign(uh1d)
-
     
-    os.makedirs(directory_path, exist_ok=True)
-    output_file_1d = os.path.join(directory_path, "pressure1d.vtk")
-    output_file_3d = os.path.join(directory_path, "pressure3d.pvd")
-    save_mesh_as_vtk(Lambda, output_file_1d, radius_function, uh1d=uh1d)
-    File(output_file_3d) << uh3d
-    
-    return output_file_1d, output_file_3d, uh1d, uh3d
+    return f"{output_file_1d}.pvd", f"{output_file_3d}.pvd"
