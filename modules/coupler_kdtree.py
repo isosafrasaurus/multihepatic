@@ -1,39 +1,15 @@
 import vtk
 import meshio
+
 from dolfin import *
 from vtk.util.numpy_support import vtk_to_numpy
 from xii import *
 from graphnics import *
 from scipy.spatial import cKDTree
 
-class RadiusFunction(UserExpression):
+def save_mesh_vtk(Lambda, file_path, radius_map_G, uh1d=None):
     """
-    A user-defined expression to compute the radius at a given point based on the nearest control point in a graph.
-
-    Args:
-        G (graphnics.FenicsGraph): The graph containing control points with radius information.
-        mf (dolfin.MeshFunction): A mesh function associated with the graph.
-        kdtree (scipy.spatial.cKDTree): A k-d tree for efficient nearest neighbor search in the graph.
-        **kwargs: Additional keyword arguments to be passed to the UserExpression constructor.
-    """
-    def __init__(self, G, mf, kdtree, **kwargs):
-        self.G = G
-        self.mf = mf
-        self.kdtree = kdtree
-        super().__init__(**kwargs)
-
-    def eval(self, value, x):
-        p = (x[0], x[1], x[2])
-        _, nearest_control_point_index = self.kdtree.query(p)
-        nearest_control_point = list(self.G.nodes)[nearest_control_point_index]
-        value[0] = self.G.nodes[nearest_control_point]['radius']
-
-    def value_shape(self):
-        return ()
-
-def saveMeshVTK(Lambda, file_path, radius_map_G, uh1d=None):
-    """
-    Saves a mesh as a VTK file with additional point data.
+    Saves a tube mesh as a VThK file with the option to include the 1D solution as a data array.
 
     Args:
         Lambda (dolfin.Mesh): The mesh to be saved.
@@ -76,10 +52,35 @@ def saveMeshVTK(Lambda, file_path, radius_map_G, uh1d=None):
     writer.SetFileName(file_path)
     writer.SetInputData(polydata)
     writer.Write()
-
-def runPerfusionUniv(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3):
+    
+class radius_function(UserExpression):
     """
-    Runs a perfusion simulation on a given graph and saves the results for a universal boundary condition.
+    A user expression to compute the radius at a given point based on the nearest control point in a graph.
+
+    Args:
+        G (graphnics.FenicsGraph): The graph containing control points with radius information.
+        mf (dolfin.MeshFunction): A mesh function associated with the graph.
+        kdtree (scipy.spatial.cKDTree): A k-d tree for efficient nearest neighbor search in the graph.
+        **kwargs: Additional keyword arguments to be passed to the UserExpression constructor.
+    """
+    def __init__(self, G, mf, kdtree, **kwargs):
+        self.G = G
+        self.mf = mf
+        self.kdtree = kdtree
+        super().__init__(**kwargs)
+
+    def eval(self, value, x):
+        p = (x[0], x[1], x[2])
+        _, nearest_control_point_index = self.kdtree.query(p)
+        nearest_control_point = list(self.G.nodes)[nearest_control_point_index]
+        value[0] = self.G.nodes[nearest_control_point]['radius']
+
+    def value_shape(self):
+        return ()
+
+def run_perfusion_univ(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3):
+    """
+    Runs a perfusion simulation with Robin far field effects everywhere on a given graph, and saves the results for a universal boundary condition.
 
     Args:
         G (graphnics.FenicsGraph): The graph representing the network.
@@ -141,7 +142,7 @@ def runPerfusionUniv(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e
     u3, u1 = list(map(TrialFunction, W))
     v3, v1 = list(map(TestFunction, W))
 
-    radius_map_G = RadiusFunction(G, mf, kdtree)
+    radius_map_G = radius_function(G, mf, kdtree)
     cylinder = Circle(radius=radius_map_G, degree=5)
     u3_avg = Average(u3, Lambda, cylinder)
     v3_avg = Average(v3, Lambda, cylinder)
@@ -185,14 +186,14 @@ def runPerfusionUniv(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e
     os.makedirs(directory_path, exist_ok=True)
     output_file_1d = os.path.join(directory_path, "pressure1d.vtk")
     output_file_3d = os.path.join(directory_path, "pressure3d.pvd")
-    saveMeshVTK(Lambda, output_file_1d, radius_map_G, uh1d=uh1d)
+    save_mesh_vtk(Lambda, output_file_1d, radius_map_G, uh1d=uh1d)
     File(output_file_3d) << uh3d
 
     return output_file_1d, output_file_3d, uh1d, uh3d
 
-def runPerfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3, E=[]):
+def run_perfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3, E=[]):
     """
-    Runs a perfusion simulation on a given graph and saves the results.
+    Runs a perfusion simulation on a given graph with selective far field boundaries and saves the results.
 
     Args:
         G (graphnics.FenicsGraph): The graph representing the network.
@@ -260,7 +261,7 @@ def runPerfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, k
     u3, u1 = list(map(TrialFunction, W))
     v3, v1 = list(map(TestFunction, W))
 
-    radius_map_G = RadiusFunction(G, mf)
+    radius_map_G = radius_function(G, mf)
     cylinder = Circle(radius=radius_map_G, degree=5)
     u3_avg = Average(u3, Lambda, cylinder)
     v3_avg = Average(v3, Lambda, cylinder)
@@ -304,12 +305,12 @@ def runPerfusion(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, k
     os.makedirs(directory_path, exist_ok=True)
     output_file_1d = os.path.join(directory_path, "pressure1d.vtk")
     output_file_3d = os.path.join(directory_path, "pressure3d.pvd")
-    saveMeshVTK(Lambda, output_file_1d, radius_map_G, uh1d=uh1d)
+    save_mesh_vtk(Lambda, output_file_1d, radius_map_G, uh1d=uh1d)
     File(output_file_3d) << uh3d
 
     return output_file_1d, output_file_3d, uh1d, uh3d
 
-def runPerfusionUnivTime(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3, dt=0.1, num_steps=20, time_dampen=1.0e-2):
+def run_perfusion_univ_time(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1.45e4, kappa=3.09e-5, gamma=1.0, P_infty=1.0e3, dt=0.1, num_steps=20):
     """
     Runs a time-dependent perfusion simulation using the backward Euler method.
 
@@ -380,7 +381,7 @@ def runPerfusionUnivTime(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1
 
     u3_n, u1_n = Function(V3), Function(V1)
 
-    radius_map_G = RadiusFunction(G, mf, kdtree)
+    radius_map_G = radius_function(G, mf, kdtree)
     cylinder = Circle(radius=radius_map_G, degree=5)
     u3_avg = Average(u3, Lambda, cylinder)
     v3_avg = Average(v3, Lambda, cylinder)
@@ -408,14 +409,14 @@ def runPerfusionUnivTime(G, directory_path, del_Omega=3.0, perf3=9.6e-2, perf1=1
         current_time = n * float(dt)
 
         # Variational forms
-        a00 = Constant(time_dampen) * (1/dt) * inner(u3, v3) * dxOmega + perf3 * inner(grad(u3), grad(v3)) * dxOmega + kappa * inner(u3_avg, v3_avg) * D_perimeter * dxLambda
+        a00 = D_area * (1/dt) * inner(u3, v3) * dxOmega + perf3 * inner(grad(u3), grad(v3)) * dxOmega + kappa * inner(u3_avg, v3_avg) * D_perimeter * dxLambda
         a01 = -kappa * inner(u1, v3_avg) * D_perimeter * dxLambda
         a10 = -kappa * inner(u3_avg, v1) * D_perimeter * dxLambda
-        a11 = Constant(time_dampen) * (1/dt) * inner(u1, v1) * dxLambda + perf1 * inner(grad(u1), grad(v1)) * D_area * dxLambda + kappa * inner(u1, v1) * D_perimeter * dxLambda - gamma * inner(u1, v1) * dsLambda
+        a11 = D_area * (1/dt) * inner(u1, v1) * dxLambda + perf1 * inner(grad(u1), grad(v1)) * D_area * dxLambda + kappa * inner(u1, v1) * D_perimeter * dxLambda - gamma * inner(u1, v1) * dsLambda
 
         # Right-hand side
-        L0 = Constant(time_dampen) * (1/dt) * inner(u3_n, v3) * dxOmega + inner(Constant(0), v3_avg) * dxOmega
-        L1 = Constant(time_dampen) * (1/dt) * inner(u1_n, v1) * dxLambda + inner(Constant(0), v1) * dxLambda - gamma * inner(P_infty, v1) * dsLambda
+        L0 = D_area * (1/dt) * inner(u3_n, v3) * dxOmega + inner(Constant(0), v3_avg) * dxOmega
+        L1 = D_area * (1/dt) * inner(u1_n, v1) * dxLambda + inner(Constant(0), v1) * dxLambda - gamma * inner(P_infty, v1) * dsLambda
 
         a = [[a00, a01], [a10, a11]]
         L = [L0, L1]
