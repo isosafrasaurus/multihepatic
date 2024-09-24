@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 import numpy as np
 import scipy.interpolate
 
-def visualize(mesh1d, sol1d, mesh3d=None, sol3d=None, z_level=50, elev=90, azim=-90):
+def visualize(mesh1d, sol1d, mesh3d=None, sol3d=None, z_level=50, elev=20, azim=-80):
     # Two columns if mesh3d included, otherwise only one column for scatter
     num_columns = 2 if (sol3d is not None and mesh3d is not None) else 1
     if num_columns == 1:
@@ -22,9 +22,10 @@ def visualize(mesh1d, sol1d, mesh3d=None, sol3d=None, z_level=50, elev=90, azim=
     scatter_values = sol1d.compute_vertex_values(mesh1d)     
     x_min, x_max = scatter_coords[:, 0].min(), scatter_coords[:, 0].max()
     y_min, y_max = scatter_coords[:, 1].min(), scatter_coords[:, 1].max()
-    x_width, y_width = x_max - x_min, y_max - y_min
+    z_min, z_max = scatter_coords[:, 2].min(), scatter_coords[:, 2].max()
+    x_width, y_width, z_width = x_max - x_min, y_max - y_min, z_max - z_min
         
-    x_plane, y_plane = np.meshgrid( #2D plane at z_level
+    x_plane, y_plane = np.meshgrid( # 2D plane at z_level
         np.linspace(x_min, x_max, num=10),
         np.linspace(y_min, y_max, num=10)
     )
@@ -33,11 +34,11 @@ def visualize(mesh1d, sol1d, mesh3d=None, sol3d=None, z_level=50, elev=90, azim=
     # Ensure 1:1:1 scaling for the scatter plot axes
     ax1.set_box_aspect((np.ptp(scatter_coords[:,0]), np.ptp(scatter_coords[:,1]), np.ptp(scatter_coords[:,2])))
 
-    ax1.plot_surface(x_plane, y_plane, z_plane, color='m', alpha=0.3, zorder=10) # ensure plane is in front
+    ax1.plot_surface(x_plane, y_plane, z_plane, color='m', alpha=0.3, zorder=10)  # ensure plane is in front
     ax1.view_init(elev=elev, azim=azim)
     sc = ax1.scatter(scatter_coords[:, 0], scatter_coords[:, 1], scatter_coords[:, 2], c=scatter_values, cmap='viridis', s=0.5)
     cbar = plt.colorbar(sc, ax=ax1)
-    cbar.set_label('1D Pressure (Pa)')
+    cbar.set_label('1D Sensitivity')
     ax1.set_xlabel('X')
     ax1.set_ylabel('Y')
     ax1.set_zlabel('Z')
@@ -51,7 +52,7 @@ def visualize(mesh1d, sol1d, mesh3d=None, sol3d=None, z_level=50, elev=90, azim=
         filtered_coords = heat_coords[mask]
         filtered_pressure = heat_values[mask]
 
-        # grid for the heatmap
+        # Grid for the heatmap
         x = filtered_coords[:, 0]
         y = filtered_coords[:, 1]
         z = filtered_pressure
@@ -67,12 +68,40 @@ def visualize(mesh1d, sol1d, mesh3d=None, sol3d=None, z_level=50, elev=90, azim=
         ax2 = fig.add_subplot(122)
         cf = ax2.contourf(xi, yi, zi_smoothed, levels=100, cmap='viridis')
         cbar = plt.colorbar(cf, ax=ax2)
-        cbar.set_label('3D Pressure (Pa)')
+        cbar.set_label('3D Sensitivity')
         ax2.set_xlabel('X')
         ax2.set_ylabel('Y')
         ax2.set_title(f'3D Domain Section at Z = {z_level}')
         fig.get_axes()[1].axis('off')
-    
+
+        # Draw rectangular prism for mesh3d boundaries
+        x_min_3d, x_max_3d = heat_coords[:, 0].min(), heat_coords[:, 0].max()
+        y_min_3d, y_max_3d = heat_coords[:, 1].min(), heat_coords[:, 1].max()
+        z_min_3d, z_max_3d = heat_coords[:, 2].min(), heat_coords[:, 2].max()
+
+        # Define the corner points of the rectangular prism
+        corners = np.array([
+            [x_min_3d, y_min_3d, z_min_3d],
+            [x_max_3d, y_min_3d, z_min_3d],
+            [x_max_3d, y_max_3d, z_min_3d],
+            [x_min_3d, y_max_3d, z_min_3d],
+            [x_min_3d, y_min_3d, z_max_3d],
+            [x_max_3d, y_min_3d, z_max_3d],
+            [x_max_3d, y_max_3d, z_max_3d],
+            [x_min_3d, y_max_3d, z_max_3d]
+        ])
+
+        # Define the edges of the rectangular prism (connecting the corners)
+        edges = [
+            (0, 1), (1, 2), (2, 3), (3, 0),  # Bottom face
+            (4, 5), (5, 6), (6, 7), (7, 4),  # Top face
+            (0, 4), (1, 5), (2, 6), (3, 7)   # Vertical edges
+        ]
+
+        # Plot the rectangular prism
+        for edge in edges:
+            ax1.plot3D(*zip(*corners[edge, :]), color="red", lw=1)
+
     fig.get_axes()[0].axis('off')
     plt.gca().set_aspect('equal')
     plt.show()
