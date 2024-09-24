@@ -23,28 +23,37 @@ class FEMSensitivity:
       Omega_bbox : tuple = None
       ):
 
+        
         kappa, alpha, beta, gamma, del_Omega, P_infty = map(Constant, [kappa, alpha, beta, gamma, del_Omega, P_infty])
 
+        
         G.make_mesh()
         Lambda, G_mf = G.get_mesh()
 
-        node_positions = nx.get_node_attributes(G, "pos")
-        node_coords = np.asarray(list(node_positions.values()))
-        G_kdt = scipy.spatial.cKDTree(node_coords)
+        
+        edge_positions = []
+        edge_list = list(G.edges())
+        for u, v in edge_list:
+            pos_u = G.nodes[u]['pos']
+            pos_v = G.nodes[v]['pos']
+            midpoint = ((pos_u[0] + pos_v[0])/2, (pos_u[1] + pos_v[1])/2, (pos_u[2] + pos_v[2])/2)
+            edge_positions.append(midpoint)
+        edge_coords = np.asarray(edge_positions)
+        G_kdt = scipy.spatial.cKDTree(edge_coords)
 
         
         Omega = UnitCubeMesh(32, 32, 32)
         Omega_coords = Omega.coordinates()
-        xl, yl, zl = (np.max(node_coords, axis=0) - np.min(node_coords, axis=0))
+        xl, yl, zl = (np.max(edge_coords, axis=0) - np.min(edge_coords, axis=0))
         
-        if Omega_bbox != None:
-          Omega_coords[:, :] *= [Omega_bbox[0], Omega_bbox[1], Omega_bbox[2]]
+        if Omega_bbox is not None:
+            Omega_coords[:, :] *= [Omega_bbox[0], Omega_bbox[1], Omega_bbox[2]]
         else:
-          Omega_coords[:, :] *= [xl + 3, yl + 3, zl + 3]
+            Omega_coords[:, :] *= [xl + 3, yl + 3, zl + 3]
         
         
         def boundary_Omega(x, on_boundary):
-          return on_boundary and not near(x[2], 0) and not near(x[2], zl)
+            return on_boundary and not near(x[2], 0) and not near(x[2], zl)
 
         self.Lambda, self.Omega = Lambda, Omega
 
@@ -55,7 +64,8 @@ class FEMSensitivity:
         u3, u1 = list(map(TrialFunction, W))
         v3, v1 = list(map(TestFunction, W))
 
-        G_rf = RadiusFunction(G, G_mf, G_kdt)
+        
+        G_rf = RadiusFunction(G, edge_list, G_kdt, degree=5)
         self.G_rf = G_rf
         cylinder = Circle(radius=G_rf, degree=5)
         u3_avg = Average(u3, Lambda, cylinder)
@@ -83,12 +93,15 @@ class FEMSensitivity:
         a = [[a00, a01], [a10, a11]]
         L = [L0, L1]
 
+        
         W_bcs = [[DirichletBC(V3, del_Omega, boundary_Omega)], []]
 
+        
         A, b = map(ii_assemble, (a, L))
         A, b = apply_bc(A, b, W_bcs)
         A, b = map(ii_convert, (A, b))
 
+        
         wh = ii_Function(W)
         solver = LUSolver(A, "mumps")
         solver.solve(wh.vector(), b)
@@ -185,17 +198,18 @@ class Uh3dAtLambda(UserExpression):
 
 class RadiusFunction(UserExpression):
     
-    def __init__(self, G: "FenicsGraph", G_mf: MeshFunction, G_kdt: scipy.spatial.cKDTree, **kwargs):
+    def __init__(self, G: "FenicsGraph", edge_list: list, G_kdt: scipy.spatial.cKDTree, **kwargs):
         self.G = G
-        self.G_mf = G_mf
+        self.edge_list = edge_list
         self.G_kdt = G_kdt
         super().__init__(**kwargs)
 
     def eval(self, value: np.ndarray, x: np.ndarray):
         p = (x[0], x[1], x[2])
-        _, nearest_control_point_index = self.G_kdt.query(p)
-        nearest_control_point = list(self.G.nodes)[nearest_control_point_index]
-        value[0] = self.G.nodes[nearest_control_point]['radius']
+        _, nearest_edge_index = self.G_kdt.query(p)
+        u, v = self.edge_list[nearest_edge_index]
+        radius = self.G.edges[u, v]['radius']
+        value[0] = radius
 
     def value_shape(self) -> tuple:
         return ()
