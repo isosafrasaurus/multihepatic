@@ -31,43 +31,43 @@ class FEMSensitivity:
         sh3d (dolfin.Function): The sensitivity of 3D pressure.
         sh1d (dolfin.Function): The sensitivity of 1D pressure.
     """
-    def __init__(self, G: "FenicsGraph", kappa: float = 1.0, alpha: float = 9.6e-2, beta: float = 1.45e4, gamma: float = 1.0, del_Omega: float = 3.0, P_infty: float = 1.0e3):
-        """
-        Initializes the FEMSensitivity class with given parameters and solves the steady-state and sensitivity problems.
 
-        Args:
-            G (FenicsGraph): The FenicsGraph object representing the 1D network.
-            kappa (float, optional): Coupling coefficient between 3D and 1D domains.
-            alpha (float, optional): Diffusion coefficient in the 3D domain.
-            beta (float, optional): Diffusion coefficient in the 1D network.
-            gamma (float, optional): Reaction coefficient in the 1D network.
-            del_Omega (float, optional): Boundary condition value on the 3D domain.
-            P_infty (float, optional): Source term value in the 1D network.
-        """
+    # Constructor
+    def __init__(self, 
+      G: "FenicsGraph", 
+      kappa: float = 1.0, 
+      alpha: float = 9.6e-2, 
+      beta: float = 1.45e4, 
+      gamma: float = 1.0, 
+      del_Omega: float = 3.0, 
+      P_infty: float = 1.0e3,
+      Omega_bbox : tuple = None
+      ):
+
         kappa, alpha, beta, gamma, del_Omega, P_infty = map(Constant, [kappa, alpha, beta, gamma, del_Omega, P_infty])
 
-        # Create meshes
         G.make_mesh()
         Lambda, G_mf = G.get_mesh()
-        Omega = UnitCubeMesh(16, 16, 16)
 
-        # Translate all Lambda points to positive
         node_positions = nx.get_node_attributes(G, "pos")
         node_coords = np.asarray(list(node_positions.values()))
-        xmin, ymin, zmin = np.min(node_coords, axis=0)
-        G_kdt = scipy.spatial.cKDTree(node_coords[:,:] + [-xmin, -ymin, -zmin])
-        Lambda_coords = Lambda.coordinates()
-        Lambda_coords[:, :] += [-xmin, -ymin, -zmin]
+        G_kdt = scipy.spatial.cKDTree(node_coords)
 
         # Fit Omega around Lambda
+        Omega = UnitCubeMesh(32, 32, 32)
         Omega_coords = Omega.coordinates()
         xl, yl, zl = (np.max(node_coords, axis=0) - np.min(node_coords, axis=0))
-        Omega_coords[:, :] *= [xl + 3, yl + 3, zl]
-        self.Lambda, self.Omega = Lambda, Omega
+        
+        if Omega_bbox != None:
+          Omega_coords[:, :] *= [Omega_bbox[0], Omega_bbox[1], Omega_bbox[2]]
+        else:
+          Omega_coords[:, :] *= [xl + 3, yl + 3, zl + 3]
         
         # Omega boundary function
         def boundary_Omega(x, on_boundary):
-            return on_boundary and not near(x[2], 0) and not near(x[2], zl)
+          return on_boundary and not near(x[2], 0) and not near(x[2], zl)
+
+        self.Lambda, self.Omega = Lambda, Omega
 
         # Function spaces
         V3 = FunctionSpace(Omega, "CG", 1)
@@ -131,7 +131,7 @@ class FEMSensitivity:
         a10_sens = -kappa * inner(s3k_avg, v1k) * D_perimeter * dxLambda
         a11_sens = beta * inner(grad(s1k), grad(v1k)) * D_area * dxLambda + kappa * inner(s1k, v1k) * D_perimeter * dxLambda
 
-        # Right-hand side for the sensitivity problem
+        # Right-hand side for the sen sitivity problem
         L0_sens = inner(uh1d - u3h_at_Lambda, v3k_avg) * D_perimeter * dxLambda
         L1_sens = inner(u3h_at_Lambda - uh1d, v1k) * D_perimeter * dxLambda
 
@@ -214,33 +214,13 @@ class Uh3dAtLambda(UserExpression):
         **kwargs: Additional keyword arguments to be passed to the UserExpression constructor.
     """
     def __init__(self, uh3d: Function, **kwargs):
-        """
-        Initializes the Uh3dAtLambda class.
-
-        Args:
-            uh3d (dolfin.Function): The 3D solution function.
-            **kwargs: Additional keyword arguments.
-        """
         self.uh3d = uh3d
         super().__init__(**kwargs)
     
     def eval(self, value: np.ndarray, x: np.ndarray):
-        """
-        Evaluates the 3D solution at a given point.
-
-        Args:
-            value (np.ndarray): The array to store the evaluated value.
-            x (np.ndarray): The coordinates of the point.
-        """
         value[0] = self.uh3d(x)
     
     def value_shape(self) -> tuple:
-        """
-        Returns the shape of the evaluated value.
-
-        Returns:
-            tuple: The shape of the evaluated value.
-        """
         return ()
 
 class RadiusFunction(UserExpression):
@@ -254,38 +234,16 @@ class RadiusFunction(UserExpression):
         **kwargs: Additional keyword arguments to be passed to the UserExpression constructor.
     """
     def __init__(self, G: "FenicsGraph", G_mf: MeshFunction, G_kdt: scipy.spatial.cKDTree, **kwargs):
-        """
-        Initializes the RadiusFunction class.
-
-        Args:
-            G (graphnics.FenicsGraph): The graph containing control points with radius information.
-            G_mf (dolfin.MeshFunction): A mesh function associated with the graph.
-            G_kdt (scipy.spatial.cKDTree): A k-d tree for efficient nearest neighbor search in the graph.
-            **kwargs: Additional keyword arguments.
-        """
         self.G = G
         self.G_mf = G_mf
         self.G_kdt = G_kdt
         super().__init__(**kwargs)
 
     def eval(self, value: np.ndarray, x: np.ndarray):
-        """
-        Computes the radius at a given point.
-
-        Args:
-            value (np.ndarray): The array to store the computed radius.
-            x (np.ndarray): The coordinates of the point.
-        """
         p = (x[0], x[1], x[2])
         _, nearest_control_point_index = self.G_kdt.query(p)
         nearest_control_point = list(self.G.nodes)[nearest_control_point_index]
         value[0] = self.G.nodes[nearest_control_point]['radius']
 
     def value_shape(self) -> tuple:
-        """
-        Returns the shape of the computed radius.
-
-        Returns:
-            tuple: The shape of the computed radius.
-        """
         return ()
