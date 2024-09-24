@@ -44,28 +44,37 @@ class FEMSensitivity:
       Omega_bbox : tuple = None
       ):
 
+        # Convert scalar parameters to FEniCS Constants
         kappa, alpha, beta, gamma, del_Omega, P_infty = map(Constant, [kappa, alpha, beta, gamma, del_Omega, P_infty])
 
+        # Generate the mesh from the graph
         G.make_mesh()
         Lambda, G_mf = G.get_mesh()
 
-        node_positions = nx.get_node_attributes(G, "pos")
-        node_coords = np.asarray(list(node_positions.values()))
-        G_kdt = scipy.spatial.cKDTree(node_coords)
+        # Extract edge midpoints for KDTree construction
+        edge_positions = []
+        edge_list = list(G.edges())
+        for u, v in edge_list:
+            pos_u = G.nodes[u]['pos']
+            pos_v = G.nodes[v]['pos']
+            midpoint = ((pos_u[0] + pos_v[0])/2, (pos_u[1] + pos_v[1])/2, (pos_u[2] + pos_v[2])/2)
+            edge_positions.append(midpoint)
+        edge_coords = np.asarray(edge_positions)
+        G_kdt = scipy.spatial.cKDTree(edge_coords)
 
         # Fit Omega around Lambda
         Omega = UnitCubeMesh(32, 32, 32)
         Omega_coords = Omega.coordinates()
-        xl, yl, zl = (np.max(node_coords, axis=0) - np.min(node_coords, axis=0))
+        xl, yl, zl = (np.max(edge_coords, axis=0) - np.min(edge_coords, axis=0))
         
-        if Omega_bbox != None:
-          Omega_coords[:, :] *= [Omega_bbox[0], Omega_bbox[1], Omega_bbox[2]]
+        if Omega_bbox is not None:
+            Omega_coords[:, :] *= [Omega_bbox[0], Omega_bbox[1], Omega_bbox[2]]
         else:
-          Omega_coords[:, :] *= [xl + 3, yl + 3, zl + 3]
+            Omega_coords[:, :] *= [xl + 3, yl + 3, zl + 3]
         
         # Omega boundary function
         def boundary_Omega(x, on_boundary):
-          return on_boundary and not near(x[2], 0) and not near(x[2], zl)
+            return on_boundary and not near(x[2], 0) and not near(x[2], zl)
 
         self.Lambda, self.Omega = Lambda, Omega
 
@@ -76,7 +85,8 @@ class FEMSensitivity:
         u3, u1 = list(map(TrialFunction, W))
         v3, v1 = list(map(TestFunction, W))
 
-        G_rf = RadiusFunction(G, G_mf, G_kdt)
+        # Initialize RadiusFunction with edge-based radius
+        G_rf = RadiusFunction(G, edge_list, G_kdt, degree=5)
         self.G_rf = G_rf
         cylinder = Circle(radius=G_rf, degree=5)
         u3_avg = Average(u3, Lambda, cylinder)
@@ -87,7 +97,7 @@ class FEMSensitivity:
         dxLambda = Measure("dx", domain=Lambda)
         dsLambda = Measure("ds", domain=Lambda)
 
-        # Define D_area and D_perimeter
+        # Define D_area and D_perimeter based on radius
         D_area = np.pi * G_rf ** 2
         D_perimeter = 2 * np.pi * G_rf
 
@@ -104,12 +114,15 @@ class FEMSensitivity:
         a = [[a00, a01], [a10, a11]]
         L = [L0, L1]
 
+        # Boundary conditions
         W_bcs = [[DirichletBC(V3, del_Omega, boundary_Omega)], []]
 
+        # Assemble and apply boundary conditions
         A, b = map(ii_assemble, (a, L))
         A, b = apply_bc(A, b, W_bcs)
         A, b = map(ii_convert, (A, b))
 
+        # Solve the steady-state problem
         wh = ii_Function(W)
         solver = LUSolver(A, "mumps")
         solver.solve(wh.vector(), b)
@@ -131,7 +144,7 @@ class FEMSensitivity:
         a10_sens = -kappa * inner(s3k_avg, v1k) * D_perimeter * dxLambda
         a11_sens = beta * inner(grad(s1k), grad(v1k)) * D_area * dxLambda + kappa * inner(s1k, v1k) * D_perimeter * dxLambda
 
-        # Right-hand side for the sen sitivity problem
+        # Right-hand side for the sensitivity problem
         L0_sens = inner(uh1d - u3h_at_Lambda, v3k_avg) * D_perimeter * dxLambda
         L1_sens = inner(u3h_at_Lambda - uh1d, v1k) * D_perimeter * dxLambda
 
@@ -225,25 +238,26 @@ class Uh3dAtLambda(UserExpression):
 
 class RadiusFunction(UserExpression):
     """
-    A user expression to compute the radius at a given point based on the nearest control point in a graph.
+    A user expression to compute the radius at a given point based on the nearest edge in a graph.
 
     Args:
-        G (graphnics.FenicsGraph): The graph containing control points with radius information.
-        G_mf (dolfin.MeshFunction): A mesh function associated with the graph.
-        G_kdt (scipy.spatial.cKDTree): A k-d tree for efficient nearest neighbor search in the graph.
+        G (graphnics.FenicsGraph): The graph containing edges with radius information.
+        edge_list (list): List of edges in the graph.
+        G_kdt (scipy.spatial.cKDTree): A k-d tree for efficient nearest edge search in the graph.
         **kwargs: Additional keyword arguments to be passed to the UserExpression constructor.
     """
-    def __init__(self, G: "FenicsGraph", G_mf: MeshFunction, G_kdt: scipy.spatial.cKDTree, **kwargs):
+    def __init__(self, G: "FenicsGraph", edge_list: list, G_kdt: scipy.spatial.cKDTree, **kwargs):
         self.G = G
-        self.G_mf = G_mf
+        self.edge_list = edge_list
         self.G_kdt = G_kdt
         super().__init__(**kwargs)
 
     def eval(self, value: np.ndarray, x: np.ndarray):
         p = (x[0], x[1], x[2])
-        _, nearest_control_point_index = self.G_kdt.query(p)
-        nearest_control_point = list(self.G.nodes)[nearest_control_point_index]
-        value[0] = self.G.nodes[nearest_control_point]['radius']
+        _, nearest_edge_index = self.G_kdt.query(p)
+        u, v = self.edge_list[nearest_edge_index]
+        radius = self.G.edges[u, v]['radius']
+        value[0] = radius
 
     def value_shape(self) -> tuple:
         return ()
