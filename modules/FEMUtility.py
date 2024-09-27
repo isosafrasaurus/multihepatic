@@ -9,18 +9,54 @@ import os
 import scipy.spatial
 import vtk
 
-class FEMUtility:
-    def fenicsgraph_to_vtk(self, Lambda: Mesh, file_path: str, G_rf: "RadiusFunction", uh1d: Function = None):
+class FEMUtility:    
+    @staticmethod
+    def load_mesh(G, Omega_box : list[float] = None):
+        
+        G.make_mesh()
+        Lambda, edge_marker = G.get_mesh()
+
+        node_positions = nx.get_node_attributes(G, "pos")
+        node_coords = np.asarray(list(node_positions.values()))
+
+        
+        Omega = UnitCubeMesh(32, 32, 32)
+        Omega_coords = Omega.coordinates()
+        if (Omega_box == None):
+          xmax, ymax, zmax = np.max(node_coords, axis=0)
+          xmin, ymin, zmin = np.min(node_coords, axis=0)
+          Omega_coords[:, :] *= [xmax - xmin + 10, ymax - ymin + 10, zmax - zmin + 10]
+          Omega_coords[:, :] += xmin - 5, ymin - 5, zmin - 5
+        else:
+          Omega_coords[:, :] *= [Omega_box[0] - Omega_box[3], Omega_box[1] - Omega_box[4], Omega_box[2] - Omega_box[5]]
+          Omega_coords[:, :] += [Omega_box[3], Omega_box[4], Omega_box[5]]
+
+        
+        boundary_markers = MeshFunction("size_t", Omega, Omega.topology().dim() - 1, 0)
+
+        
+        class Face1(SubDomain):
+            def inside(self, x, on_boundary):
+                return on_boundary and near(x[2], 1.0, DOLFIN_EPS)
+
+        
+        face1 = Face1()
+        face1.mark(boundary_markers, 1)
+
+        return Lambda, Omega, boundary_markers, edge_marker
+
+    @staticmethod
+    def fenics_to_vtk(Lambda: Mesh, file_path: str, radius_map: "RadiusFunction", uh1d: Function = None):
         points = Lambda.coordinates()
         cells = {"line": Lambda.cells()}
-        radius_values = np.array([G_rf(point) for point in points])
+        radius_values = np.array([radius_map(point) for point in points])
 
         
         if uh1d is not None:
-            uh1d_values = np.array([uh1d(point) for point in points])
-            mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values, "Pressure1D": uh1d_values})
+          uh1d_values = np.array([uh1d(point) for point in points])
+          mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values, "Pressure1D": uh1d_values})
         else:
-            mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values})
+          mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values})
         mesh.write(file_path)
 
         
@@ -35,36 +71,3 @@ class FEMUtility:
         writer.SetFileName(file_path)
         writer.SetInputData(polydata)
         writer.Write()
-    
-    def load_mesh(G):
-        G.make_mesh()
-        Lambda, edge_marker = G.get_mesh()
-        
-        node_positions = nx.get_node_attributes(G, "pos")
-        node_coords = np.asarray(list(node_positions.values()))
-
-        Omega = UnitCubeMesh(32, 32, 32)
-        Omega_coords = Omega.coordinates()
-        xl, yl, zl = (np.max(node_coords, axis=0) - np.min(node_coords, axis=0))
-        Omega_coords[:, :] *= [xl + 3, yl + 3, zl + 3]
-        return Lambda, Omega
-        
-    def build_spatial_index(G):
-        
-        p = index.Property()
-        p.dimension = 3  
-        idx = index.Index(properties=p)
-        
-        for edge_id, (u, v, data) in enumerate(G.edges(data=True)):
-            pos_u = np.array(G.nodes[u]['pos'])
-            pos_v = np.array(G.nodes[v]['pos'])
-            radius = data['radius']
-            
-            min_coords = np.minimum(pos_u, pos_v) - radius
-            max_coords = np.maximum(pos_u, pos_v) + radius
-            
-            
-            bbox = tuple(min_coords.tolist() + max_coords.tolist())
-            idx.insert(edge_id, bbox, obj=(u, v, data))
-        
-        return idx
