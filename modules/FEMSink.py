@@ -14,19 +14,21 @@ class FEMSink:
                  alpha: float,
                  beta: float,
                  gamma: float,
-                 P_cvp: float,
+                 del_Omega: float,
+                 P_infty: float,
                  theta: float,
                  P_sink: float,
-                 Lambda_endpoints : list[int] = None,
-                 Omega_box : list[float] = None):
+                 robin_endpoints: list[int] = None,
+                 Omega_box: list[float] = None):
 
         importlib.reload(FEMUtility)
 
-        kappa, alpha, beta, gamma, del_Omega, P_cvp, theta, P_sink = map(Constant, 
-            [kappa, alpha, beta, gamma, del_Omega, P_cvp, theta, P_sink])
+        kappa, alpha, beta, gamma, del_Omega, P_infty, theta, P_sink = map(Constant, 
+            [kappa, alpha, beta, gamma, del_Omega, P_infty, theta, P_sink])
         
-        self.Lambda, self.Omega, boundary_Omega, edge_marker, lambda_boundary_markers = \
-            FEMUtility.FEMUtility.load_mesh(G, Omega_box=Omega_box, Lambda_endpoints=Lambda_endpoints)
+        # Pass robin_endpoints to load_mesh
+        self.Lambda, self.Omega, boundary_Omega, edge_marker, lambda_boundary_markers = FEMUtility.FEMUtility.load_mesh(
+            G, Omega_box=Omega_box, robin_endpoints=robin_endpoints)
 
         V3 = FunctionSpace(self.Omega, "CG", 1)
         V1 = FunctionSpace(self.Lambda, "CG", 1)
@@ -35,20 +37,23 @@ class FEMSink:
         v3, v1 = list(map(TestFunction, W))
         
         self.radius_map = RadiusFunction(G, edge_marker, degree=5)
-        cylinder = Circle(radius = self.radius_map, degree=5)
+        cylinder = Circle(radius=self.radius_map, degree=5)
         u3_avg = Average(u3, self.Lambda, cylinder)
         v3_avg = Average(v3, self.Lambda, cylinder)
         
         dxOmega = Measure("dx", domain=self.Omega)
         dxLambda = Measure("dx", domain=self.Lambda)
-        dsLambda = Measure("ds", domain=self.Lambda)
-        
+        dsLambda = Measure("ds", domain=self.Lambda, subdomain_data=lambda_boundary_markers)
+
         D_area = pi * pow(self.radius_map, 2)
         D_perimeter = 2 * pi * self.radius_map
         
         # boundary_Omega is a MeshFunction with markers and Face 1 is marked with marker=1
         ds_Omega = Measure("ds", domain=self.Omega, subdomain_data=boundary_Omega)
         ds_Face1 = ds_Omega(1)
+
+        # Define a separate measure for Robin endpoints on Lambda
+        dsLambda_robin = dsLambda(1)
 
         a00 = alpha * inner(grad(u3), grad(v3)) * dxOmega \
               + kappa * u3_avg * v3_avg * D_perimeter * dxLambda \
@@ -71,15 +76,15 @@ class FEMSink:
              [a10, a11]]
         L = [L0, L1]
         
-        W_bcs = [[], []]
-
+        W_bcs = [[], []]  # No essential boundary conditions
+        
         A, b = map(ii_assemble, (a, L))
         A, b = apply_bc(A, b, W_bcs)
         A, b = map(ii_convert, (A, b))
         wh = ii_Function(W)
         solver = LUSolver(A, "mumps")
         solver.solve(wh.vector(), b)
-        uh3d, uh1d = wh
+        uh3d, uh1d = wh.split()
         uh3d.rename("3D Pressure", "3D Pressure Distribution")
         uh1d.rename("1D Pressure", "1D Pressure Distribution")
         self.uh3d, self.uh1d = uh3d, uh1d
@@ -92,7 +97,7 @@ class FEMSink:
         File(output_file_3d) << self.uh3d
 
 class RadiusFunction(UserExpression):
-    def __init__(self, G : FenicsGraph, edge_marker: MeshFunction,**kwargs):
+    def __init__(self, G: "FenicsGraph", edge_marker: MeshFunction, **kwargs):
         p = rtree_index.Property()
         p.dimension = 3
         spatial_idx = rtree_index.Index(properties=p)
@@ -137,7 +142,7 @@ class RadiusFunction(UserExpression):
 
     def value_shape(self) -> tuple:
         return ()
-
+    
     @staticmethod
     def point_in_cylinder(point, pos_u, pos_v, radius):
         p = np.array(point)
