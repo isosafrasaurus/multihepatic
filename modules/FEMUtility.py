@@ -9,10 +9,9 @@ import os
 import scipy.spatial
 import vtk
 
-class FEMUtility:    
+class FEMUtility:
     @staticmethod
-    def load_mesh(G, Omega_box : list[float] = None):
-        # Omega_box must take the form [xmax, ymax, zmax, xmin, ymin, zmin]
+    def load_mesh(G, Omega_box: list[float] = None, robin_endpoints: list[int] = None):
         G.make_mesh()
         Lambda, edge_marker = G.get_mesh()
 
@@ -22,16 +21,16 @@ class FEMUtility:
         # Fit Omega around Lambda unless Omega_box is provided
         Omega = UnitCubeMesh(32, 32, 32)
         Omega_coords = Omega.coordinates()
-        if (Omega_box == None):
-          xmax, ymax, zmax = np.max(node_coords, axis=0)
-          xmin, ymin, zmin = np.min(node_coords, axis=0)
-          Omega_coords[:, :] *= [xmax - xmin + 10, ymax - ymin + 10, zmax - zmin + 10]
-          Omega_coords[:, :] += xmin - 5, ymin - 5, zmin - 5
+        if Omega_box is None:
+            xmax, ymax, zmax = np.max(node_coords, axis=0)
+            xmin, ymin, zmin = np.min(node_coords, axis=0)
+            Omega_coords[:, :] *= [xmax - xmin + 10, ymax - ymin + 10, zmax - zmin + 10]
+            Omega_coords[:, :] += [xmin - 5, ymin - 5, zmin - 5]
         else:
-          Omega_coords[:, :] *= [Omega_box[0] - Omega_box[3], Omega_box[1] - Omega_box[4], Omega_box[2] - Omega_box[5]]
-          Omega_coords[:, :] += [Omega_box[3], Omega_box[4], Omega_box[5]]
+            Omega_coords[:, :] *= [Omega_box[3] - Omega_box[0], Omega_box[4] - Omega_box[1], Omega_box[5] - Omega_box[2]]
+            Omega_coords[:, :] += [Omega_box[0], Omega_box[1], Omega_box[2]]
 
-        # Create a MeshFunction for boundary markers
+        # Create a MeshFunction for boundary markers on Omega
         boundary_markers = MeshFunction("size_t", Omega, Omega.topology().dim() - 1, 0)
 
         # Define Face 1 as the top face (z = 1.0)
@@ -43,7 +42,27 @@ class FEMUtility:
         face1 = Face1()
         face1.mark(boundary_markers, 1)
 
-        return Lambda, Omega, boundary_markers, edge_marker
+        # Create a MeshFunction for boundary markers on Lambda
+        lambda_boundary_markers = MeshFunction("size_t", Lambda, Lambda.topology().dim() - 1, 0)
+
+        if robin_endpoints is not None:
+            # Define a SubDomain for each Robin endpoint
+            for endpoint in robin_endpoints:
+                class RobinEndpoint(SubDomain):
+                    def __init__(self, point):
+                        super().__init__()
+                        self.point = point
+
+                    def inside(self, x, on_boundary):
+                        return on_boundary and near(x[0], self.point[0], DOLFIN_EPS) and \
+                               near(x[1], self.point[1], DOLFIN_EPS) and \
+                               near(x[2], self.point[2], DOLFIN_EPS)
+
+                pos = G.nodes[endpoint]['pos']
+                robin_subdomain = RobinEndpoint(pos)
+                robin_subdomain.mark(lambda_boundary_markers, 1)  # Marker '1' for Robin
+
+        return Lambda, Omega, boundary_markers, edge_marker, lambda_boundary_markers
 
     @staticmethod
     def fenics_to_vtk(Lambda: Mesh, file_path: str, radius_map: "RadiusFunction", uh1d: Function = None):
