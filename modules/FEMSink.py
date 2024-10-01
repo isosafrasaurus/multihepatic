@@ -7,23 +7,26 @@ import FEMUtility
 import numpy as np
 import os
 
-class FEMEdge:
+class FEMSink:
     def __init__(self, 
                  G: "FenicsGraph",
                  kappa: float,
                  alpha: float,
                  beta: float,
                  gamma: float,
-                 del_Omega: float,
-                 P_infty: float,
-                 Omega_box : list[int] = None):
+                 P_cvp: float,
+                 theta: float,
+                 P_sink: float,
+                 Lambda_endpoints : list[int] = None,
+                 Omega_box : list[float] = None):
 
         importlib.reload(FEMUtility)
 
-        kappa, alpha, beta, gamma, del_Omega, P_infty, theta, P_sink = map(Constant, 
-            [kappa, alpha, beta, gamma, del_Omega, P_infty, theta, P_sink])
+        kappa, alpha, beta, gamma, del_Omega, P_cvp, theta, P_sink = map(Constant, 
+            [kappa, alpha, beta, gamma, del_Omega, P_cvp, theta, P_sink])
         
-        self.Lambda, self.Omega, boundary_Omega, edge_marker = FEMUtility.FEMUtility.load_mesh(G, Omega_box = Omega_box)
+        self.Lambda, self.Omega, boundary_Omega, edge_marker, lambda_boundary_markers = \
+            FEMUtility.FEMUtility.load_mesh(G, Omega_box=Omega_box, Lambda_endpoints=Lambda_endpoints)
 
         V3 = FunctionSpace(self.Omega, "CG", 1)
         V1 = FunctionSpace(self.Lambda, "CG", 1)
@@ -42,20 +45,27 @@ class FEMEdge:
         
         D_area = pi * pow(self.radius_map, 2)
         D_perimeter = 2 * pi * self.radius_map
+        
+        # boundary_Omega is a MeshFunction with markers and Face 1 is marked with marker=1
+        ds_Omega = Measure("ds", domain=self.Omega, subdomain_data=boundary_Omega)
+        ds_Face1 = ds_Omega(1)
 
         a00 = alpha * inner(grad(u3), grad(v3)) * dxOmega \
-              + kappa * u3_avg * v3_avg * D_perimeter * dxLambda
+              + kappa * u3_avg * v3_avg * D_perimeter * dxLambda \
+              + theta * u3 * v3 * ds_Face1  # Robin boundary term on Omega
         
         a01 = -kappa * u1 * v3_avg * D_perimeter * dxLambda
         a10 = -kappa * u3_avg * v1 * D_perimeter * dxLambda
         a11 = beta * inner(grad(u1), grad(v1)) * D_area * dxLambda \
               + kappa * u1 * v1 * D_perimeter * dxLambda \
-              - gamma * u1 * v1 * dsLambda
+              - gamma * u1 * v1 * dsLambda_robin  # Robin BC only on marked endpoints
         
-        L0 = Constant(0) * v3_avg * dxLambda
+        # Modify L0 and L1 to include Robin terms only on marked endpoints
+        L0 = Constant(0) * v3_avg * dxLambda \
+             + theta * P_sink * v3 * ds_Face1  # Pressure sink term on Omega's face1
         
         L1 = Constant(0) * v1 * dxLambda \
-             - gamma * P_infty * v1 * dsLambda
+             - gamma * P_infty * v1 * dsLambda_robin  # Robin BC on Lambda's marked endpoints
         
         a = [[a00, a01],
              [a10, a11]]
