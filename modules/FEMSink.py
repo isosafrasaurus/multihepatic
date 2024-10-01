@@ -14,21 +14,20 @@ class FEMSink:
                  alpha: float,
                  beta: float,
                  gamma: float,
-                 del_Omega: float,
-                 P_infty: float,
+                 P_inlet: float,
                  theta: float,
                  P_sink: float,
-                 robin_endpoints: list[int] = None,
+                 Lambda_endpoints: list[int] = None,
                  Omega_box: list[float] = None):
 
         importlib.reload(FEMUtility)
 
-        kappa, alpha, beta, gamma, del_Omega, P_infty, theta, P_sink = map(Constant, 
-            [kappa, alpha, beta, gamma, del_Omega, P_infty, theta, P_sink])
+        kappa, alpha, beta, gamma, P_inlet, theta, P_sink = map(Constant, 
+            [kappa, alpha, beta, gamma, P_inlet, theta, P_sink])
         
-        # Pass robin_endpoints to load_mesh
+        # Pass Lambda_endpoints to load_mesh
         self.Lambda, self.Omega, boundary_Omega, edge_marker, lambda_boundary_markers = FEMUtility.FEMUtility.load_mesh(
-            G, Omega_box=Omega_box, robin_endpoints=robin_endpoints)
+            G, Omega_box=Omega_box, Lambda_endpoints=Lambda_endpoints)
 
         V3 = FunctionSpace(self.Omega, "CG", 1)
         V1 = FunctionSpace(self.Lambda, "CG", 1)
@@ -43,17 +42,17 @@ class FEMSink:
         
         dxOmega = Measure("dx", domain=self.Omega)
         dxLambda = Measure("dx", domain=self.Lambda)
-        dsLambda = Measure("ds", domain=self.Lambda, subdomain_data=lambda_boundary_markers)
-
-        D_area = pi * pow(self.radius_map, 2)
-        D_perimeter = 2 * pi * self.radius_map
-        
+        if lambda_boundary_markers != None:
+            dsLambda = Measure("ds", domain=self.Lambda, subdomain_data=lambda_boundary_markers)
+            dsLambda_robin = dsLambda(1)
+        else:
+            dsLambda_robin = Measure("ds", domain=self.Lambda)
         # boundary_Omega is a MeshFunction with markers and Face 1 is marked with marker=1
         ds_Omega = Measure("ds", domain=self.Omega, subdomain_data=boundary_Omega)
         ds_Face1 = ds_Omega(1)
 
-        # Define a separate measure for Robin endpoints on Lambda
-        dsLambda_robin = dsLambda(1)
+        D_area = pi * pow(self.radius_map, 2)
+        D_perimeter = 2 * pi * self.radius_map
 
         a00 = alpha * inner(grad(u3), grad(v3)) * dxOmega \
               + kappa * u3_avg * v3_avg * D_perimeter * dxLambda \
@@ -70,7 +69,7 @@ class FEMSink:
              + theta * P_sink * v3 * ds_Face1  # Pressure sink term on Omega's face1
         
         L1 = Constant(0) * v1 * dxLambda \
-             - gamma * P_infty * v1 * dsLambda_robin  # Robin BC on Lambda's marked endpoints
+             - gamma * P_inlet * v1 * dsLambda_robin  # Robin BC on Lambda's marked endpoints
         
         a = [[a00, a01],
              [a10, a11]]
@@ -84,7 +83,7 @@ class FEMSink:
         wh = ii_Function(W)
         solver = LUSolver(A, "mumps")
         solver.solve(wh.vector(), b)
-        uh3d, uh1d = wh.split()
+        uh3d, uh1d = wh
         uh3d.rename("3D Pressure", "3D Pressure Distribution")
         uh1d.rename("1D Pressure", "1D Pressure Distribution")
         self.uh3d, self.uh1d = uh3d, uh1d
