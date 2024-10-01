@@ -11,7 +11,10 @@ import vtk
 
 class FEMUtility:
     @staticmethod
-    def load_mesh(G, Omega_box: list[float] = None, robin_endpoints: list[int] = None):
+    def load_mesh(G, 
+                  Omega_box: list[float] = None, 
+                  Lambda_endpoints: list[int] = None):
+                  
         G.make_mesh()
         Lambda, edge_marker = G.get_mesh()
 
@@ -42,12 +45,11 @@ class FEMUtility:
         face1 = Face1()
         face1.mark(boundary_markers, 1)
 
-        # Create a MeshFunction for boundary markers on Lambda
-        lambda_boundary_markers = MeshFunction("size_t", Lambda, Lambda.topology().dim() - 1, 0)
-
-        if robin_endpoints is not None:
+        if Lambda_endpoints is not None:
+            # Create a MeshFunction for boundary markers on Lambda
+            lambda_boundary_markers = MeshFunction("size_t", Lambda, Lambda.topology().dim() - 1, 0)
             # Define a SubDomain for each Robin endpoint
-            for endpoint in robin_endpoints:
+            for endpoint in Lambda_endpoints:
                 class RobinEndpoint(SubDomain):
                     def __init__(self, point):
                         super().__init__()
@@ -61,6 +63,8 @@ class FEMUtility:
                 pos = G.nodes[endpoint]['pos']
                 robin_subdomain = RobinEndpoint(pos)
                 robin_subdomain.mark(lambda_boundary_markers, 1)  # Marker '1' for Robin
+        else:
+            lambda_boundary_markers = None
 
         return Lambda, Omega, boundary_markers, edge_marker, lambda_boundary_markers
 
