@@ -28,11 +28,10 @@ class FEMSinkVelo:
         inlet_points: list[int] = [0],
         Omega_box: list[float] = None
     ):
-        
         mesh_data = MeshCreator.create_mesh_and_measures(
             G,
             Omega_box=Omega_box,
-            inlet_points=inlet_points,  
+            inlet_points=inlet_points,
         )
         self.Lambda = mesh_data["Lambda"]
         self.Omega = mesh_data["Omega"]
@@ -50,7 +49,6 @@ class FEMSinkVelo:
         self.dsLambda_robin = mesh_data["dsLambdaRobin"]  
         dsLambda_inlet = mesh_data["dsLambdaInlet"]       
 
-        
         V3 = FunctionSpace(self.Omega, "CG", 1)
         V1 = FunctionSpace(self.Lambda, "CG", 1)
         W = [V3, V1]
@@ -63,32 +61,25 @@ class FEMSinkVelo:
         u3_avg = Average(u3, self.Lambda, cylinder)
         v3_avg = Average(v3, self.Lambda, cylinder)
 
-        
         D_area = np.pi * self.radius_map**2
         D_perimeter = 2.0 * np.pi * self.radius_map
 
-        
-        
         a00 = (Constant(k_t/mu)*inner(grad(u3), grad(v3))*self.dxOmega
                + Constant(gamma)*u3_avg*v3_avg*D_perimeter*self.dxLambda
                + Constant(gamma_R)*u3*v3*self.ds_Face1)
         
-        
         a01 = - Constant(gamma)*u1*v3_avg*D_perimeter*self.dxLambda
         a10 = - Constant(gamma)*u3_avg*v1*D_perimeter*self.dxLambda
 
-        
         a11 = (Constant(k_t/mu)*inner(grad(u1), grad(v1))*D_area*self.dxLambda
                + Constant(gamma)*u1*v1*D_perimeter*self.dxLambda
-               
                + Constant(gamma_a/mu)*u1*v1*self.dsLambda_robin)
         
         a = [[a00, a01],
              [a10, a11]]
 
-        
-        L0 = Constant(gamma_R)*P_cvp*v3*self.ds_Face1  
-        L1 = - Constant(gamma_a/mu)*P_cvp*v1*self.dsLambda_robin  
+        L0 = Constant(gamma_R)*P_cvp*v3*self.ds_Face1
+        L1 = - Constant(gamma_a/mu)*P_cvp*v1*self.dsLambda_robin
         L = [L0, L1]
 
         inlet_bc = DirichletBC(W[1], Constant(P_in),
