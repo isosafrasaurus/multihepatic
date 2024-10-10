@@ -9,70 +9,64 @@ from MeasureMeshCreator import MeasureMeshCreator, XZeroPlane
 import VTKExporter
 from RadiusFunction import RadiusFunction
 
-
 class FEMSinkVelo:
     def __init__(
-        self, 
+        self,
         G: "FenicsGraph",
         gamma: float,
         gamma_R: float,
-        gamma_v: float,   
+        gamma_v: float,
         gamma_a: float,
         mu: float,
         k_t: float,
         k_v: float,
         P_in: float,
         P_cvp: float,
-        inlet_points: list[int] = [0],
+        inlet_points=None,  
         Omega_sink: SubDomain = XZeroPlane()
     ):
         
+
+        measure_creator = MeasureMeshCreator(G, Omega_sink, Lambda_inlet=inlet_points)
+        mesh_data = measure_creator.create_mesh_and_measures()
+
+        self.Omega = mesh_data["Omega"]        
+        self.Lambda = mesh_data["Lambda"]      
+        self.dsOmegaSink = mesh_data["dsOmegaSink"]   
+        self.dsOmegaNeumann = mesh_data["dsOmegaNeumann"]  
+
+        
+        
+        
+        
+        self.dsLambdaNeumann = mesh_data["dsLambdaNeumann"]  
+        self.dsLambdaInlet = mesh_data["dsLambdaInlet"]      
+
+        self.dxOmega = mesh_data["dxOmega"]  
+        self.dxLambda = mesh_data["dxLambda"]  
+        edge_marker = mesh_data["edge_marker"]
+
+        self.mu = mu
+        self.k_t = k_t
+        self.k_v = k_v
         self.gamma = gamma
         self.gamma_R = gamma_R
         self.gamma_a = gamma_a
         self.P_cvp = P_cvp
+        self.P_in = P_in
 
-        self.mu = mu
-        self.k_v = k_v
-        self.k_t = k_t
-
-        
-        
-        
-        measure_creator = MeasureMeshCreator(G, Omega_sink, Lambda_inlet=inlet_points)
-        mesh_data = measure_creator.create_mesh_and_measures()
-
-        self.Lambda = mesh_data["Lambda"]       
-        self.Omega = mesh_data["Omega"]         
-
-        
-        edge_marker = mesh_data["edge_marker"]
-        self.dxOmega = mesh_data["dxOmega"]
-        self.dxLambda = mesh_data["dxLambda"]
-        self.dsOmega_sink = mesh_data["dsOmegaSink"]       
-        self.dsLambda_robin = mesh_data["dsLambdaNeumann"] 
-
-        
-        
-        
-        V3 = FunctionSpace(self.Omega, "CG", 1)   
-        V1 = FunctionSpace(self.Lambda, "CG", 1)  
+        V3 = FunctionSpace(self.Omega, "CG", 1)  
+        V1 = FunctionSpace(self.Lambda, "CG", 1) 
         W = [V3, V1]
-
         u3, u1 = map(TrialFunction, W)
         v3, v1 = map(TestFunction, W)
 
-        
-        
-        
         self.radius_map = RadiusFunction(G, edge_marker, degree=5)
         cylinder = Circle(radius=self.radius_map, degree=5)  
 
-        
         u3_avg = Average(u3, self.Lambda, cylinder)
         v3_avg = Average(v3, self.Lambda, cylinder)
 
-        
         D_area = np.pi * self.radius_map**2
         D_perimeter = 2.0 * np.pi * self.radius_map
 
@@ -89,163 +83,157 @@ class FEMSinkVelo:
         
         
         
-        
-        
-        
-        
-        
-        
-        
-        
+        a00 = (
+            Constant(self.k_t/self.mu)*inner(grad(u3), grad(v3))*self.dxOmega
+            + Constant(self.gamma_R)*u3*v3*self.dsOmegaSink
+            - Constant(self.gamma)*u3_avg*v3_avg*D_perimeter*self.dxLambda
+        )
 
         
-        a00 = (Constant(self.k_t/self.mu)*inner(grad(u3), grad(v3))*self.dxOmega
-               - Constant(self.gamma)*u3_avg*v3_avg*D_perimeter*self.dxLambda  
-               + Constant(self.gamma_R)*u3*v3*self.dsOmega_sink)               
+        a01 = Constant(self.gamma)*u1*v3_avg*D_perimeter*self.dxLambda
 
         
-        a01 = (Constant(self.gamma)*u1*v3_avg*D_perimeter*self.dxLambda)
+        a10 = -Constant(self.gamma)*u3_avg*v1*D_perimeter*self.dxLambda
 
         
-        a10 = (- Constant(self.gamma)*u3_avg*v1*D_perimeter*self.dxLambda)
-
         
-        a11 = (Constant(self.k_v/self.mu)*inner(grad(u1), grad(v1))*D_area*self.dxLambda
-               + Constant(self.gamma)*u1*v1*D_perimeter*self.dxLambda
-               + Constant(self.gamma_a/self.mu)*u1*v1*self.dsLambda_robin)
+        
+        a11 = (
+            Constant(self.k_v/self.mu)*inner(grad(u1), grad(v1))*D_area*self.dxLambda
+            + Constant(self.gamma)*u1*v1*D_perimeter*self.dxLambda
+            + Constant(self.gamma_a/self.mu)*u1*v1*self.dsLambdaNeumann
+        )
 
         a = [[a00, a01],
              [a10, a11]]
 
         
+        L0 = Constant(self.gamma_R)*Constant(self.P_cvp)*v3*self.dsOmegaSink
+
         
         
-        
-        L0 = Constant(self.gamma_R)*Constant(P_cvp)*v3*self.dsOmega_sink
-        
-        L1 = -Constant(self.gamma_a/self.mu)*Constant(P_cvp)*v1*self.dsLambda_robin
+        L1 = -Constant(self.gamma_a/self.mu)*Constant(self.P_cvp)*v1*self.dsLambdaNeumann
 
         L = [L0, L1]
 
         
-        
-        
-        
-        inlet_bc = DirichletBC(
-            W[1],
-            Constant(P_in),
-            mesh_data["Lambda_boundary_markers"],
-            2  
-        )
-        W_bcs = [[], [inlet_bc]]
+        Lambda_bcs = mesh_data["Lambda_boundary_markers"]
+        inlet_bc = DirichletBC(W[1], Constant(self.P_in), Lambda_bcs, 1)
+        inlet_bcs = [inlet_bc] if len(inlet_bc.get_boundary_values()) > 0 else []
+        W_bcs = [[], inlet_bcs]
 
-        
-        
-        
         A, b = map(ii_assemble, (a, L))
-        A, b = apply_bc(A, b, W_bcs)
+        if any(W_bcs[0]) or any(W_bcs[1]):  
+            print("Applied BC! Non-empty list")
+            A, b = apply_bc(A, b, W_bcs)
         A, b = map(ii_convert, (A, b))
 
         wh = ii_Function(W)
         solver = LUSolver(A, "mumps")
         solver.solve(wh.vector(), b)
 
-        
-        uh3d, uh1d = wh
-        uh3d.rename("3D Pressure", "3D Pressure Distribution")
-        uh1d.rename("1D Pressure", "1D Pressure Distribution")
+        self.uh3d, self.uh1d = wh
+        self.uh3d.rename("3D Pressure", "3D Pressure Distribution")
+        self.uh1d.rename("1D Pressure", "1D Pressure Distribution")
 
-        self.uh3d, self.uh1d = uh3d, uh1d
-
-        
-        
-        
         
         V_vector = VectorFunctionSpace(self.Omega, "CG", 1)
-        u_velocity = TrialFunction(V_vector)
-        v_velocity = TestFunction(V_vector)
+        u_vel = TrialFunction(V_vector)
+        v_vel = TestFunction(V_vector)
 
-        a_vel = dot(u_velocity, v_velocity)*dx
-        L_vel = -Constant(self.k_t/self.mu)*dot(grad(self.uh3d), v_velocity)*self.dxOmega
+        a_vel = dot(u_vel, v_vel)*dx
+        L_vel = -Constant(self.k_t/self.mu)*dot(grad(self.uh3d), v_vel)*self.dxOmega
 
         A_vel = assemble(a_vel)
         b_vel = assemble(L_vel)
         solver_vel = LUSolver(A_vel, "mumps")
-
-        velocity = Function(V_vector, name="Velocity_L2_Projection")
+        velocity = Function(V_vector, name="Velocity Field")
         solver_vel.solve(velocity.vector(), b_vel)
         velocity.rename("Velocity", "Velocity Field")
         self.velocity = velocity
 
     
-    
-    
     def calculate_3d_outflow(self) -> float:
-        
-        return assemble(Constant(self.gamma_R)*(self.uh3d - self.P_cvp)*self.dsOmega_sink)
-
-    def calculate_3d_flow_from_velocity(self) -> float:
-        
         n = FacetNormal(self.Omega)
-        return assemble(dot(self.velocity, n)*self.dsOmega_sink)
+        return assemble(dot(self.velocity, n)*self.dsOmegaSink)
 
+    
     def calculate_1d_inflow(self) -> float:
         
         mesh1d = self.Lambda
-
-        
         v0 = Vertex(mesh1d, 0)
         edges = list(v0.entities(1))
         if not edges:
             return 0.0
 
         e = Edge(mesh1d, edges[0])
-        verts = list(e.entities(0))
-        neighbor_vid = verts[0] if verts[0] != v0.index() else verts[1]
-        v1 = Vertex(mesh1d, neighbor_vid)
+        vs = list(e.entities(0))
+        neighbor_v = vs[0] if vs[0] != v0.index() else vs[1]
+        v1 = Vertex(mesh1d, neighbor_v)
 
         coords0 = np.array(v0.point().array())
         coords1 = np.array(v1.point().array())
-        distance = np.linalg.norm(coords1 - coords0)
-        if distance < 1e-14:
+        dist = np.linalg.norm(coords1 - coords0)
+        if dist < 1e-14:
             return 0.0
 
         p0 = self.uh1d(v0.point())
         p1 = self.uh1d(v1.point())
-        dP_ds = (p1 - p0)/distance
-
-        radius0 = float(self.radius_map(v0.point()))
-        area0 = np.pi*(radius0**2)
+        dP_ds = (p1 - p0)/dist
 
         
-        Q_in = - area0*(self.k_v/self.mu)*dP_ds
-        return Q_in
+        r0 = float(self.radius_map(v0.point()))
+        A0 = np.pi*(r0**2)
 
+        
+        return -A0*(self.k_v/self.mu)*dP_ds
+
+    
+    def calculate_1d_outflow(self) -> float:
+        
+        boundary_markers = self.dsLambdaNeumann.subdomain_data()  
+        mesh1d = self.Lambda
+        outflow_total = 0.0
+
+        for f in facets(mesh1d):
+            
+            if boundary_markers[f.index()] == 1:
+                
+                
+                vs = list(f.entities(0))
+                for vid in vs:
+                    v = Vertex(mesh1d, vid)
+                    pval = self.uh1d(v.point())
+                    flux_i = (self.gamma_a/self.mu)*(pval - self.P_cvp)
+                    
+                    outflow_total += flux_i
+
+        return outflow_total
+
+    
+    def calculate_total_outflow(self) -> float:
+        return self.calculate_3d_outflow() + self.calculate_1d_outflow()
+
+    
     def calculate_total_flow_all_boundaries(self) -> float:
-        
         ds_all = Measure("ds", domain=self.Omega)
         n = FacetNormal(self.Omega)
         return assemble(dot(self.velocity, n)*ds_all)
 
-    
-    
-    
     def save_vtk(self, directory_path: str):
-        
         os.makedirs(directory_path, exist_ok=True)
 
-        output_file_1d = os.path.join(directory_path, "pressure1d.vtk")
-        output_file_3d = os.path.join(directory_path, "pressure3d.pvd")
-        output_file_velocity = os.path.join(directory_path, "velocity3d.pvd")
+        out_1d = os.path.join(directory_path, "pressure1d.vtk")
+        out_3d = os.path.join(directory_path, "pressure3d.pvd")
+        out_vel = os.path.join(directory_path, "velocity3d.pvd")
 
         
         VTKExporter.fenics_to_vtk(
             self.Lambda,
-            output_file_1d,
+            out_1d,
             self.radius_map,
             uh1d=self.uh1d
         )
-
         
-        File(output_file_3d) << self.uh3d
-        File(output_file_velocity) << self.velocity
+        File(out_3d) << self.uh3d
+        File(out_vel) << self.velocity

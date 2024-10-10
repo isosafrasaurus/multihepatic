@@ -32,6 +32,7 @@ class MeasureMeshCreator:
         Lambda = mesh_data["Lambda"]
         Omega = mesh_data["Omega"]
         Lambda_edge_marker = mesh_data["Lambda_edge_marker"]
+        G_copy = mesh_data["G_copy"]
 
         
         boundary_Omega = MeshFunction("size_t", Omega, Omega.topology().dim() - 1, 0)
@@ -40,17 +41,10 @@ class MeasureMeshCreator:
         
         Lambda_boundary_markers = MeshFunction("size_t", Lambda, Lambda.topology().dim() - 1, 0)
 
-        class AllBoundary(SubDomain):
-            def inside(self, x, on_boundary):
-                return on_boundary
-
-        all_boundary = AllBoundary()
-        all_boundary.mark(Lambda_boundary_markers, 1)
-
         
         if self.inlet_points is not None:
             for node_id in self.inlet_points:
-                pos = self.G.nodes[node_id]["pos"]
+                pos = self.G_copy.nodes[node_id]["pos"]
 
                 class InletEndpoint(SubDomain):
                     def __init__(self, point):
@@ -66,7 +60,7 @@ class MeasureMeshCreator:
                         )
 
                 inlet_subdomain = InletEndpoint(pos)
-                inlet_subdomain.mark(Lambda_boundary_markers, 2)
+                inlet_subdomain.mark(Lambda_boundary_markers, 1)
 
         
         dxOmega = Measure("dx", domain=Omega)
@@ -79,8 +73,8 @@ class MeasureMeshCreator:
 
         
         dsLambda = Measure("ds", domain=Lambda, subdomain_data=Lambda_boundary_markers)
-        dsLambdaNeumann = dsLambda(1)   
-        dsLambdaInlet = dsLambda(2)     
+        dsLambdaNeumann = dsLambda(0)  
+        dsLambdaInlet = dsLambda(1)    
 
         
         mesh_data.update({
