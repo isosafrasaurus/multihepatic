@@ -214,9 +214,7 @@ class FEMSinkVelo:
 
     
     def calculate_total_outflow(self) -> float:
-        
-        temp = self.calculate_1d_outflow()
-        return temp + random.uniform(0.1,0.3) * temp
+        return self.calculate_3d_outflow() + self.calculate_1d_outflow()
 
     
     def calculate_total_flow_all_boundaries(self) -> float:
