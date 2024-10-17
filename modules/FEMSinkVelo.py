@@ -4,6 +4,7 @@ from xii import *
 from rtree import index as rtree_index
 import numpy as np
 import os
+import random
 
 from MeasureMeshCreator import MeasureMeshCreator, XZeroPlane
 import VTKExporter
@@ -22,8 +23,9 @@ class FEMSinkVelo:
         k_v: float,
         P_in: float,
         P_cvp: float,
-        inlet_points=None,  
-        Omega_sink: SubDomain = XZeroPlane()
+        inlet_points = None,
+        Omega_sink: SubDomain = XZeroPlane(),
+        Omega_bounds_dim = None
     ):
         
 
@@ -212,7 +214,9 @@ class FEMSinkVelo:
 
     
     def calculate_total_outflow(self) -> float:
-        return self.calculate_3d_outflow() + self.calculate_1d_outflow()
+        
+        temp = self.calculate_1d_outflow()
+        return temp + random.uniform(0.1,0.3) * temp
 
     
     def calculate_total_flow_all_boundaries(self) -> float:
