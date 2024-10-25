@@ -35,8 +35,8 @@ class FEMSinkVelo:
         self.Lambda = measure_creator.Lambda
         self.dsOmegaSink = measure_creator.dsOmegaSink
         self.dsOmegaNeumann = measure_creator.dsOmegaNeumann
-        self.dsLambdaNeumann = measure_creator.dsLambdaNeumann
         self.dsLambdaInlet = measure_creator.dsLambdaInlet
+        self.dsLambdaNeumann = measure_creator.dsLambdaNeumann
         self.dxOmega = measure_creator.dxOmega
         self.dxLambda = measure_creator.dxLambda
 
