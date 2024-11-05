@@ -11,7 +11,7 @@ class MeshCreator:
         G: FenicsGraph,
         Omega_bounds_dim: Optional[List[List[float]]] = None,
         Omega_mesh_voxel_dim: List[int] = [32, 32, 32],
-        Lambda_padding_min: float = 8,
+        Lambda_padding_min: float = 0.008,
         Lambda_num_nodes_exp: int = 8,
     ):
         
@@ -47,7 +47,7 @@ class MeshCreator:
             shifts = lower
 
         
-        Omega_coords[:] = Omega_coords * scales + shifts
+        Omega_coords[:,:] = Omega_coords * scales + shifts
 
         
         G_copy = nx.Graph(G)
