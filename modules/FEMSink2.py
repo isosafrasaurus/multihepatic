@@ -69,30 +69,56 @@ class FEMSink:
         self.radius_map = RadiusFunction.RadiusFunction(G, measure_creator.Lambda_edge_marker, degree=5)
         cylinder = Circle(radius=self.radius_map, degree=5)
 
+        # u3_avg and v3_avg denote the lateral average (i.e. on the vessel surface)
         u3_avg = Average(u3, self.Lambda, cylinder)
         v3_avg = Average(v3, self.Lambda, cylinder)
 
-        D_area = np.pi * self.radius_map**2
-        D_perimeter = 2.0 * np.pi * self.radius_map
+        # Cross-sectional area and perimeter of the vessel
+        D_area = np.pi * self.radius_map**2        # |Theta|
+        D_perimeter = 2.0 * np.pi * self.radius_map   # |∂Theta|
 
         # Assemble system matrices
-        a00 = (
-            Constant(self.k_t / self.mu) * inner(grad(u3), grad(v3)) * self.dxOmega
-            + Constant(self.gamma) * u3_avg * v3_avg * D_perimeter * self.dxLambda
-            + Constant(self.gamma_R) * u3 * v3 * self.dsOmegaSink
-        )
-        a01 = -Constant(self.gamma) * u1 * v3_avg * D_perimeter * self.dxLambda
-        a10 = -Constant(self.gamma) * u3_avg * v1 * D_perimeter * self.dxLambda
-        a11 = (
-            Constant(self.k_v / self.mu) * inner(grad(u1), grad(v1)) * D_area * self.dxLambda
-            + Constant(self.gamma) * u1 * v1 * D_perimeter * self.dxLambda
-            - Constant(self.gamma_a / self.mu) * u1 * v1 * self.dsLambdaRobin
-        )
+
+        # -- 3D tissue bilinear form (a00)
+        a00 = (Constant(self.k_t / self.mu) * inner(grad(u3), grad(v3)) * self.dxOmega
+               + Constant(self.gamma) * u3_avg * v3_avg * D_perimeter * self.dxLambda
+               + Constant(self.gamma_R) * u3 * v3 * self.dsOmegaSink
+               # Model 2 modification: add outlet point contribution in 3D
+               + Constant(self.gamma_a / self.mu) * u3_avg * v3_avg * D_area * self.dsLambdaRobin
+               )
+
+        # -- Coupling term from 3D to 1D (a01)
+        a01 = (- Constant(self.gamma) * u1 * v3_avg * D_perimeter * self.dxLambda
+               # Model 2 modification: outlet contribution coupling 3D (average) and 1D
+               - Constant(self.gamma_a / self.mu) * u3_avg * v1 * D_area * self.dsLambdaRobin
+               )
+
+        # -- Coupling term from 1D to 3D (a10)
+        a10 = (- Constant(self.gamma) * u3_avg * v1 * D_perimeter * self.dxLambda
+               # Model 2 modification: outlet contribution coupling 1D and 3D (average)
+               - Constant(self.gamma_a / self.mu) * u1 * v3_avg * D_area * self.dsLambdaRobin
+               )
+
+        # -- 1D vessel bilinear form (a11)
+        a11 = (Constant(self.k_v / self.mu) * inner(grad(u1), grad(v1)) * D_area * self.dxLambda
+               + Constant(self.gamma) * u1 * v1 * D_perimeter * self.dxLambda
+               # Model 1 had a subtraction here; in Model 2 the outlet term enters with opposite sign and weighted by D_area:
+               + Constant(self.gamma_a / self.mu) * u1 * v1 * D_area * self.dsLambdaRobin
+               )
+
         a = [[a00, a01],
              [a10, a11]]
 
-        L0 = -Constant(self.gamma_R) * Constant(self.p_cvp) * v3 * self.dsOmegaSink
-        L1 = -Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v1 * self.dsLambdaRobin
+        # Assemble right–hand side.
+        # Note: The original Model 1 RHS had an outlet contribution only in the 1D part.
+        # For Model 2 we split the outlet contribution (proportional to p_cvp) into both equations.
+        L0 = (- Constant(self.gamma_R) * Constant(self.p_cvp) * v3 * self.dsOmegaSink
+              # Model 2 modification: add outlet term in the tissue equation (with minus sign on the average)
+              - Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v3_avg * D_area * self.dsLambdaRobin
+              )
+        L1 = (  # Model 2 modification: outlet term in the vessel equation (with plus sign on the 1D part)
+              + Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v1 * D_area * self.dsLambdaRobin
+              )
         L = [L0, L1]
 
         # Boundary conditions: apply Dirichlet BC on 1D inlet where marker = 1
