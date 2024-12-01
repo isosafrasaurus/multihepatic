@@ -44,11 +44,8 @@ class FEMSink:
         self.dsLambdaRobin = measure_creator.dsLambdaRobin
         self.dxOmega = measure_creator.dxOmega
         self.dxLambda = measure_creator.dxLambda
-
-        
-        self.boundary_Omega = measure_creator.boundary_Omega  
-
-        self.Lambda_boundary_markers = measure_creator.Lambda_boundary_markers  
+        self.boundary_Omega = measure_creator.boundary_Omega
+        self.Lambda_boundary_markers = measure_creator.Lambda_boundary_markers
 
         self.mu = mu
         self.k_t = k_t
@@ -59,7 +56,6 @@ class FEMSink:
         self.p_cvp = p_cvp
         self.P_in = P_in
 
-        
         V3 = FunctionSpace(self.Omega, "CG", 1)
         V1 = FunctionSpace(self.Lambda, "CG", 1)
         W = [V3, V1]
@@ -69,64 +65,43 @@ class FEMSink:
         self.radius_map = RadiusFunction.RadiusFunction(G, measure_creator.Lambda_edge_marker, degree=5)
         cylinder = Circle(radius=self.radius_map, degree=5)
 
-        
         u3_avg = Average(u3, self.Lambda, cylinder)
         v3_avg = Average(v3, self.Lambda, cylinder)
 
-        
-        D_area = np.pi * self.radius_map**2        
-        D_perimeter = 2.0 * np.pi * self.radius_map   
+        D_area = np.pi * self.radius_map**2
+        D_perimeter = 2.0 * np.pi * self.radius_map
 
-        
-
-        
-        a00 = (Constant(self.k_t / self.mu) * inner(grad(u3), grad(v3)) * self.dxOmega
-               + Constant(self.gamma) * u3_avg * v3_avg * D_perimeter * self.dxLambda
-               + Constant(self.gamma_R) * u3 * v3 * self.dsOmegaSink
-               
-               + Constant(self.gamma_a / self.mu) * u3_avg * v3_avg * D_area * self.dsLambdaRobin
-               )
-
-        
-        a01 = (- Constant(self.gamma) * u1 * v3_avg * D_perimeter * self.dxLambda
-               
-               - Constant(self.gamma_a / self.mu) * u3_avg * v1 * D_area * self.dsLambdaRobin
-               )
-
-        
-        a10 = (- Constant(self.gamma) * u3_avg * v1 * D_perimeter * self.dxLambda
-               
-               - Constant(self.gamma_a / self.mu) * u1 * v3_avg * D_area * self.dsLambdaRobin
-               )
-
-        
-        a11 = (Constant(self.k_v / self.mu) * inner(grad(u1), grad(v1)) * D_area * self.dxLambda
-               + Constant(self.gamma) * u1 * v1 * D_perimeter * self.dxLambda
-               
-               + Constant(self.gamma_a / self.mu) * u1 * v1 * D_area * self.dsLambdaRobin
-               )
-
+        a00 = (
+            Constant(self.k_t / self.mu) * inner(grad(u3), grad(v3)) * self.dxOmega
+            + Constant(self.gamma_R) * u3 * v3 * self.dsOmegaSink
+            + Constant(self.gamma) * u3_avg * v3_avg * D_perimeter * self.dxLambda
+        )
+        a01 = (
+            -Constant(self.gamma) * u1 * v3_avg * D_perimeter * self.dxLambda
+        )
+        a10 = (
+            -Constant(self.gamma) * u3_avg * v1 * D_perimeter * self.dxLambda
+        )
+        a11 = (
+            Constant(self.k_v / self.mu) * inner(grad(u1), grad(v1)) * D_area * self.dxLambda
+            + Constant(self.gamma) * u1 * v1 * D_perimeter * self.dxLambda
+            + Constant(self.gamma_a / self.mu) * u1 * v1 * self.dsLambdaRobin
+        )
+        L0 = (
+            -Constant(self.gamma_R) * Constant(self.p_cvp) * v3 * self.dsOmegaSink
+        )
+        L1 = (
+            +Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v1 * self.dsLambdaRobin
+        )
         a = [[a00, a01],
              [a10, a11]]
-
-        
-        
-        
-        L0 = (- Constant(self.gamma_R) * Constant(self.p_cvp) * v3 * self.dsOmegaSink
-              
-              - Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v3_avg * D_area * self.dsLambdaRobin
-              )
-        L1 = (  
-              + Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v1 * D_area * self.dsLambdaRobin
-              )
         L = [L0, L1]
 
-        
         inlet_bc = DirichletBC(V1, Constant(self.P_in), self.Lambda_boundary_markers, 1)
         inlet_bcs = [inlet_bc] if len(inlet_bc.get_boundary_values()) > 0 else []
         W_bcs = [[], inlet_bcs]
+        self.W_bcs = W_bcs
 
-        
         A, b = map(ii_assemble, (a, L))
         if any(W_bcs[0]) or any(W_bcs[1]):
             print("Applied BC! Non-empty list")
