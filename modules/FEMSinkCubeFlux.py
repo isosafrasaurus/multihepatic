@@ -15,7 +15,6 @@ class FEMSinkCubeFlux(FEMSinkVelo):
         super().__init__(*args, **kwargs)
         
         
-        
         coords = self.Omega.coordinates()
         x_min, x_max = np.min(coords[:, 0]), np.max(coords[:, 0])
         y_min, y_max = np.min(coords[:, 1]), np.max(coords[:, 1])
