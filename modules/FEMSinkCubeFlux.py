@@ -1,19 +1,12 @@
 import numpy as np
 import math
 from dolfin import *
-import FEMSink2
+import FEMSinkVelo
 import importlib
 
-importlib.reload(FEMSink2)
-
-
-from FEMSinkVelo import FEMSinkVelo  
-
-class FEMSinkCubeFlux(FEMSinkVelo):
+class FEMSinkCubeFlux(FEMSinkVelo.FEMSinkVelo):
     def __init__(self, *args, **kwargs):
-        
         super().__init__(*args, **kwargs)
-        
         
         coords = self.Omega.coordinates()
         x_min, x_max = np.min(coords[:, 0]), np.max(coords[:, 0])
