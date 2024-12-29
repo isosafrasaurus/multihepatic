@@ -1,9 +1,10 @@
 from typing import Optional, List
-from dolfin import UnitCubeMesh
+from dolfin import *
 from graphnics import *
 from xii import *
 import networkx as nx
 import numpy as np
+from rtree import index as rtree_index
 
 class MeshUtility:
     def __init__(
@@ -14,15 +15,14 @@ class MeshUtility:
         Lambda_padding_min: float = 0.008,
         Lambda_num_nodes_exp: int = 5,
     ):
+        
         G.make_mesh(n=Lambda_num_nodes_exp)
         G.make_submeshes()
         Lambda, Lambda_edge_marker = G.get_mesh(n=Lambda_num_nodes_exp)
 
         Lambda_coords = Lambda.coordinates()
-        min_coords = np.min(Lambda_coords, axis=0)
-        offset = np.where(min_coords < 0, -min_coords, 0)
-        Lambda_coords[:] = Lambda_coords + offset
 
+        
         Omega = UnitCubeMesh(*Omega_mesh_voxel_dim)
         Omega_coords = Omega.coordinates()
 
@@ -44,10 +44,78 @@ class MeshUtility:
             upper = np.array(Omega_bounds_dim[1])
             scales = upper - lower
             shifts = lower
-            
-        Omega_coords[:,:] = Omega_coords * scales + shifts
-        
+
+        Omega_coords[:, :] = Omega_coords * scales + shifts
+
         self.Omega_bounds = [shifts, shifts + scales]
         self.Omega = Omega
         self.Lambda = Lambda
         self.Lambda_edge_marker = Lambda_edge_marker
+        self.radius_map = self.radius_map(G, Lambda_edge_marker)
+
+    class radius_map(UserExpression):
+        def __init__(self, G: "FenicsGraph", edge_marker: MeshFunction, **kwargs):
+            super().__init__(**kwargs)
+            
+            
+            p = rtree_index.Property()
+            p.dimension = 3
+            self.spatial_idx = rtree_index.Index(properties=p)
+            self.edge_data_list = []
+
+            
+            for edge_id, (u, v, data) in enumerate(G.edges(data=True)):
+                pos_u = np.array(G.nodes[u]['pos'])
+                pos_v = np.array(G.nodes[v]['pos'])
+                radius = data['radius']
+
+                min_coords = np.minimum(pos_u, pos_v) - radius
+                max_coords = np.maximum(pos_u, pos_v) + radius
+
+                
+                
+                bbox = tuple(min_coords.tolist() + max_coords.tolist())
+                self.spatial_idx.insert(edge_id, bbox)
+                self.edge_data_list.append((u, v, data))
+
+            self.G = G
+            self.edge_marker = edge_marker
+
+        def eval(self, value, x):
+            
+            point = tuple(x[:3])
+            
+            candidates = list(self.spatial_idx.intersection(point + point, objects=False))
+
+            for edge_id in candidates:
+                u, v, data = self.edge_data_list[edge_id]
+                pos_u = np.array(self.G.nodes[u]['pos'])
+                pos_v = np.array(self.G.nodes[v]['pos'])
+                radius = data['radius']
+
+                if self.point_in_cylinder(point, pos_u, pos_v, radius):
+                    value[0] = radius
+                    return
+
+            value[0] = 0.0
+
+        def value_shape(self):
+            return ()
+
+        @staticmethod
+        def point_in_cylinder(point, pos_u, pos_v, radius):
+            p = np.array(point)
+            u = np.array(pos_u)
+            v = np.array(pos_v)
+            line = v - u
+            line_length_sq = np.dot(line, line)
+            if line_length_sq == 0:
+                
+                return np.linalg.norm(p - u) <= radius
+
+            
+            t = np.dot(p - u, line) / line_length_sq
+            t = np.clip(t, 0.0, 1.0)
+            projection = u + t * line
+            distance = np.linalg.norm(p - projection)
+            return distance <= radius

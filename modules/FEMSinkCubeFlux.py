@@ -26,12 +26,10 @@ class FEMSinkCubeFlux(FEMSinkVelo.FEMSinkVelo):
     ):
         super().__init__(G, gamma, gamma_a, gamma_R, gamma_v, mu, k_t, k_v, P_in, p_cvp, Lambda_inlet, Omega_sink, **kwargs)
         
-        
         coords = self.Omega.coordinates()
         x_min, x_max = np.min(coords[:, 0]), np.max(coords[:, 0])
         y_min, y_max = np.min(coords[:, 1]), np.max(coords[:, 1])
         z_min, z_max = np.min(coords[:, 2]), np.max(coords[:, 2])
-        
         
         eps = 0.5 * min(x_max - x_min, y_max - y_min, z_max - z_min)
         
@@ -78,23 +76,18 @@ class FEMSinkCubeFlux(FEMSinkVelo.FEMSinkVelo):
         self.ds_cube = Measure("ds", domain=self.Omega, subdomain_data=self.cube_boundaries)
     
     def compute_lower_cube_flux(self):
-        
         n = FacetNormal(self.Omega)
-        flux_lower = assemble(dot(self.velocity, n) * self.ds_cube(1))
+        flux_lower = assemble(abs(dot(self.velocity, n)) * self.ds_cube(1))
         return flux_lower
 
     def compute_upper_cube_flux(self):
-        
         n = FacetNormal(self.Omega)
-        flux_upper = assemble(dot(self.velocity, n) * self.ds_cube(2))
+        flux_upper = assemble(abs(dot(self.velocity, n)) * self.ds_cube(2))
         return flux_upper
 
     def save_vtk(self, directory_path: str):
-        
         import os
         os.makedirs(directory_path, exist_ok=True)
-        
         super().save_vtk(directory_path)
-        
         xdmf_file = XDMFFile(os.path.join(directory_path, "cube_boundaries.xdmf"))
         xdmf_file.write(self.cube_boundaries)
