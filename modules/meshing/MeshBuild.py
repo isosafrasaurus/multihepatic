@@ -1,11 +1,10 @@
 import numpy as np
-
 from typing import Optional, List
 from dolfin import UnitCubeMesh, MeshFunction, UserExpression
 from graphnics import FenicsGraph
 from rtree import index as rtree_index
 
-class MeshCreator:
+class MeshBuild:
     def __init__(
         self,
         G: FenicsGraph,
@@ -35,9 +34,6 @@ class MeshCreator:
                 center_shift = omega_center - lambda_center
                 Lambda_coords[:] += center_shift
                 self.__shift_graph_nodes(self.G_ref, center_shift)
-        else:
-            
-            pass
 
         
         self.Omega = UnitCubeMesh(*Omega_mesh_voxel_dim)
