@@ -6,17 +6,6 @@ from graphnics import FenicsGraph
 from .MeshBuild import MeshBuild
 from typing import Optional, List
 
-class Face(SubDomain):
-    pass
-
-class XAxisPlane(Face):
-    def __init__(self, lock: float):
-        super().__init__()
-        self.lock = lock
-
-    def inside(self, x, on_boundary: bool) -> bool:
-        return on_boundary and near(x[0], self.lock)
-
 class InletEndpoint(SubDomain):
     def __init__(self, point):
         super().__init__()
