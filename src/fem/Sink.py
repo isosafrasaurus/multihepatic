@@ -1,16 +1,11 @@
 import numpy as np
 import VTKExporter
-import importlib
-import os
 import tissue
 from dolfin import *
 from graphnics import *
 from xii import *
-from typing import Optional, List, Any
 
-importlib.reload(tissue)
-
-class FEMSink():
+class Sink:
     def __init__(
         self,
         domain: tissue.MeasureBuild,
@@ -115,8 +110,8 @@ class FEMSink():
     def save_vtk(self, directory_path: str):
         os.makedirs(directory_path, exist_ok=True)
 
-        out_1d = os.path.join(directory_path, "pressure1d.vtk")
-        out_3d = os.path.join(directory_path, "pressure3d.pvd")
+        out_1d = directory_path + "/pressure1d.vtk"
+        out_3d = directory_path + "/pressure3d.pvd"
 
         VTKExporter.fenics_to_vtk(
             self.Lambda,
