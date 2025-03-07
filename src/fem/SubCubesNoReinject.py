@@ -1,11 +1,11 @@
-from . import Velo
+from . import Velo, VeloNoReinject
 
 import numpy as np
 import tissue
 from dolfin import *
 from typing import List
 
-class SubCubes(Velo):
+class SubCubesNoReinject(VeloNoReinject):
     def __init__(
         self,
         domain: tissue.MeasureBuild,
@@ -49,6 +49,7 @@ class SubCubes(Velo):
                     x[1] >= self.lower[1] - self.tol and x[1] <= self.upper[1] + self.tol and
                     x[2] >= self.lower[2] - self.tol and x[2] <= self.upper[2] + self.tol
                 )
+        
         
         self.lower_cube = CubeSubBoundary(self.lower_cube_bounds[0], self.lower_cube_bounds[1])
         self.upper_cube = CubeSubBoundary(self.upper_cube_bounds[0], self.upper_cube_bounds[1])
