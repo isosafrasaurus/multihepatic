@@ -11,22 +11,23 @@ class SinkNoReinject:
         gamma: float,
         gamma_a: float,
         gamma_R: float,
-        gamma_v: float,
         mu: float,
         k_t: float,
         k_v: float,
         P_in: float,
-        p_cvp: float
+        p_cvp: float,
+        g_Neumann: float = 0.0   
     ):
         
         for name, value in zip(
-            ["gamma", "gamma_a", "gamma_R", "gamma_v", "mu", "k_t", "k_v", "P_in", "p_cvp"],
-            [gamma, gamma_a, gamma_R, gamma_v, mu, k_t, k_v, P_in, p_cvp]
+            ["gamma", "gamma_a", "gamma_R", "mu", "k_t", "k_v", "P_in", "p_cvp", "g_Neumann"],
+            [gamma, gamma_a, gamma_R, mu, k_t, k_v, P_in, p_cvp, g_Neumann]
         ):
             setattr(self, name, value)
         for attr in ["Omega", "Lambda", "radius_map"]:
-            setattr(self, attr, getattr(domain.mesh, attr))
-        for attr in ["dxOmega", "dxLambda", "dsOmegaNeumann", "dsOmegaSink","dsLambdaRobin", "dsLambdaInlet", "boundary_Lambda"]:
+            setattr(self, attr, getattr(domain, attr))
+        for attr in ["dsOmega", "dsLambda", "dxOmega", "dxLambda", "dsOmegaNeumann", "dsOmegaSink",
+                     "dsLambdaRobin", "dsLambdaInlet", "boundary_Lambda"]:
             setattr(self, attr, getattr(domain, attr))
 
         
@@ -43,7 +44,6 @@ class SinkNoReinject:
         D_area = np.pi * self.radius_map**2
         D_perimeter = 2.0 * np.pi * self.radius_map
 
-        
         a00 = (
             Constant(self.k_t / self.mu) * inner(grad(u3), grad(v3)) * self.dxOmega
             + Constant(self.gamma) * u3_avg * v3_avg * D_perimeter * self.dxLambda
