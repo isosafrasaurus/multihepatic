@@ -42,32 +42,52 @@ class Sink:
         v3_avg = Average(v3, self.Lambda, cylinder)
         D_area = np.pi * self.radius_map**2
         D_perimeter = 2.0 * np.pi * self.radius_map
-
+       
         
         a00 = (
             Constant(self.k_t / self.mu) * inner(grad(u3), grad(v3)) * self.dxOmega
             + Constant(self.gamma_R) * u3 * v3 * self.dsOmegaSink
             + Constant(self.gamma) * u3_avg * v3_avg * D_perimeter * self.dxLambda
         )
+        
+        
+        
         a01 = (
             - Constant(self.gamma) * u1 * v3_avg * D_perimeter * self.dxLambda
             - Constant(self.gamma_a / self.mu) * u1 * v3_avg * D_area * self.dsLambdaRobin
         )
-        a10 = - Constant(self.gamma) * u3_avg * v1 * D_perimeter * self.dxLambda
-        a11 = (
-            Constant(self.k_v / self.mu) * inner(grad(u1), grad(v1)) * D_area * self.dxLambda
-            + Constant(self.gamma) * u1 * v1 * D_perimeter * self.dxLambda
-            + Constant(self.gamma_a / self.mu) * u1 * v1 * self.dsLambdaRobin
+        
+        
+        
+        a10 = (
+            - Constant(self.gamma) * u3_avg * v1 * D_perimeter * self.dxLambda
         )
+        
+        
+        a11 = (
+            Constant(self.k_v / self.mu) * D_area * inner(grad(u1), grad(v1)) * self.dxLambda
+            + Constant(self.gamma) * u1 * v1 * D_perimeter * self.dxLambda
+            + Constant(self.gamma_a / self.mu) * u1 * v1 * D_area * self.dsLambdaRobin
+        )
+        
+        
+        
+        
         
         
         L0 = (
             Constant(self.gamma_R) * Constant(self.p_cvp) * v3 * self.dsOmegaSink
             + Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v3_avg * D_area * self.dsLambdaRobin
         )
-        L1 = Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v1 * self.dsLambdaRobin
         
-        a = [[a00, a01], [a10, a11]]
+        
+        L1 = (
+            Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v1 * D_area * self.dsLambdaRobin
+        )
+        
+        
+        a = [[a00, a01],
+             [a10, a11]]
         L = [L0, L1]
 
         
