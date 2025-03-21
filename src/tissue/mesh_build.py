@@ -40,20 +40,20 @@ class MeshBuild:
         Omega_coords[:] = Omega_coords * scales + shifts
         self.radius_map = RadiusMap(fenics_graph, edge_marker)
 
-    def get_Omega_axis_plane(self, face: str) -> AxisPlane:
+    def get_Omega_axis_plane(self, face, tolerance=1e-10) -> AxisPlane:
         face = face.lower()
         match face:
             case "left":
-                return AxisPlane(0, self.Omega_bounds[0, 0])
+                return AxisPlane(0, self.Omega_bounds[0, 0], tolerance)
             case "right":
-                return AxisPlane(0, self.Omega_bounds[1, 0])
+                return AxisPlane(0, self.Omega_bounds[1, 0], tolerance)
             case "bottom":
-                return AxisPlane(1, self.Omega_bounds[0, 1])
+                return AxisPlane(1, self.Omega_bounds[0, 1], tolerance)
             case "top":
-                return AxisPlane(1, self.Omega_bounds[1, 1])
+                return AxisPlane(1, self.Omega_bounds[1, 1], tolerance)
             case "front":
-                return AxisPlane(2, self.Omega_bounds[0, 2])
+                return AxisPlane(2, self.Omega_bounds[0, 2], tolerance)
             case "back":
-                return AxisPlane(2, self.Omega_bounds[1, 2])
+                return AxisPlane(2, self.Omega_bounds[1, 2], tolerance)
             case _:
                 raise ValueError(f"Unknown face: {face}")
