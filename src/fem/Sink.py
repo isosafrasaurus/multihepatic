@@ -1,13 +1,13 @@
 import os, fem, tissue, visualize
 import numpy as np
-from dolfin import FunctionSpace, TrialFunction, TestFunction, Constant, inner, grad, DirichletBC, File, PETScKrylovSolver
+from dolfin import FunctionSpace, TrialFunction, TestFunction, Constant, inner, grad, DirichletBC, File, PETScKrylovSolver, LUSolver
 from graphnics import ii_assemble, apply_bc, ii_convert, ii_Function
 from xii import Circle, Average
 
 class Sink:
     def __init__(
         self,
-        domain: tissue.MeasureBuild,
+        domain: tissue.DomainBuild,
         gamma: float,
         gamma_a: float,
         gamma_R: float,
@@ -43,26 +43,20 @@ class Sink:
         D_area = np.pi * self.radius_map**2
         D_perimeter = 2.0 * np.pi * self.radius_map
        
-        
         a00 = (
             Constant(self.k_t / self.mu) * inner(grad(u3), grad(v3)) * self.dxOmega
             + Constant(self.gamma_R) * u3 * v3 * self.dsOmegaSink
             + Constant(self.gamma) * u3_avg * v3_avg * D_perimeter * self.dxLambda
         )
         
-        
-        
         a01 = (
             - Constant(self.gamma) * u1 * v3_avg * D_perimeter * self.dxLambda
             - Constant(self.gamma_a / self.mu) * u1 * v3_avg * D_area * self.dsLambdaRobin
         )
         
-        
-        
         a10 = (
             - Constant(self.gamma) * u3_avg * v1 * D_perimeter * self.dxLambda
         )
-        
         
         a11 = (
             Constant(self.k_v / self.mu) * D_area * inner(grad(u1), grad(v1)) * self.dxLambda
@@ -70,21 +64,14 @@ class Sink:
             + Constant(self.gamma_a / self.mu) * u1 * v1 * D_area * self.dsLambdaRobin
         )
         
-        
-        
-        
-        
-        
         L0 = (
             Constant(self.gamma_R) * Constant(self.p_cvp) * v3 * self.dsOmegaSink
             + Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v3_avg * D_area * self.dsLambdaRobin
         )
         
-        
         L1 = (
             Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v1 * D_area * self.dsLambdaRobin
         )
-        
         
         a = [[a00, a01],
              [a10, a11]]
@@ -101,10 +88,13 @@ class Sink:
             A, b = apply_bc(A, b, W_bcs)
         A, b = map(ii_convert, (A, b))
         wh = ii_Function(W)
-        solver = PETScKrylovSolver("cg", "hypre_amg")
-        solver.set_operator(A)
-        solver.parameters["relative_tolerance"] = 1e-8
-        solver.parameters["maximum_iterations"] = int(1e6)
+        
+        
+        
+        
+        
+
+        solver = LUSolver(A, "mumps")
         solver.solve(wh.vector(), b)
 
         self.uh3d, self.uh1d = wh

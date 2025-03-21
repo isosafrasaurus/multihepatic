@@ -3,7 +3,6 @@
 import numpy as np
 from dolfin import SubDomain, near
 
-
 class AxisPlane(SubDomain):
     def __init__(self, axis: int, coordinate: float, tolerance: float = 1e-8):
         super().__init__()
