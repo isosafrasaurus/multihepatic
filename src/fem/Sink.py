@@ -18,15 +18,13 @@ class Sink:
         p_cvp: float
     ):
         # Set attributes
-        for name, value in zip(
-            ["gamma", "gamma_a", "gamma_R", "mu", "k_t", "k_v", "P_in", "p_cvp"],
-            [gamma, gamma_a, gamma_R, mu, k_t, k_v, P_in, p_cvp]
-        ):
+        for name, value in zip(["gamma", "gamma_a", "gamma_R", "mu", "k_t", "k_v", "P_in", "p_cvp"], 
+                               [gamma, gamma_a, gamma_R, mu, k_t, k_v, P_in, p_cvp]):
             setattr(self, name, value)
         for attr in ["Omega", "Lambda", "radius_map"]:
             setattr(self, attr, getattr(domain, attr))
-        for attr in ["dsOmega", "dsLambda", "dxOmega", "dxLambda", "dsOmegaNeumann", "dsOmegaSink",
-                     "dsLambdaRobin", "dsLambdaInlet", "boundary_Lambda"]:
+        for attr in ["dsOmega", "dsLambda", "dxOmega", "dxLambda", 
+                     "dsOmegaNeumann", "dsOmegaSink", "dsLambdaRobin", "dsLambdaInlet", "boundary_Lambda","boundary_Omega"]:
             setattr(self, attr, getattr(domain, attr))
 
         # Function spaces
@@ -48,31 +46,25 @@ class Sink:
             + Constant(self.gamma_R) * u3 * v3 * self.dsOmegaSink
             + Constant(self.gamma) * u3_avg * v3_avg * D_perimeter * self.dxLambda
         )
-        
         a01 = (
             - Constant(self.gamma) * u1 * v3_avg * D_perimeter * self.dxLambda
             - Constant(self.gamma_a / self.mu) * u1 * v3_avg * D_area * self.dsLambdaRobin
         )
-        
         a10 = (
             - Constant(self.gamma) * u3_avg * v1 * D_perimeter * self.dxLambda
         )
-        
         a11 = (
             Constant(self.k_v / self.mu) * D_area * inner(grad(u1), grad(v1)) * self.dxLambda
             + Constant(self.gamma) * u1 * v1 * D_perimeter * self.dxLambda
             + Constant(self.gamma_a / self.mu) * u1 * v1 * D_area * self.dsLambdaRobin
         )
-        
         L0 = (
             Constant(self.gamma_R) * Constant(self.p_cvp) * v3 * self.dsOmegaSink
             + Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v3_avg * D_area * self.dsLambdaRobin
         )
-        
         L1 = (
             Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v1 * D_area * self.dsLambdaRobin
         )
-        
         a = [[a00, a01],
              [a10, a11]]
         L = [L0, L1]
@@ -88,27 +80,18 @@ class Sink:
             A, b = apply_bc(A, b, W_bcs)
         A, b = map(ii_convert, (A, b))
         wh = ii_Function(W)
-        # solver = PETScKrylovSolver("cg", "hypre_amg")
-        # solver.set_operator(A)
-        # solver.parameters["relative_tolerance"] = 1e-8
-        # solver.parameters["maximum_iterations"] = int(1e6)
-        # solver.solve(wh.vector(), b)
-
         solver = LUSolver(A, "mumps")
         solver.solve(wh.vector(), b)
-
         self.uh3d, self.uh1d = wh
         self.uh3d.rename("3D Pressure (Pa)", "3D Pressure Distribution")
         self.uh1d.rename("1D Pressure (Pa)", "1D Pressure Distribution")
 
     def save_vtk(self, directory: str):
         os.makedirs(directory, exist_ok=True)
-        # Save Lambda solution
         visualize.save_Lambda(
             save_path = f"{directory}/pressure1d.vtk",
             Lambda = self.Lambda,
             radius_map = self.radius_map,
             uh1d = self.uh1d
         )
-        # Save Omega solution
         File(f"{directory}/pressure3d.pvd") << self.uh3d
