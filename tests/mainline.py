@@ -42,7 +42,7 @@ mesh_builder = tissue.MeshBuild(
 
 sink_face = mesh_builder.get_Omega_axis_plane("left")
 
-measure_builder = tissue.MeasureBuild(
+measure_builder = tissue.DomainBuild(
     mesh_build=mesh_builder,
     Lambda_inlet=[0],  
     Omega_sink=sink_face

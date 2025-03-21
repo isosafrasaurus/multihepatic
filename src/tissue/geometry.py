@@ -36,11 +36,9 @@ def point_in_cylinder(point, pos_u, pos_v, radius):
     line = v - u
     line_length_sq = np.dot(line, line)
     if line_length_sq == 0:
-        
         return np.linalg.norm(p - u) <= radius
 
-    
     t = np.dot(p - u, line) / line_length_sq
-    t = np.clip(t, 0.0, 1.0)  
+    t = np.clip(t, 0.0, 1.0)
     projection = u + t * line
     return np.linalg.norm(p - projection) <= radius

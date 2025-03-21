@@ -17,11 +17,8 @@ class SubCubes(Velo):
         lower_cube_bounds,
         upper_cube_bounds
     ):
-        
         super().__init__(domain, gamma, gamma_a, gamma_R, mu, k_t, k_v, P_in, p_cvp)
-        self.mesh = self.Omega  
-
-        
+        self.mesh = self.Omega
         self.dS_lower = self._build_interior_measure(lower_cube_bounds)
         self.dS_upper = self._build_interior_measure(upper_cube_bounds)
 
@@ -29,7 +26,6 @@ class SubCubes(Velo):
         low = np.array(cube_bounds[0])
         high = np.array(cube_bounds[1])
 
-        
         cell_markers = MeshFunction("size_t", self.mesh, self.mesh.topology().dim(), 0)
         for cell in cells(self.mesh):
             midpoint = cell.midpoint().array()
@@ -47,7 +43,6 @@ class SubCubes(Velo):
                     
                     facet_markers[facet.index()] = 1
 
-        
         dS_interior = Measure("dS", domain=self.mesh, subdomain_data=facet_markers)
         return dS_interior
 

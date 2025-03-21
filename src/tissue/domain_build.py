@@ -12,7 +12,6 @@ class DomainBuild:
         self.radius_map = mesh_build.radius_map
         self.Lambda_inlet = Lambda_inlet
         self.Omega_sink = Omega_sink
-
         self.boundary_Omega = MeshFunction("size_t", self.Omega, self.Omega.topology().dim() - 1, 0)
         self.boundary_Lambda = MeshFunction("size_t", self.Lambda, self.Lambda.topology().dim() - 1, 0)
 
@@ -31,6 +30,7 @@ class DomainBuild:
                 coordinate = lambda_coords[node_id]
                 inlet_subdomain = BoundaryPoint(coordinate)
                 inlet_subdomain.mark(self.boundary_Lambda, 1)
+
         self.dsLambda = Measure("ds", domain=self.Lambda, subdomain_data=self.boundary_Lambda)
         self.dxOmega = Measure("dx", domain=self.Omega)
         self.dxLambda = Measure("dx", domain=self.Lambda)
