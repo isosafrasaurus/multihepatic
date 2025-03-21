@@ -1,16 +1,14 @@
 import numpy as np
-from typing import Optional, Tuple
 from dolfin import UnitCubeMesh, MeshFunction, UserExpression, SubDomain, BoundingBoxTree, near, Point
 from graphnics import FenicsGraph
 from rtree import index as rtree_index
 
 class AxisPlane(SubDomain):
-    def __init__(self, axis, coordinate: float):
+    def __init__(self, axis, coordinate):
         super().__init__()
         self.axis = axis
         self.coordinate = coordinate
-
-    def inside(self, x, on_boundary: bool) -> bool:
+    def inside(self, x, on_boundary) -> bool:
         return on_boundary and near(x[self.axis], self.coordinate)
 
 
@@ -19,7 +17,6 @@ class AxisPlane(SubDomain):
 
 
 
-    
 
 
 
@@ -32,7 +29,7 @@ class RadiusMap(UserExpression):
         super().__init__()
         self.G = G
         self.edge_marker = edge_marker
-
+        
         p = rtree_index.Property()
         p.dimension = 3
         self.spatial_idx = rtree_index.Index(properties=p)
@@ -80,17 +77,16 @@ class RadiusMap(UserExpression):
 
 class MeshBuild:
     def __init__(
-        self,
-        G: FenicsGraph,
-        Omega_bounds: Optional[np.ndarray] = None,
-        Omega_mesh_voxel_dim: Tuple[int, int, int] = (16, 16, 16),
-        Lambda_padding: Optional[float] = 0.008,
-        Lambda_num_nodes_exp: Optional[int] = 5
+        self, G,
+        Omega_bounds = None,
+        Omega_mesh_voxel_dim = (16, 16, 16),
+        Lambda_padding = 0.008,
+        Lambda_num_nodes_exp = 5
     ):
-        assert Omega_bounds.shape == (2, 3), "Omega_bounds must have shape (2, 3) for span of Omega box"
-
-        G.make_mesh(n = Lambda_num_nodes_exp); G.make_submeshes()
+        G.make_mesh(n = Lambda_num_nodes_exp)
+        G.make_submeshes()
         self.Lambda, edge_marker = G.get_mesh(n = Lambda_num_nodes_exp)
+        
         Lambda_coords = self.Lambda.coordinates()
         lambda_min = np.min(Lambda_coords, axis=0)
         lambda_max = np.max(Lambda_coords, axis=0)
@@ -105,9 +101,7 @@ class MeshBuild:
         else:
             lower = np.minimum(Omega_bounds[0], Omega_bounds[1])
             upper = np.maximum(Omega_bounds[0], Omega_bounds[1])
-            assert np.all(lambda_min >= lower) and np.all(lambda_max <= upper), (
-                "Lambda mesh is not contained within Omega_bounds."
-            )
+            assert np.all(lambda_min >= lower) and np.all(lambda_max <= upper), ("Lambda mesh is not contained within Omega_bounds.")
             scales = upper - lower
             shifts = lower
             self.Omega_bounds = np.vstack((lower, upper))
