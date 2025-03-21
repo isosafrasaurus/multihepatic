@@ -5,20 +5,18 @@ from dolfin import UnitCubeMesh
 from .expressions import RadiusMap
 from .geometry import AxisPlane
 
-
 class MeshBuild:
     def __init__(
-        self,
-        fenics_graph,
-        Omega_bounds=None,
-        Omega_mesh_voxel_dim=(16, 16, 16),
-        Lambda_padding=0.008,
-        Lambda_num_nodes_exp=5
+        self, fenics_graph,
+        Omega_bounds = None,
+        Omega_mesh_voxel_dim = (16, 16, 16),
+        Lambda_padding = 0.008,
+        Lambda_num_nodes_exp = 5
     ):
-        fenics_graph.make_mesh(n=Lambda_num_nodes_exp)
+        fenics_graph.make_mesh(n = Lambda_num_nodes_exp)
         fenics_graph.make_submeshes()
-        self.Lambda, self.edge_marker = fenics_graph.get_mesh(n=Lambda_num_nodes_exp)
-
+        self.Lambda, edge_marker = fenics_graph.get_mesh(n = Lambda_num_nodes_exp)
+        
         Lambda_coords = self.Lambda.coordinates()
         lambda_min = np.min(Lambda_coords, axis=0)
         lambda_max = np.max(Lambda_coords, axis=0)
@@ -27,7 +25,6 @@ class MeshBuild:
         Omega_coords = self.Omega.coordinates()
 
         if Omega_bounds is None:
-            # Auto-compute a bounding box that comfortably contains Lambda
             scales = lambda_max - lambda_min + 2 * Lambda_padding
             shifts = lambda_min - Lambda_padding
             self.Omega_bounds = np.array([shifts, shifts + scales])
@@ -41,8 +38,7 @@ class MeshBuild:
             self.Omega_bounds = np.vstack((lower, upper))
 
         Omega_coords[:] = Omega_coords * scales + shifts
-
-        self.radius_map = RadiusMap(fenics_graph, self.edge_marker)
+        self.radius_map = RadiusMap(fenics_graph, edge_marker)
 
     def get_Omega_axis_plane(self, face: str) -> AxisPlane:
         face = face.lower()

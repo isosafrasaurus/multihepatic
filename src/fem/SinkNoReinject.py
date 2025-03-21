@@ -7,7 +7,7 @@ from xii import Circle, Average
 class SinkNoReinject:
     def __init__(
         self,
-        domain: tissue.MeasureBuild,
+        domain: tissue.DomainBuild,
         gamma: float,
         gamma_a: float,
         gamma_R: float,

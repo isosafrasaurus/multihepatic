@@ -3,7 +3,7 @@
 from .geometry import AxisPlane, BoundaryPoint, point_in_cylinder
 from .expressions import RadiusMap
 from .mesh_build import MeshBuild
-from .measure_build import MeasureBuild
+from .domain_build import DomainBuild
 
 __all__ = [
     "AxisPlane",
@@ -11,5 +11,5 @@ __all__ = [
     "point_in_cylinder",
     "RadiusMap",
     "MeshBuild",
-    "MeasureBuild",
+    "DomainBuild",
 ]
