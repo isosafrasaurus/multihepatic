@@ -7,7 +7,7 @@ from .VeloNoReinject import VeloNoReinject
 class SubCubesNoReinject(VeloNoReinject):
     def __init__(
         self,
-        domain: tissue.MeasureBuild,
+        domain: tissue.DomainBuild,
         gamma: float,
         gamma_a: float,
         gamma_R: float,
