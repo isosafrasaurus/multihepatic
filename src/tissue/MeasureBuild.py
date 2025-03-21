@@ -9,21 +9,15 @@ class BoundaryPoint(SubDomain):
     def __init__(self, coordinate):
         super().__init__()
         self.coordinate = coordinate
-
     def inside(self, x, on_boundary: bool) -> bool:
-        return (
-            on_boundary
-            and near(x[0], self.coordinate[0])
-            and near(x[1], self.coordinate[1])
-            and near(x[2], self.coordinate[2])
-        )
-
+        return on_boundary and near(x[0], self.coordinate[0]) and near(x[1], self.coordinate[1]) and near(x[2], self.coordinate[2])
+        
 class MeasureBuild():
     def __init__(
         self,
-        mesh_build: MeshBuild,
-        Lambda_inlet: Optional[List[int]] = None,
-        Omega_sink: Optional[SubDomain] = None
+        mesh_build,
+        Lambda_inlet = None,
+        Omega_sink = None
     ):
         self.Omega = mesh_build.Omega
         self.Lambda = mesh_build.Lambda
