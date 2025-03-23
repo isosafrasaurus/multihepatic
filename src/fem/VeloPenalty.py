@@ -17,15 +17,21 @@ class Velo(Sink):
         p_cvp: float
     ):
         super().__init__(domain, gamma, gamma_a, gamma_R, mu, k_t, k_v, P_in, p_cvp)
+        
+        
         V_vec = VectorFunctionSpace(self.Omega, "CG", 1)
         v_trial = TrialFunction(V_vec)
         v_test  = TestFunction(V_vec)
-        a_proj  = inner(v_trial, v_test)*dx
+        n = FacetNormal(self.Omega)
+        
+        alpha = Constant(1e10)
+        
+        a_proj  = inner(v_trial, v_test)*dx + alpha*inner(dot(v_trial, n), dot(v_test, n))*self.dsOmegaNeumann
         L_proj  = inner(Constant(- self.k_t / self.mu)*grad(self.uh3d), v_test)*dx
-        bc_neumann = DirichletBC(V_vec, Constant((0.0, 0.0, 0.0)), self.boundary_Omega, 2)
         self.velocity = Function(V_vec)
-        solve(a_proj == L_proj, self.velocity, bc_neumann)
+        solve(a_proj == L_proj, self.velocity)
 
+    
     def compute_inflow_sink(self):
         n = FacetNormal(self.Omega)
         return assemble(conditional(lt(dot(self.velocity, n), 0), dot(self.velocity, n), 0.0) * self.dsOmegaSink)
@@ -41,10 +47,12 @@ class Velo(Sink):
         n = FacetNormal(self.Omega)
         return assemble(dot(self.velocity, n) * self.dsOmegaSink)
 
+    
     def compute_net_flow_neumann_dolfin(self):
         n = FacetNormal(self.Omega)
         return assemble(dot(self.velocity, n) * self.dsOmegaNeumann)
 
+    
     def compute_inflow_all(self):
         n = FacetNormal(self.Omega)
         return assemble(conditional(lt(dot(self.velocity, n), 0), dot(self.velocity, n), 0.0) * self.dsOmega)
@@ -60,19 +68,24 @@ class Velo(Sink):
         n = FacetNormal(self.Omega)
         return assemble(dot(self.velocity, n) * self.dsOmega)
 
+    
     def print_diagnostics(self):
+        
         sink_inflow      = self.compute_inflow_sink()
         sink_outflow     = self.compute_outflow_sink()
         sink_net_sum     = self.compute_net_flow_sink()
         sink_net_dolfin  = self.compute_net_flow_sink_dolfin()
 
+        
         all_inflow       = self.compute_inflow_all()
         all_outflow      = self.compute_outflow_all()
         all_net_sum      = self.compute_net_flow_all()
         all_net_dolfin   = self.compute_net_flow_all_dolfin()
 
+        
         neumann_net_dolfin = self.compute_net_flow_neumann_dolfin()
 
+        
         combined_net = sink_net_dolfin + neumann_net_dolfin
 
         print("Flow Diagnostic Report:")
