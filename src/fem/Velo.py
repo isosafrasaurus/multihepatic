@@ -29,7 +29,7 @@ class Velo(Sink):
         flux_neumann = assemble(dot(self.velocity, n) * self.dsOmegaNeumann)
         n_sum = np.array([assemble(n[i] * self.dsOmegaNeumann) for i in range(dim)])
         n_sum_norm_sq = np.dot(n_sum, n_sum)
-        if n_sum_norm_sq > 1e-15:
+        if n_sum_norm_sq > 1e-12:
             c_vec = flux_neumann / n_sum_norm_sq * n_sum
         else:
             c_vec = np.zeros(dim)
