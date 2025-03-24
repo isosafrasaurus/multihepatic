@@ -1,11 +1,26 @@
+import tissue
 import numpy as np
 from dolfin import *
+from typing import List
 from .Velo import Velo
+
+class CubeSubBoundary(SubDomain):
+    def __init__(self, lower, upper):
+        super().__init__()
+        self.lower = lower
+        self.upper = upper
+
+    def inside(self, x, on_boundary):
+        return on_boundary and (
+            near(x[0], self.lower[0]) or near(x[0], self.upper[0]) or
+            near(x[1], self.lower[1]) or near(x[1], self.upper[1]) or
+            near(x[2], self.lower[2]) or near(x[2], self.upper[2])
+        )
 
 class SubCubes(Velo):
     def __init__(
         self,
-        domain,
+        domain: tissue.DomainBuild,
         gamma: float,
         gamma_a: float,
         gamma_R: float,
@@ -14,70 +29,61 @@ class SubCubes(Velo):
         k_v: float,
         P_in: float,
         p_cvp: float,
-        lower_cube_bounds,
-        upper_cube_bounds
+        lower_cube_bounds: List[int],
+        upper_cube_bounds: List[int]
     ):
         super().__init__(domain, gamma, gamma_a, gamma_R, mu, k_t, k_v, P_in, p_cvp)
-        self.mesh = self.Omega
-        self.dS_lower = self._build_interior_measure(lower_cube_bounds)
-        self.dS_upper = self._build_interior_measure(upper_cube_bounds)
-
-    def _build_interior_measure(self, cube_bounds):
-        low = np.array(cube_bounds[0])
-        high = np.array(cube_bounds[1])
-
-        cell_markers = MeshFunction("size_t", self.mesh, self.mesh.topology().dim(), 0)
-        for cell in cells(self.mesh):
-            midpoint = cell.midpoint().array()
-            if all(midpoint >= low) and all(midpoint <= high):
-                cell_markers[cell.index()] = 1
-
-        # Mark internal facets between marker=1 and marker=0
-        facet_markers = MeshFunction("size_t", self.mesh, self.mesh.topology().dim()-1, 0)
-        for facet in facets(self.mesh):
-            # Usually in 3D, each facet can have up to 2 adjacent cells
-            c = list(facet.entities(3))
-            if len(c) == 2:  # Only interior facets have 2 adjacent cells
-                c0, c1 = c
-                if cell_markers[c0] != cell_markers[c1]:
-                    # This facet separates inside=1 from outside=0
-                    facet_markers[facet.index()] = 1
-
-        dS_interior = Measure("dS", domain=self.mesh, subdomain_data=facet_markers)
-        return dS_interior
-
+        
+        coords = self.Omega.coordinates()
+        x_min, x_max = np.min(coords[:, 0]), np.max(coords[:, 0])
+        y_min, y_max = np.min(coords[:, 1]), np.max(coords[:, 1])
+        z_min, z_max = np.min(coords[:, 2]), np.max(coords[:, 2])
+            
+        self.lower_cube_bounds = lower_cube_bounds
+        self.upper_cube_bounds = upper_cube_bounds
+        
+        self.lower_boundaries = MeshFunction("size_t", self.Omega, self.Omega.topology().dim() - 1)
+        self.lower_boundaries.set_all(0)
+        self.upper_boundaries = MeshFunction("size_t", self.Omega, self.Omega.topology().dim() - 1)
+        self.upper_boundaries.set_all(0)
+        
+        self.lower_cube = CubeSubBoundary(self.lower_cube_bounds[0], self.lower_cube_bounds[1])
+        self.upper_cube = CubeSubBoundary(self.upper_cube_bounds[0], self.upper_cube_bounds[1])
+        self.lower_cube.mark(self.lower_boundaries, 1)
+        self.upper_cube.mark(self.upper_boundaries, 1)
+        self.ds_lower = Measure("ds", domain=self.Omega, subdomain_data=self.lower_boundaries)
+        self.ds_upper = Measure("ds", domain=self.Omega, subdomain_data=self.upper_boundaries)
+    
     def compute_lower_cube_flux(self):
-        n = FacetNormal(self.mesh)
-        return assemble(dot(self.velocity_expr("+"), n("+")) * self.dS_lower(1))
-
-    def compute_lower_cube_flux_in(self):
-        n = FacetNormal(self.mesh)
-        expr = conditional(dot(self.velocity_expr("+"), n("+")) < 0,
-                           dot(self.velocity_expr("+"), n("+")), 
-                           0.0)
-        return assemble(expr * self.dS_lower(1))
-
-    def compute_lower_cube_flux_out(self):
-        n = FacetNormal(self.mesh)
-        expr = conditional(dot(self.velocity_expr("+"), n("+")) > 0,
-                           dot(self.velocity_expr("+"), n("+")), 
-                           0.0)
-        return assemble(expr * self.dS_lower(1))
+        n = FacetNormal(self.Omega)
+        flux_lower = assemble(dot(self.velocity, n) * self.ds_lower(1))
+        return flux_lower
 
     def compute_upper_cube_flux(self):
-        n = FacetNormal(self.mesh)
-        return assemble(dot(self.velocity_expr("+"), n("+")) * self.dS_upper(1))
+        n = FacetNormal(self.Omega)
+        flux_upper = assemble(dot(self.velocity, n) * self.ds_upper(1))
+        return flux_upper
+
+    def compute_lower_cube_flux_in(self):
+        n = FacetNormal(self.Omega)
+        flux_lower_in = assemble(conditional(dot(self.velocity, n) < 0,
+                                             dot(self.velocity, n), 0) * self.ds_lower(1))
+        return flux_lower_in
+
+    def compute_lower_cube_flux_out(self):
+        n = FacetNormal(self.Omega)
+        flux_lower_out = assemble(conditional(dot(self.velocity, n) > 0,
+                                              dot(self.velocity, n), 0) * self.ds_lower(1))
+        return flux_lower_out
 
     def compute_upper_cube_flux_in(self):
-        n = FacetNormal(self.mesh)
-        expr = conditional(dot(self.velocity_expr("+"), n("+")) < 0,
-                           dot(self.velocity_expr("+"), n("+")),
-                           0.0)
-        return assemble(expr * self.dS_upper(1))
+        n = FacetNormal(self.Omega)
+        flux_upper_in = assemble(conditional(dot(self.velocity, n) < 0,
+                                             dot(self.velocity, n), 0) * self.ds_upper(1))
+        return flux_upper_in
 
     def compute_upper_cube_flux_out(self):
-        n = FacetNormal(self.mesh)
-        expr = conditional(dot(self.velocity_expr("+"), n("+")) > 0,
-                           dot(self.velocity_expr("+"), n("+")),
-                           0.0)
-        return assemble(expr * self.dS_upper(1))
+        n = FacetNormal(self.Omega)
+        flux_upper_out = assemble(conditional(dot(self.velocity, n) > 0,
+                                              dot(self.velocity, n), 0) * self.ds_upper(1))
+        return flux_upper_out
