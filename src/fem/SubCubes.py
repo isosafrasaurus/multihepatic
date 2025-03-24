@@ -4,10 +4,8 @@ from dolfin import *
 from typing import List
 from .Velo import Velo
 
-
 class CubeSubBoundary(SubDomain):
     def __init__(self, lower, upper):
-        
         super().__init__()
         self.lower = lower
         self.upper = upper
@@ -34,7 +32,6 @@ class SubCubes(Velo):
         lower_cube_bounds: List[List[float]],
         upper_cube_bounds: List[List[float]]
     ):
-        
         super().__init__(domain, gamma, gamma_a, gamma_R, mu, k_t, k_v, P_in, p_cvp)
         
         self.lower_cube_bounds = lower_cube_bounds
