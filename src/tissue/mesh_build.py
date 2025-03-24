@@ -44,16 +44,16 @@ class MeshBuild:
         face = face.lower()
         match face:
             case "left":
-                return AxisPlane(0, self.Omega_bounds[0, 0], tolerance)
+                return AxisPlane(0, self.Omega_bounds[0][0], tolerance)
             case "right":
-                return AxisPlane(0, self.Omega_bounds[1, 0], tolerance)
+                return AxisPlane(0, self.Omega_bounds[1][0], tolerance)
             case "bottom":
-                return AxisPlane(1, self.Omega_bounds[0, 1], tolerance)
+                return AxisPlane(1, self.Omega_bounds[0][1], tolerance)
             case "top":
-                return AxisPlane(1, self.Omega_bounds[1, 1], tolerance)
+                return AxisPlane(1, self.Omega_bounds[1][1], tolerance)
             case "front":
-                return AxisPlane(2, self.Omega_bounds[0, 2], tolerance)
+                return AxisPlane(2, self.Omega_bounds[0][2], tolerance)
             case "back":
-                return AxisPlane(2, self.Omega_bounds[1, 2], tolerance)
+                return AxisPlane(2, self.Omega_bounds[1][2], tolerance)
             case _:
                 raise ValueError(f"Unknown face: {face}")
