@@ -24,6 +24,7 @@ class Velo(Sink):
         L_proj  = inner(Constant(- self.k_t / self.mu)*grad(self.uh3d), v_test)*dx
         self.velocity = Function(V_vec)
         solve(a_proj == L_proj, self.velocity, solver_parameters = {"linear_solver" : "mumps"})
+        
         dim = self.Omega.geometric_dimension()
         n = FacetNormal(self.Omega)
         flux_neumann = assemble(dot(self.velocity, n) * self.dsOmegaNeumann)
