@@ -2,6 +2,5 @@
 !.gitignore
 !/.git
 !/.github
-__*__
 /export
 /data
