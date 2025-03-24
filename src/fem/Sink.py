@@ -17,24 +17,19 @@ class Sink:
         P_in: float,
         p_cvp: float
     ):
-        
         for name, value in zip(["gamma", "gamma_a", "gamma_R", "mu", "k_t", "k_v", "P_in", "p_cvp"], 
                                [gamma, gamma_a, gamma_R, mu, k_t, k_v, P_in, p_cvp]):
             setattr(self, name, value)
-        for attr in ["Omega", "Lambda", "radius_map"]:
-            setattr(self, attr, getattr(domain, attr))
-        for attr in ["dsOmega", "dsLambda", "dxOmega", "dxLambda", 
+        for attr in ["Omega", "Lambda", "radius_map", "dsOmega", "dsLambda", "dxOmega", "dxLambda", 
                      "dsOmegaNeumann", "dsOmegaSink", "dsLambdaRobin", "dsLambdaInlet", "boundary_Lambda","boundary_Omega"]:
             setattr(self, attr, getattr(domain, attr))
 
-        
         V3 = FunctionSpace(self.Omega, "CG", 1)
         V1 = FunctionSpace(self.Lambda, "CG", 1)
         W = [V3, V1]
         u3, u1 = map(TrialFunction, W)
         v3, v1 = map(TestFunction, W)
 
-        
         cylinder = Circle(radius=self.radius_map, degree=5)
         u3_avg = Average(u3, self.Lambda, cylinder)
         v3_avg = Average(v3, self.Lambda, cylinder)
@@ -69,12 +64,10 @@ class Sink:
              [a10, a11]]
         L = [L0, L1]
 
-        
         inlet_bc = DirichletBC(V1, Constant(self.P_in), self.boundary_Lambda, 1)
         inlet_bcs = [inlet_bc] if inlet_bc.get_boundary_values() else []
         W_bcs = [[], inlet_bcs]
 
-        
         A, b = map(ii_assemble, (a, L))
         if any(W_bcs[0]) or any(W_bcs[1]):
             A, b = apply_bc(A, b, W_bcs)
