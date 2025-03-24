@@ -57,3 +57,8 @@ class MeshBuild:
                 return AxisPlane(2, self.Omega_bounds[1][2], tolerance)
             case _:
                 raise ValueError(f"Unknown face: {face}")
+    
+    def get_surface_area(self) -> float:
+        sizes = [self.Omega_bounds[1][i] - self.Omega_bounds[0][i] for i in range(3)]
+        print(sizes)
+        return 2 * (sizes[0] * sizes[1] + sizes[0] * sizes[2] + sizes[1] * sizes[2])
