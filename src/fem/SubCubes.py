@@ -4,13 +4,8 @@ from dolfin import *
 from typing import List
 from .Velo import Velo
 
-# Define a SubDomain for a cube (or a portion of a cube) on a facet.
 class CubeSubBoundary(SubDomain):
     def __init__(self, lower, upper):
-        """
-        lower and upper should be lists (or arrays) defining the bounds
-        in each coordinate direction.
-        """
         super().__init__()
         self.lower = lower
         self.upper = upper
@@ -37,13 +32,6 @@ class SubCubes(Velo):
         lower_cube_bounds: List[List[float]],
         upper_cube_bounds: List[List[float]]
     ):
-        """
-        lower_cube_bounds and upper_cube_bounds should be provided as lists of two lists:
-          lower_cube_bounds = [lower_bound_coords, upper_bound_coords] 
-        specifying the region of the lower cube boundary (on the interior facet)
-          upper_cube_bounds = [lower_bound_coords, upper_bound_coords] 
-        specifying the region of the upper cube boundary.
-        """
         super().__init__(domain, gamma, gamma_a, gamma_R, mu, k_t, k_v, P_in, p_cvp)
         
         self.lower_cube_bounds = lower_cube_bounds
