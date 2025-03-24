@@ -2,7 +2,7 @@
 
 import numpy as np
 import warnings
-from dolfin import MeshFunction, Measure, Facet, facets
+from dolfin import MeshFunction, Measure, facets
 from .geometry import BoundaryPoint
 
 class DomainBuild:
@@ -38,9 +38,3 @@ class DomainBuild:
         self.dsOmegaSink    = self.dsOmega(1)
         self.dsLambdaRobin  = self.dsLambda(0)
         self.dsLambdaInlet  = self.dsLambda(1)
-
-    def get_neumann_point(self):
-        for facet in facets(self.Omega):
-            if self.boundary_Omega[facet.index()] == 0:
-                return facet.midpoint()
-        raise ValueError("No Neumann boundary facet found.")
