@@ -13,7 +13,6 @@ class AxisPlane(SubDomain):
     def inside(self, x, on_boundary) -> bool:
         return on_boundary and near(x[self.axis], self.coordinate, self.tolerance)
 
-
 class BoundaryPoint(SubDomain):
     def __init__(self, coordinate, tolerance: float = 1e-8):
         super().__init__()
