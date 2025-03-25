@@ -10,7 +10,7 @@ Create a `venv` with the `--system-site-packages` option and run the following s
 #!/bin/bash
 set -e
 
-bin/pip install ipywidgets vtk meshio pyvista Rtree
+bin/pip install ipykernel tqdm ipywidgets vtk meshio pyvista Rtree
 
 git clone "https://bitbucket.org/fenics-apps/cbc.block/src/master/"
 bin/pip install master/
@@ -24,6 +24,8 @@ bin/pip install graphnics/
 
 bin/pip install git+https://github.com/dolfin-adjoint/pyadjoint.git --upgrade
 ```
+
+Then, you must register the kernel. Run `python -m ipykernel install --user --name=<your_venv_kernel_name> --display-name="Python (<your_venv_name>)"`
 
 ### Via Google Colab
 KSPSolve can sometimes run out of memory. If your computer has RAM limitations, follow these instructions to run the demo notebook on Google Colab instead.
