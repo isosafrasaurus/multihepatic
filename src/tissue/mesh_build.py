@@ -13,6 +13,7 @@ class MeshBuild:
         Lambda_padding = 0.008,
         Lambda_num_nodes_exp = 5
     ):
+        self.fenics_graph = fenics_graph
         fenics_graph.make_mesh(n = Lambda_num_nodes_exp)
         fenics_graph.make_submeshes()
         self.Lambda, edge_marker = fenics_graph.get_mesh(n = Lambda_num_nodes_exp)
