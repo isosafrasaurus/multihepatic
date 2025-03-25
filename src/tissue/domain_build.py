@@ -7,6 +7,7 @@ from .geometry import BoundaryPoint
 
 class DomainBuild:
     def __init__(self, mesh_build, Lambda_inlet=None, Omega_sink=None):
+        self.fenics_graph = mesh_build.fenics_graph
         self.Omega = mesh_build.Omega
         self.Lambda = mesh_build.Lambda
         self.radius_map = mesh_build.radius_map
