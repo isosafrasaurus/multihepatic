@@ -1,7 +1,7 @@
 import os, fem, tissue, visualize
 import numpy as np
 from dolfin import FunctionSpace, TrialFunction, TestFunction, Constant, inner, grad, DirichletBC, File, PETScKrylovSolver, LUSolver
-from graphnics import ii_assemble, apply_bc, ii_convert, ii_Function
+from graphnics import ii_assemble, apply_bc, ii_convert, ii_Function, TubeFile
 from xii import Circle, Average
 
 class Sink:
@@ -17,6 +17,7 @@ class Sink:
         P_in: float,
         p_cvp: float
     ):
+        self.fenics_graph = domain.fenics_graph
         for name, value in zip(["gamma", "gamma_a", "gamma_R", "mu", "k_t", "k_v", "P_in", "p_cvp"], 
                                [gamma, gamma_a, gamma_R, mu, k_t, k_v, P_in, p_cvp]):
             setattr(self, name, value)
@@ -81,10 +82,15 @@ class Sink:
 
     def save_vtk(self, directory: str):
         os.makedirs(directory, exist_ok=True)
-        visualize.save_Lambda(
-            save_path = f"{directory}/pressure1d.vtk",
-            Lambda = self.Lambda,
-            radius_map = self.radius_map,
-            uh1d = self.uh1d
-        )
+        TubeFile(self.fenics_graph, os.path.join(directory, "pressure1d.pvd")) << self.uh1d
         File(f"{directory}/pressure3d.pvd") << self.uh3d
+
+    # def save_vtk(self, directory: str):
+    #     os.makedirs(directory, exist_ok=True)
+    #     visualize.save_Lambda(
+    #         save_path = f"{directory}/pressure1d.vtk",
+    #         Lambda = self.Lambda,
+    #         radius_map = self.radius_map,
+    #         uh1d = self.uh1d
+    #     )
+    #     File(f"{directory}/pressure3d.pvd") << self.uh3d
