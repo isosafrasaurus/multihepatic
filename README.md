@@ -3,6 +3,28 @@
 1. `docker pull` the most recent 3d-1d package
 2. `docker run` the image with `-p 127.0.0.1:8888:8888` to expose the Jupyter port, and optionally mount a local directory on your host machine to `/root/3d-1d/export` to receive ParaView files
 
+### Via Linux and Python venv
+This assumes you have already installed legacy DOLFIN/FEniCS on your Linux system using the instructions on the website and wish to run this library natively.
+Create a `venv` with the `--system-site-packages` option and run the following shell script within the venv
+```
+#!/bin/bash
+set -e
+
+bin/pip install ipywidgets vtk meshio pyvista Rtree
+
+git clone "https://bitbucket.org/fenics-apps/cbc.block/src/master/"
+bin/pip install master/
+
+git clone --single-branch -b "collapse-iter-dev" "https://github.com/MiroK/fenics_ii"
+find fenics_ii/ -type f -name "*.py" -exec perl -pi -e 's/\bufl\b/ufl_legacy/g' {} +
+bin/pip install fenics_ii/
+
+git clone "https://github.com/IngeborgGjerde/graphnics"
+bin/pip install graphnics/
+
+bin/pip install git+https://github.com/dolfin-adjoint/pyadjoint.git --upgrade
+```
+
 ### Via Google Colab
 KSPSolve can sometimes run out of memory. If your computer has RAM limitations, follow these instructions to run the demo notebook on Google Colab instead.
 1. Download and copy repo contents to Google Drive at address `d`
