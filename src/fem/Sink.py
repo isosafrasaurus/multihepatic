@@ -84,13 +84,3 @@ class Sink:
         os.makedirs(directory, exist_ok=True)
         TubeFile(self.fenics_graph, os.path.join(directory, "pressure1d.pvd")) << self.uh1d
         File(f"{directory}/pressure3d.pvd") << self.uh3d
-
-    
-    
-    
-    
-    
-    
-    
-    
-    

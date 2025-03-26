@@ -25,19 +25,19 @@ class Velo(Sink):
         self.velocity = Function(V_vec)
         solve(a_proj == L_proj, self.velocity, solver_parameters = {"linear_solver" : "mumps"})
         
-        dim = self.Omega.geometric_dimension()
-        n = FacetNormal(self.Omega)
-        flux_neumann = assemble(dot(self.velocity, n) * self.dsOmegaNeumann)
-        n_sum = np.array([assemble(n[i] * self.dsOmegaNeumann) for i in range(dim)])
-        n_sum_norm_sq = np.dot(n_sum, n_sum)
-        if n_sum_norm_sq > 1e-12:
-            c_vec = flux_neumann / n_sum_norm_sq * n_sum
-        else:
-            c_vec = np.zeros(dim)
-        mean_c = Constant(tuple(c_vec))
-        mean_func = Function(self.velocity.function_space())
-        mean_func.interpolate(mean_c)
-        self.velocity.assign(self.velocity - mean_func)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
     def compute_inflow_sink(self):
         n = FacetNormal(self.Omega)
