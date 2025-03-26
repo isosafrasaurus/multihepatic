@@ -84,13 +84,3 @@ class Sink:
         os.makedirs(directory, exist_ok=True)
         TubeFile(self.fenics_graph, os.path.join(directory, "pressure1d.pvd")) << self.uh1d
         File(f"{directory}/pressure3d.pvd") << self.uh3d
-
-    # def save_vtk(self, directory: str):
-    #     os.makedirs(directory, exist_ok=True)
-    #     visualize.save_Lambda(
-    #         save_path = f"{directory}/pressure1d.vtk",
-    #         Lambda = self.Lambda,
-    #         radius_map = self.radius_map,
-    #         uh1d = self.uh1d
-    #     )
-    #     File(f"{directory}/pressure3d.pvd") << self.uh3d
