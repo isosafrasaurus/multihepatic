@@ -13,21 +13,6 @@ class AxisPlane(SubDomain):
     def inside(self, x, on_boundary) -> bool:
         return on_boundary and near(x[self.axis], self.coordinate, self.tolerance)
 
-class BoundaryPoint(SubDomain):
-    def __init__(self, coordinate, tolerance: float = 1e-8):
-        super().__init__()
-        self.coordinate = coordinate
-        self.tolerance = tolerance
-
-    def inside(self, x, on_boundary: bool) -> bool:
-        return (
-            on_boundary
-            and near(x[0], self.coordinate[0], self.tolerance)
-            and near(x[1], self.coordinate[1], self.tolerance)
-            and near(x[2], self.coordinate[2], self.tolerance)
-        )
-
-
 def point_in_cylinder(point, pos_u, pos_v, radius):
     p = np.array(point)
     u = np.array(pos_u)
