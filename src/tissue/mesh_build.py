@@ -17,47 +17,65 @@ class MeshBuild:
         fenics_graph.make_mesh(n = Lambda_num_nodes_exp)
         fenics_graph.make_submeshes()
         self.Lambda, edge_marker = fenics_graph.get_mesh(n = Lambda_num_nodes_exp)
-        
         Lambda_coords = self.Lambda.coordinates()
-        lambda_min = np.min(Lambda_coords, axis=0)
-        lambda_max = np.max(Lambda_coords, axis=0)
+        Lambda_min = np.min(Lambda_coords, axis=0)
+        Lambda_max = np.max(Lambda_coords, axis=0)
 
         self.Omega = UnitCubeMesh(*Omega_mesh_voxel_dim)
         Omega_coords = self.Omega.coordinates()
-
         if Omega_bounds is None:
-            scales = lambda_max - lambda_min + 2 * Lambda_padding
-            shifts = lambda_min - Lambda_padding
+            scales = Lambda_max - Lambda_min + 2 * Lambda_padding
+            shifts = Lambda_min - Lambda_padding
             self.Omega_bounds = np.array([shifts, shifts + scales])
         else:
             lower = np.minimum(Omega_bounds[0], Omega_bounds[1])
             upper = np.maximum(Omega_bounds[0], Omega_bounds[1])
-            if not (np.all(lambda_min >= lower) and np.all(lambda_max <= upper)):
+            if not (np.all(Lambda_min >= lower) and np.all(Lambda_max <= upper)):
                 raise ValueError("Lambda mesh is not contained within the provided Omega_bounds.")
             scales = upper - lower
             shifts = lower
             self.Omega_bounds = np.vstack((lower, upper))
-
         Omega_coords[:] = Omega_coords * scales + shifts
         self.radius_map = RadiusMap(fenics_graph, edge_marker)
 
-    def get_Omega_axis_plane(self, face, tolerance=1e-10) -> AxisPlane:
-        face = face.lower()
-        match face:
-            case "left":
-                return AxisPlane(0, self.Omega_bounds[0][0], tolerance)
-            case "right":
-                return AxisPlane(0, self.Omega_bounds[1][0], tolerance)
-            case "bottom":
-                return AxisPlane(1, self.Omega_bounds[0][1], tolerance)
-            case "top":
-                return AxisPlane(1, self.Omega_bounds[1][1], tolerance)
-            case "front":
-                return AxisPlane(2, self.Omega_bounds[0][2], tolerance)
-            case "back":
-                return AxisPlane(2, self.Omega_bounds[1][2], tolerance)
-            case _:
-                raise ValueError(f"Unknown face: {face}")
+    def get_cells_along_path(self, path):
+        global_vertices = []
+        global_coords = self.fenics_graph.mesh.coordinates()
+    
+        for i in range(len(path) - 1):
+            u, v = path[i], path[i + 1]
+            if self.fenics_graph.has_edge(u, v):
+                edge, forward = (u, v), True
+            elif self.fenics_graph.has_edge(v, u):
+                edge, forward = (v, u), False
+            else:
+                raise ValueError(f"No edge between {u} and {v} in the graph.")
+    
+            submesh = self.fenics_graph.edges[edge]["submesh"]
+            coords = submesh.coordinates()
+            if hasattr(submesh, 'entity_map'):
+                local_to_global = submesh.entity_map(0)
+            else:
+                tol = 1e-12
+                local_to_global = []
+                for local_pt in coords:
+                    matches = np.where(np.all(np.isclose(global_coords, local_pt, atol=tol), axis=1))[0]
+                    if len(matches) == 0:
+                        raise ValueError(f"No matching global vertex for local coordinate: {local_pt}")
+                    local_to_global.append(matches[0])
+                local_to_global = np.array(local_to_global)
+    
+            tangent = fenics_graph.edges[edge]["tangent"]
+            if not forward:
+                tangent = -tangent
+            proj = np.dot(coords, tangent)
+            sorted_local_indices = np.argsort(proj)
+            ordered_globals = [local_to_global[idx] for idx in sorted_local_indices]
+    
+            if i > 0 and ordered_globals[0] == global_vertices[-1]:
+                ordered_globals = ordered_globals[1:]
+            global_vertices.extend(ordered_globals)
+        return global_vertices
     
     def get_surface_area(self) -> float:
         sizes = [self.Omega_bounds[1][i] - self.Omega_bounds[0][i] for i in range(3)]

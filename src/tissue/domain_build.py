@@ -1,27 +1,41 @@
 # tissue/domain_build.py
 
-import numpy as np
-import warnings
-from dolfin import MeshFunction, Measure, facets
-from .geometry import BoundaryPoint
+import warnings, numpy as np
+from dolfin import SubDomain, MeshFunction, Measure, facets, near
+from .mesh_build import MeshBuild
 
-class DomainBuild:
-    def __init__(self, mesh_build, Lambda_inlet=None, Omega_sink=None):
-        self.fenics_graph = mesh_build.fenics_graph
-        self.Omega = mesh_build.Omega
-        self.Lambda = mesh_build.Lambda
-        self.radius_map = mesh_build.radius_map
-        self.get_surface_area = mesh_build.get_surface_area
-        self.Lambda_inlet = Lambda_inlet
-        self.Omega_sink = Omega_sink
+class BoundaryPoint(SubDomain):
+    def __init__(self, coordinate, tolerance: float = 1e-8):
+        super().__init__()
+        self.coordinate = coordinate
+        self.tolerance = tolerance
+
+    def inside(self, x, on_boundary: bool) -> bool:
+        return (
+            on_boundary
+            and near(x[0], self.coordinate[0], self.tolerance)
+            and near(x[1], self.coordinate[1], self.tolerance)
+            and near(x[2], self.coordinate[2], self.tolerance)
+        )
+
+class DomainBuild(MeshBuild):
+    def __init__(self, fenics_graph,
+        Omega_bounds = None,
+        Omega_mesh_voxel_dim = (16, 16, 16),
+        Lambda_padding = 0.008,
+        Lambda_num_nodes_exp = 5,
+        Lambda_inlet = None, 
+        Omega_sink = None
+    ):
+        super().__init__(fenics_graph, Omega_bounds, Omega_mesh_voxel_dim, Lambda_padding, Lambda_num_nodes_exp)
         self.boundary_Omega = MeshFunction("size_t", self.Omega, self.Omega.topology().dim() - 1, 0)
         self.boundary_Lambda = MeshFunction("size_t", self.Lambda, self.Lambda.topology().dim() - 1, 0)
 
-        if self.Omega_sink is not None:
-            self.Omega_sink.mark(self.boundary_Omega, 1)
+        if Omega_sink is not None:
+            Omega_sink.mark(self.boundary_Omega, 1)
         self.dsOmega = Measure("ds", domain=self.Omega, subdomain_data=self.boundary_Omega)
 
-        if self.Lambda_inlet is not None:
+        if Lambda_inlet is not None:
             lambda_coords = self.Lambda.coordinates()
             for node_id in Lambda_inlet:
                 if not (0 <= node_id < len(lambda_coords)):
