@@ -87,11 +87,11 @@ def plot_with_boundaries(uh1d, uh3d, z_level=None, cube_lower=None, cube_upper=N
     plt.tight_layout()
     return fig
 
-def plot_path_pressure(uh1d, G, path):
-    node_ids = get_cells_along_path(G, path)
-    mesh = uh1d.function_space().mesh()
+def plot_path_pressure(fem_sink, path):
+    node_ids = fem_sink.domain.get_cells_along_path(path)
+    mesh = fem_sink.uh1d.function_space().mesh()
     coords = mesh.coordinates()
-    pressure = uh1d.compute_vertex_values(mesh)
+    pressure = fem_sink.uh1d.compute_vertex_values(mesh)
     path_coords, path_pressure = coords[node_ids], pressure[node_ids]
     
     print("Node Pressure Data:")

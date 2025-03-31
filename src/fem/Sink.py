@@ -17,6 +17,7 @@ class Sink:
         P_in: float,
         p_cvp: float
     ):
+        self.domain = domain
         self.fenics_graph = domain.fenics_graph
         for name, value in zip(["gamma", "gamma_a", "gamma_R", "mu", "k_t", "k_v", "P_in", "p_cvp"], 
                                [gamma, gamma_a, gamma_R, mu, k_t, k_v, P_in, p_cvp]):
