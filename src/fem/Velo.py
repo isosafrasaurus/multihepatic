@@ -24,20 +24,6 @@ class Velo(Sink):
         L_proj  = inner(Constant(- self.k_t / self.mu)*grad(self.uh3d), v_test)*dx
         self.velocity = Function(V_vec)
         solve(a_proj == L_proj, self.velocity, solver_parameters = {"linear_solver" : "mumps"})
-        
-        # dim = self.Omega.geometric_dimension()
-        # n = FacetNormal(self.Omega)
-        # flux_neumann = assemble(dot(self.velocity, n) * self.dsOmegaNeumann)
-        # n_sum = np.array([assemble(n[i] * self.dsOmegaNeumann) for i in range(dim)])
-        # n_sum_norm_sq = np.dot(n_sum, n_sum)
-        # if n_sum_norm_sq > 1e-12:
-        #     c_vec = flux_neumann / n_sum_norm_sq * n_sum
-        # else:
-        #     c_vec = np.zeros(dim)
-        # mean_c = Constant(tuple(c_vec))
-        # mean_func = Function(self.velocity.function_space())
-        # mean_func.interpolate(mean_c)
-        # self.velocity.assign(self.velocity - mean_func)
 
     def compute_inflow_sink(self):
         n = FacetNormal(self.Omega)
@@ -54,10 +40,6 @@ class Velo(Sink):
         n = FacetNormal(self.Omega)
         return assemble(dot(self.velocity, n) * self.dsOmegaSink)
 
-    def compute_net_flow_neumann_dolfin(self):
-        n = FacetNormal(self.Omega)
-        return assemble(dot(self.velocity, n) * self.dsOmegaNeumann)
-
     def compute_inflow_all(self):
         n = FacetNormal(self.Omega)
         return assemble(conditional(lt(dot(self.velocity, n), 0), dot(self.velocity, n), 0.0) * self.dsOmega)
@@ -73,7 +55,16 @@ class Velo(Sink):
         n = FacetNormal(self.Omega)
         return assemble(dot(self.velocity, n) * self.dsOmega)
 
-    def print_diagnostics(self):
+    def compute_net_flow_neumann_dolfin(self):
+        n = FacetNormal(self.Omega)
+        return assemble(dot(self.velocity, n) * self.dsOmegaNeumann)
+
+    def compute_inflow_lambda(self):
+        D_area = np.pi * self.radius_map**2
+        n_lambda = FacetNormal(self.Lambda)
+        return (- self.k_t / self.mu) * assemble(dot(grad(self.uh1d), n_lambda) * D_area * self.dsLambdaInlet)
+
+    def print_diagnostics(self, tol = 1e-9):
         sink_inflow      = self.compute_inflow_sink()
         sink_outflow     = self.compute_outflow_sink()
         sink_net_sum     = self.compute_net_flow_sink()
@@ -83,6 +74,7 @@ class Velo(Sink):
         all_net_sum      = self.compute_net_flow_all()
         all_net_dolfin   = self.compute_net_flow_all_dolfin()
         neumann_net_dolfin = self.compute_net_flow_neumann_dolfin()
+        lambda_inflow    = self.compute_inflow_lambda()
         combined_net = sink_net_dolfin + neumann_net_dolfin
 
         print("Flow Diagnostics")
@@ -91,8 +83,11 @@ class Velo(Sink):
         print(f"  Inflow               : {sink_inflow:.8g}")
         print(f"  Outflow              : {sink_outflow:.8g}")
         print(f"  Net Flow (sum)       : {sink_net_sum:.8g}")
-        print(f"  Net Flow (Dolfin)    : {sink_net_dolfin:.8g}")
-        print("  --> The 'Net Flow (sum)' should equal 'Net Flow (Dolfin)'.")
+        print(f"  Net Flow (dolfin)    : {sink_net_dolfin:.8g}")
+        if abs(sink_net_sum - sink_net_dolfin) <= tol:
+            print("CHECK PASSED: Sink Net Flow (sum) = Sink Net Flow (dolfin)")
+        else:
+            print("CHECK FAILED: Sink Net Flow (sum) =/= Sink Net Flow (dolfin)")
         print("--------------------------------------------------")
         print("Neumann Boundary:")
         print(f"  Net Flow (Dolfin)    : {neumann_net_dolfin:.8g}")
@@ -101,12 +96,21 @@ class Velo(Sink):
         print(f"  Inflow               : {all_inflow:.8g}")
         print(f"  Outflow              : {all_outflow:.8g}")
         print(f"  Net Flow (sum)       : {all_net_sum:.8g}")
-        print(f"  Net Flow (Dolfin)    : {all_net_dolfin:.8g}")
-        print("  --> The 'Net Flow (sum)' should equal 'Net Flow (Dolfin)'.")
+        print(f"  Net Flow (dolfin)    : {all_net_dolfin:.8g}")
+        if abs(all_net_sum - all_net_dolfin) <= tol:
+            print("CHECK PASSED: All Net Flow (sum) = All Net Flow (dolfin)")
+        else:
+            print("CHECK FAILED: All Net Flow (sum) =/= All Net Flow (dolfin)")
         print("--------------------------------------------------")
-        print("Sum of dsOmegaNeumann and dsOmegaSink (Dolfin):")
+        print("1D Lambda Inlet (Dirichlet Boundary):")
+        print(f"  Inflow               : {lambda_inflow:.8g}")
+        print("--------------------------------------------------")
+        print("Sum of dsOmegaNeumann and dsOmegaSink (dolfin):")
         print(f"  Neumann + Sink       : {combined_net:.8g}")
-        print("  --> This should match the net flow over the entire domain boundary.")
+        if abs(combined_net - all_net_dolfin) <= tol:
+            print("CHECK PASSED: All Net Flow (sum) = All Net Flow (dolfin)")
+        else:
+            print("CHECK FAILED: All Net Flow (sum) =/= All Net Flow (dolfin)")
         print("--------------------------------------------------")
 
     def save_vtk(self, directory: str):
@@ -115,21 +119,3 @@ class Velo(Sink):
         self.velocity.rename("3D Velocity (m/s)", "3D Velocity Distribution")
         velocity_file = File(os.path.join(directory, "velocity3d.pvd"))
         velocity_file << self.velocity
-
-    def save_vtk_inflow(self, directory: str):
-        os.makedirs(directory, exist_ok=True)
-        n = FacetNormal(self.Omega)
-        dim = self.Omega.geometric_dimension()
-        zero_vector = Constant(tuple(0.0 for _ in range(dim)))
-        inflow_velocity = project(conditional(lt(dot(self.velocity, n), 0), self.velocity, zero_vector), self.velocity.function_space())
-        inflow_velocity.rename("3D Inflow Velocity (m/s)", "3D Inflow Velocity Distribution")
-        File(os.path.join(directory, "inflow3d.pvd")) << inflow_velocity
-
-    def save_vtk_outflow(self, directory: str):
-        os.makedirs(directory, exist_ok=True)
-        n = FacetNormal(self.Omega)
-        dim = self.Omega.geometric_dimension()
-        zero_vector = Constant(tuple(0.0 for _ in range(dim)))
-        outflow_velocity = project(conditional(gt(dot(self.velocity, n), 0), self.velocity, zero_vector), self.velocity.function_space())
-        outflow_velocity.rename("3D Outflow Velocity (m/s)", "3D Outflow Velocity Distribution")
-        File(os.path.join(directory, "outflow3d.pvd")) << outflow_velocity
