@@ -65,7 +65,7 @@ class MeshBuild:
                     local_to_global.append(matches[0])
                 local_to_global = np.array(local_to_global)
     
-            tangent = fenics_graph.edges[edge]["tangent"]
+            tangent = self.fenics_graph.edges[edge]["tangent"]
             if not forward:
                 tangent = -tangent
             proj = np.dot(coords, tangent)

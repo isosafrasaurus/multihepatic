@@ -74,7 +74,7 @@ class Velo(Sink):
         D_area = np.pi * self.radius_map**2
         n_lambda = FacetNormal(self.Lambda)
 
-        flux_expr = dot(grad(self.uh1d), n_lambda)
+        flux_expr = (- self.k_v / self.mu) * dot(grad(self.uh1d), n_lambda) * D_area
         if direction == "inflow":
             flux_expr = conditional(lt(flux_expr, 0), flux_expr, 0.0)
         elif direction == "outflow":
@@ -174,12 +174,12 @@ class Velo(Sink):
         print(f"  Inflow               : {lambda_out_inflow:.8g}")
         print(f"  Outflow              : {lambda_out_outflow:.8g}")
         print(f"  Net Flow             : {lambda_out_net:.8g}")
-        if abs(lambda_inlet_net - lambda_out_net) <= tol:
+        if abs(lambda_inlet_net + lambda_out_net) <= tol:
             print("CHECK PASSED: 1D Lambda Inlet Net Flow = 1D Lambda Outlet Net Flow")
         else:
             print("CHECK FAILED: 1D Lambda Inlet Net Flow ≠ 1D Lambda Outlet Net Flow")
         print("--------------------------------------------------")
-        if abs(all_inflow + lambda_inlet_inflow + lambda_out_inflow - all_outflow - lambda_inlet_outflow - lambda_out_outflow) <= tol:
+        if abs((lambda_inlet_net + lambda_out_net) - all_net_dolfin) <= tol:
             print("CHECK PASSED: Global Mass Conservation")
         else:
             print("CHECK FAILED: Global Mass Conservation")
