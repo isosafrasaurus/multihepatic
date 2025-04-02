@@ -1,9 +1,26 @@
-# tissue/expressions.py
-
+import warnings
 import numpy as np
-from dolfin import UserExpression
+from dolfin import SubDomain, MeshFunction, Measure, UnitCubeMesh, facets, near, UserExpression
 from rtree import index as rtree_index
-from .geometry import point_in_cylinder
+
+def point_in_cylinder(point, pos_u, pos_v, radius):
+    p = np.array(point)
+    u = np.array(pos_u)
+    v = np.array(pos_v)
+    line = v - u
+    line_length_sq = np.dot(line, line)
+    if line_length_sq == 0:
+        return np.linalg.norm(p - u) <= radius
+
+    t = np.dot(p - u, line) / line_length_sq
+    t = np.clip(t, 0.0, 1.0)
+    projection = u + t * line
+    return np.linalg.norm(p - projection) <= radius
+
+def _build_rtree_3d():
+    p = rtree_index.Property()
+    p.dimension = 3
+    return rtree_index.Index(properties=p)
 
 class RadiusMap(UserExpression):
     def __init__(self, graph, edge_marker=None, **kwargs):
@@ -38,8 +55,3 @@ class RadiusMap(UserExpression):
 
     def value_shape(self):
         return ()
-
-def _build_rtree_3d():
-    p = rtree_index.Property()
-    p.dimension = 3
-    return rtree_index.Index(properties=p)
