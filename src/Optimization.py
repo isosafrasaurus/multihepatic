@@ -1,24 +1,24 @@
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 
-def black_box_flow(gamma, gamma_R, gamma_a, gamma_v, k_v):
-    fem_test = fem.Velo(
-        domain=TEST_MEASURE,
-        gamma=gamma,
-        gamma_R=gamma_R,
-        gamma_a=gamma_a,
-        gamma_v=gamma_v,
-        mu=1.0e-3,
-        k_t=1.0e-10,
-        k_v=k_v,
-        P_in=100.0*133.322,
-        p_cvp=1.0*133.322
+def black_box_flow(domain, gamma, gamma_R, gamma_a, gamma_v, k_v):
+    flow_solve = fem.SubCubes(
+        domain = TEST_DOMAIN,
+        gamma = 1.0e-6,
+        gamma_a = 1.0e-6,
+        gamma_R = 1.0e-6,
+        mu = 1.0e-3,
+        k_t = 1.0e-10,
+        k_v = 1.0e-10,
+        P_in = 100.0 * 133.322,
+        P_cvp = 1.0 * 133.322,
+        lower_cube_bounds = [[0.0, 0.0, 0.0], [0.010, 0.010, 0.010]],
+        upper_cube_bounds = [[0.033, 0.030, 0.010],[0.043, 0.040, 0.020]]
     )
-    flow_val = fem_test.compute_outflow_sink()
+    flow_val = flow_solve.all_net_flow_dolfin()
     return flow_val
 
 def cost_function_log(params_log, target_flow):
-    # Unpack parameters in log-space and convert to linear scale
     gamma_linear   = 10.0**(params_log[0])
     gamma_R_linear = 10.0**(params_log[1])
     gamma_a_linear = 10.0**(params_log[2])
@@ -49,10 +49,7 @@ def multi_param_fit(
     initial_simplex = [np.array(initial_guess_log)]
     for i in range(n_params):
         vertex = np.array(initial_guess_log, copy=True)
-        if i == 4:  # k_v dimension: smaller step size
-            vertex[i] += 0.01
-        else:
-            vertex[i] += 0.1
+        vertex[i] += 0.01
         initial_simplex.append(vertex)
     initial_simplex = np.array(initial_simplex)
 
