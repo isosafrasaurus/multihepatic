@@ -32,18 +32,16 @@ class SubCubes(Velo):
         lower_cube_bounds: List[List[float]],
         upper_cube_bounds: List[List[float]]
     ):
-        
         super().__init__(domain, gamma, gamma_a, gamma_R, mu, k_t, k_v, P_in, P_cvp)
         
-        self.domain = domain
         self.lower_cube_bounds = lower_cube_bounds
         self.upper_cube_bounds = upper_cube_bounds
-
         
         
-        self.lower_boundaries = MeshFunction("size_t", domain.Omega, domain.Omega.topology().dim() - 1)
+        
+        self.lower_boundaries = MeshFunction("size_t", self.domain.Omega, self.domain.Omega.topology().dim() - 1)
         self.lower_boundaries.set_all(0)
-        self.upper_boundaries = MeshFunction("size_t", domain.Omega, domain.Omega.topology().dim() - 1)
+        self.upper_boundaries = MeshFunction("size_t", self.domain.Omega, self.domain.Omega.topology().dim() - 1)
         self.upper_boundaries.set_all(0)
         
         
@@ -55,39 +53,55 @@ class SubCubes(Velo):
         self.upper_cube.mark(self.upper_boundaries, 1)
         
         
-        self.dS_lower = Measure("dS", domain=domain.Omega, subdomain_data=self.lower_boundaries)
-        self.dS_upper = Measure("dS", domain=domain.Omega, subdomain_data=self.upper_boundaries)
+        self.dS_lower = Measure("dS", domain=self.domain.Omega, subdomain_data=self.lower_boundaries)
+        self.dS_upper = Measure("dS", domain=self.domain.Omega, subdomain_data=self.upper_boundaries)
+    
+    def compute_lower_cube_flux(self):
         
+        n = FacetNormal(self.domain.Omega)
+        flux_lower = assemble(dot(avg(self.velocity), n('-')) * self.dS_lower(1))
+        return flux_lower
+
+    def compute_upper_cube_flux(self):
+        n = FacetNormal(self.domain.Omega)
+        flux_upper = assemble(dot(avg(self.velocity), n('-')) * self.dS_upper(1))
+        return flux_upper
+
+    def compute_lower_cube_flux_in(self):
+        n = FacetNormal(self.domain.Omega)
         
-        n = FacetNormal(domain.Omega)
+        flux_lower_in = assemble(conditional(lt(dot(avg(self.velocity), n('-')), 0),
+                                             dot(avg(self.velocity), n('-')), 0.0) * self.dS_lower(1))
+        return flux_lower_in
+
+    def compute_lower_cube_flux_out(self):
+        n = FacetNormal(self.domain.Omega)
         
-        
-        self.lower_cube_flux = assemble(dot(avg(self.velocity), n('-')) * self.dS_lower(1))
-        self.lower_cube_flux_in = assemble(conditional(lt(dot(avg(self.velocity), n('-')), 0),
-                                                         dot(avg(self.velocity), n('-')), 0.0) *
-                                             self.dS_lower(1))
-        self.lower_cube_flux_out = assemble(conditional(gt(dot(avg(self.velocity), n('-')), 0),
-                                                          dot(avg(self.velocity), n('-')), 0.0) *
-                                              self.dS_lower(1))
-        
-        
-        self.upper_cube_flux = assemble(dot(avg(self.velocity), n('-')) * self.dS_upper(1))
-        self.upper_cube_flux_in = assemble(conditional(lt(dot(avg(self.velocity), n('-')), 0),
-                                                         dot(avg(self.velocity), n('-')), 0.0) *
-                                             self.dS_upper(1))
-        self.upper_cube_flux_out = assemble(conditional(gt(dot(avg(self.velocity), n('-')), 0),
-                                                          dot(avg(self.velocity), n('-')), 0.0) *
-                                              self.dS_upper(1))
+        flux_lower_out = assemble(conditional(gt(dot(avg(self.velocity), n('-')), 0),
+                                              dot(avg(self.velocity), n('-')), 0.0) * self.dS_lower(1))
+        return flux_lower_out
+
+    def compute_upper_cube_flux_in(self):
+        n = FacetNormal(self.domain.Omega)
+        flux_upper_in = assemble(conditional(lt(dot(avg(self.velocity), n('-')), 0),
+                                             dot(avg(self.velocity), n('-')), 0.0) * self.dS_upper(1))
+        return flux_upper_in
+
+    def compute_upper_cube_flux_out(self):
+        n = FacetNormal(self.domain.Omega)
+        flux_upper_out = assemble(conditional(gt(dot(avg(self.velocity), n('-')), 0),
+                                              dot(avg(self.velocity), n('-')), 0.0) * self.dS_upper(1))
+        return flux_upper_out
 
     def print_cube_diagnostics(self):
         
         print(f"Total Sink Flow (m^3/s): {self.compute_net_flow_sink()}")
         print(f"Total Flow (m^3/s): {self.compute_net_flow_all()}")
         print("--------------------------------------------------")
-        print(f"Net flux through lower cube: {self.compute_lower_cube_flux()}")
-        print(f"Inflow through lower cube: {self.compute_lower_cube_flux_in()}")
-        print(f"Outflow through lower cube: {self.compute_lower_cube_flux_out()}")
+        print(f"Net flux through lower: {self.compute_lower_cube_flux()}")
+        print(f"Inflow through lower: {self.compute_lower_cube_flux_in()}")
+        print(f"Outflow through lower: {self.compute_lower_cube_flux_out()}")
         print("--------------------------------------------------")
-        print(f"Net flux through upper cube: {self.compute_upper_cube_flux()}")
-        print(f"Inflow through upper cube: {self.compute_upper_cube_flux_in()}")
-        print(f"Outflow through upper cube: {self.compute_upper_cube_flux_out()}")
+        print(f"Net flux through upper: {self.compute_upper_cube_flux()}")
+        print(f"Inflow through upper: {self.compute_upper_cube_flux_in()}")
+        print(f"Outflow through upper: {self.compute_upper_cube_flux_out()}")
