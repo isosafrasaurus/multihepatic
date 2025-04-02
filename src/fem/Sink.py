@@ -1,8 +1,8 @@
 import os, fem, tissue, visualize
 import numpy as np
-from dolfin import FunctionSpace, TrialFunction, TestFunction, Constant, inner, grad, DirichletBC, File, PETScKrylovSolver, LUSolver
-from graphnics import ii_assemble, apply_bc, ii_convert, ii_Function, TubeFile
-from xii import Circle, Average
+from dolfin import FunctionSpace, TrialFunction, TestFunction, Constant, inner, grad, DirichletBC, PETScKrylovSolver, LUSolver
+from graphnics import TubeFile
+from xii import ii_assemble, apply_bc, ii_convert, ii_Function, Circle, Average
 
 class Sink:
     def __init__(
@@ -17,56 +17,47 @@ class Sink:
         P_in: float,
         p_cvp: float
     ):
-        self.domain = domain
-        self.fenics_graph = domain.fenics_graph
-        for name, value in zip(["gamma", "gamma_a", "gamma_R", "mu", "k_t", "k_v", "P_in", "p_cvp"], 
-                               [gamma, gamma_a, gamma_R, mu, k_t, k_v, P_in, p_cvp]):
-            setattr(self, name, value)
-        for attr in ["Omega", "Lambda", "radius_map", "dsOmega", "dsLambda", "dxOmega", "dxLambda", 
-                     "dsOmegaNeumann", "dsOmegaSink", "dsLambdaRobin", "dsLambdaInlet", "boundary_Lambda","boundary_Omega"]:
-            setattr(self, attr, getattr(domain, attr))
-
-        V3 = FunctionSpace(self.Omega, "CG", 1)
-        V1 = FunctionSpace(self.Lambda, "CG", 1)
+        V3 = FunctionSpace(domain.Omega, "CG", 1)
+        V1 = FunctionSpace(domain.Lambda, "CG", 1)
         W = [V3, V1]
         u3, u1 = map(TrialFunction, W)
         v3, v1 = map(TestFunction, W)
 
-        cylinder = Circle(radius=self.radius_map, degree=5)
-        u3_avg = Average(u3, self.Lambda, cylinder)
-        v3_avg = Average(v3, self.Lambda, cylinder)
-        D_area = np.pi * self.radius_map**2
-        D_perimeter = 2.0 * np.pi * self.radius_map
+        cylinder = Circle(radius = domain.radius_map, degree = 2)
+        u3_avg = Average(u3, domain.Lambda, cylinder)
+        v3_avg = Average(v3, domain.Lambda, cylinder)
+        D_area = np.pi * domain.radius_map**2
+        D_perimeter = 2.0 * np.pi * domain.radius_map
        
         a00 = (
-            Constant(self.k_t / self.mu) * inner(grad(u3), grad(v3)) * self.dxOmega
-            + Constant(self.gamma_R) * u3 * v3 * self.dsOmegaSink
-            + Constant(self.gamma) * u3_avg * v3_avg * D_perimeter * self.dxLambda
+            Constant(k_t / mu) * inner(grad(u3), grad(v3)) * domain.dxOmega
+            + Constant(gamma_R) * u3 * v3 * domain.dsOmegaSink
+            + Constant(gamma) * u3_avg * v3_avg * D_perimeter * domain.dxLambda
         )
         a01 = (
-            - Constant(self.gamma) * u1 * v3_avg * D_perimeter * self.dxLambda
-            - Constant(self.gamma_a / self.mu) * u1 * v3_avg * D_area * self.dsLambdaRobin
+            - Constant(gamma) * u1 * v3_avg * D_perimeter * domain.dxLambda
+            - Constant(gamma_a / mu) * u1 * v3_avg * D_area * domain.dsLambdaRobin
         )
         a10 = (
-            - Constant(self.gamma) * u3_avg * v1 * D_perimeter * self.dxLambda
+            - Constant(gamma) * u3_avg * v1 * D_perimeter * domain.dxLambda
         )
         a11 = (
-            Constant(self.k_v / self.mu) * D_area * inner(grad(u1), grad(v1)) * self.dxLambda
-            + Constant(self.gamma) * u1 * v1 * D_perimeter * self.dxLambda
-            + Constant(self.gamma_a / self.mu) * u1 * v1 * D_area * self.dsLambdaRobin
+            Constant(k_v / mu) * D_area * inner(grad(u1), grad(v1)) * domain.dxLambda
+            + Constant(gamma) * u1 * v1 * D_perimeter * domain.dxLambda
+            + Constant(gamma_a / mu) * u1 * v1 * D_area * domain.dsLambdaRobin
         )
         L0 = (
-            Constant(self.gamma_R) * Constant(self.p_cvp) * v3 * self.dsOmegaSink
-            + Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v3_avg * D_area * self.dsLambdaRobin
+            Constant(gamma_R) * Constant(p_cvp) * v3 * domain.dsOmegaSink
+            + Constant(gamma_a / mu) * Constant(p_cvp) * v3_avg * D_area * domain.dsLambdaRobin
         )
         L1 = (
-            Constant(self.gamma_a / self.mu) * Constant(self.p_cvp) * v1 * D_area * self.dsLambdaRobin
+            Constant(gamma_a / mu) * Constant(p_cvp) * v1 * D_area * domain.dsLambdaRobin
         )
         a = [[a00, a01],
              [a10, a11]]
         L = [L0, L1]
 
-        inlet_bc = DirichletBC(V1, Constant(self.P_in), self.boundary_Lambda, 1)
+        inlet_bc = DirichletBC(V1, Constant(P_in), domain.boundary_Lambda, 1)
         inlet_bcs = [inlet_bc] if inlet_bc.get_boundary_values() else []
         W_bcs = [[], inlet_bcs]
 
@@ -81,7 +72,7 @@ class Sink:
         self.uh3d.rename("3D Pressure (Pa)", "3D Pressure Distribution")
         self.uh1d.rename("1D Pressure (Pa)", "1D Pressure Distribution")
 
-    def save_vtk(self, directory: str):
+    def save_vtk(self, directory):
         os.makedirs(directory, exist_ok=True)
         TubeFile(self.fenics_graph, os.path.join(directory, "pressure1d.pvd")) << self.uh1d
         File(f"{directory}/pressure3d.pvd") << self.uh3d
