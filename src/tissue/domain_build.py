@@ -1,7 +1,5 @@
-import warnings
 import numpy as np
 from dolfin import SubDomain, MeshFunction, Measure, UnitCubeMesh, facets, near, UserExpression
-from rtree import index as rtree_index
 from .radius_map import RadiusMap
 
 class DomainBuild:
@@ -10,20 +8,22 @@ class DomainBuild:
         fenics_graph,
         Omega_build,
         Lambda_num_nodes_exp = 5,
-        Lambda_inlet_nodes = None, 
+        Lambda_inlet_nodes = None,
         Omega_sink_subdomain = None
     ):
         if not hasattr(fenics_graph, "mesh"):
             raise ValueError("FenicsGraph object mesh not initialized. Call .make_mesh()")
 
         self.fenics_graph = fenics_graph
+        self.Lambda = fenics_graph.mesh
+        self.Omega = Omega_build.Omega
         self.radius_map = RadiusMap(fenics_graph, fenics_graph.mf)
-        self.boundary_Omega = MeshFunction("size_t", Omega_build.Omega, Omega_build.Omega.topology().dim() - 1, 0)
-        self.boundary_Lambda = MeshFunction("size_t", fenics_graph.mesh, fenics_graph.mesh.topology().dim() - 1, 0)
+        self.boundary_Omega = MeshFunction("size_t", self.Omega, Omega_build.Omega.topology().dim() - 1, 0)
+        self.boundary_Lambda = MeshFunction("size_t", self.Lambda, fenics_graph.mesh.topology().dim() - 1, 0)
 
         if Omega_sink_subdomain is not None:
             Omega_sink_subdomain.mark(self.boundary_Omega, 1)
-        self.dsOmega = Measure("ds", domain = Omega_build.Omega, subdomain_data = self.boundary_Omega)
+        self.dsOmega = Measure("ds", domain = self.Omega, subdomain_data = self.boundary_Omega)
 
         if Lambda_inlet_nodes is not None:
             lambda_coords = self.Lambda.coordinates()
@@ -32,9 +32,9 @@ class DomainBuild:
                 inlet_subdomain = BoundaryPoint(coordinate)
                 inlet_subdomain.mark(self.boundary_Lambda, 1)
 
-        self.dsLambda = Measure("ds", domain = fenics_graph.mesh, subdomain_data = self.boundary_Lambda)
-        self.dxOmega = Measure("dx", domain = Omega_build.Omega)
-        self.dxLambda = Measure("dx", domain = fenics_graph.mesh)
+        self.dsLambda = Measure("ds", domain = self.Lambda, subdomain_data = self.boundary_Lambda)
+        self.dxOmega = Measure("dx", domain = self.Omega)
+        self.dxLambda = Measure("dx", domain = self.Lambda)
         self.dsOmegaNeumann = self.dsOmega(0)
         self.dsOmegaSink = self.dsOmega(1)
         self.dsLambdaRobin = self.dsLambda(0)
