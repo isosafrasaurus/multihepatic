@@ -1,6 +1,6 @@
 import os, fem, tissue, visualize
 import numpy as np
-from dolfin import FunctionSpace, TrialFunction, TestFunction, Constant, inner, grad, DirichletBC, PETScKrylovSolver, LUSolver
+from dolfin import FunctionSpace, TrialFunction, TestFunction, Constant, inner, grad, DirichletBC, PETScKrylovSolver, LUSolver, UserExpression, BoundingBoxTree, Point
 from graphnics import TubeFile
 from xii import ii_assemble, apply_bc, ii_convert, ii_Function, Circle, Average
 
@@ -23,11 +23,28 @@ class Sink:
         u3, u1 = map(TrialFunction, W)
         v3, v1 = map(TestFunction, W)
 
-        cylinder = Circle(radius = domain.radius_map, degree = 2)
+        class AveragingRadius(UserExpression):
+            def __init__(self, **kwargs):
+                self.G = domain.fenics_graph
+                self.tree = domain.Lambda.bounding_box_tree()
+                self.tree.build(domain.Lambda)
+                super().__init__(**kwargs)
+            def eval(self, value, x):
+                p = Point(x[0], x[1], x[2])
+                cell = self.tree.compute_first_entity_collision(p)
+                if cell == np.iinfo(np.uint32).max:
+                    value[0] = 0.0
+                else:
+                    edge_ix = self.G.mf[cell]
+                    edge = list(self.G.edges())[edge_ix]
+                    value[0] = self.G.edges()[edge]['radius']
+
+        self.radius = AveragingRadius()
+        cylinder = Circle(radius = self.radius, degree = 2)
         u3_avg = Average(u3, domain.Lambda, cylinder)
         v3_avg = Average(v3, domain.Lambda, cylinder)
-        D_area = np.pi * domain.radius_map**2
-        D_perimeter = 2.0 * np.pi * domain.radius_map
+        D_area = np.pi * self.radius**2
+        D_perimeter = 2.0 * np.pi * self.radius
        
         a00 = (
             Constant(k_t / mu) * inner(grad(u3), grad(v3)) * domain.dxOmega
