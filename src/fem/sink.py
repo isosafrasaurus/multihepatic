@@ -17,6 +17,7 @@ class Sink:
         P_in: float,
         P_cvp: float
     ):
+        self.domain = domain        
         V3 = FunctionSpace(domain.Omega, "CG", 1)
         V1 = FunctionSpace(domain.Lambda, "CG", 1)
         W = [V3, V1]
@@ -64,12 +65,13 @@ class Sink:
             + Constant(gamma_a / mu) * u1 * v1 * D_area * domain.dsLambdaRobin
         )
         L0 = (
-            Constant(gamma_R) * Constant(P_cvp) * v3 * domain.dsOmegaSink
-            + Constant(gamma_a / mu) * Constant(P_cvp) * v3_avg * D_area * domain.dsLambdaRobin
+            Constant(gamma_R * P_cvp) * v3 * domain.dsOmegaSink
+            + Constant(gamma_a * P_cvp / mu) * v3_avg * D_area * domain.dsLambdaRobin
         )
         L1 = (
-            Constant(gamma_a / mu) * Constant(P_cvp) * v1 * D_area * domain.dsLambdaRobin
+            Constant(gamma_a * P_cvp / mu) * v1 * D_area * domain.dsLambdaRobin
         )
+        
         a = [[a00, a01],
              [a10, a11]]
         L = [L0, L1]
@@ -92,4 +94,4 @@ class Sink:
     def save_vtk(self, directory):
         os.makedirs(directory, exist_ok=True)
         TubeFile(self.fenics_graph, os.path.join(directory, "pressure1d.pvd")) << self.uh1d
-        File(f"{directory}/pressure3d.pvd") << self.uh3d
+        File(os.path.join(directory, "pressure1d.pvd")) << self.uh3d
