@@ -15,7 +15,7 @@ class Sink:
         k_t: float,
         k_v: float,
         P_in: float,
-        p_cvp: float
+        P_cvp: float
     ):
         V3 = FunctionSpace(domain.Omega, "CG", 1)
         V1 = FunctionSpace(domain.Lambda, "CG", 1)
@@ -47,11 +47,11 @@ class Sink:
             + Constant(gamma_a / mu) * u1 * v1 * D_area * domain.dsLambdaRobin
         )
         L0 = (
-            Constant(gamma_R) * Constant(p_cvp) * v3 * domain.dsOmegaSink
-            + Constant(gamma_a / mu) * Constant(p_cvp) * v3_avg * D_area * domain.dsLambdaRobin
+            Constant(gamma_R) * Constant(P_cvp) * v3 * domain.dsOmegaSink
+            + Constant(gamma_a / mu) * Constant(P_cvp) * v3_avg * D_area * domain.dsLambdaRobin
         )
         L1 = (
-            Constant(gamma_a / mu) * Constant(p_cvp) * v1 * D_area * domain.dsLambdaRobin
+            Constant(gamma_a / mu) * Constant(P_cvp) * v1 * D_area * domain.dsLambdaRobin
         )
         a = [[a00, a01],
              [a10, a11]]

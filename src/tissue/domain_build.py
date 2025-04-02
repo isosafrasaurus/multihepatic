@@ -1,6 +1,7 @@
 import numpy as np
 from dolfin import SubDomain, MeshFunction, Measure, UnitCubeMesh, facets, near, UserExpression
 from .radius_map import RadiusMap
+from .geometry import BoundaryPoint
 
 class DomainBuild:
     def __init__(
