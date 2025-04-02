@@ -1,7 +1,3 @@
-from .Sink import Sink
-from .Velo import Velo
-from .SubCubes import SubCubes
-
-from .SinkNoReinject import SinkNoReinject
-from .VeloNoReinject import VeloNoReinject
-from .SubCubesNoReinject import SubCubesNoReinject
+from .sink import Sink
+from .velo import Velo
+from .sub_cubes import SubCubes

@@ -2,7 +2,7 @@ import tissue
 import numpy as np
 from dolfin import *
 from typing import List
-from .Velo import Velo
+from .velo import Velo
 
 class CubeSubBoundary(SubDomain):
     def __init__(self, lower, upper):
