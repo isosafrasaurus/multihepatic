@@ -7,7 +7,7 @@ from scipy.optimize import minimize
 
 WORK_PATH = "./"
 SOURCE_PATH = os.path.join(WORK_PATH, "src")
-EXPORT_PATH = os.path.join("..", "export")
+EXPORT_PATH = os.path.join("..", "export2")
 DATA_PATH = os.path.join("..", "data")
 
 sys.path.append(SOURCE_PATH)
@@ -38,7 +38,12 @@ TEST_GRAPH_EDGES = [
 
 X_DEFAULT = [2.570e-06, 1.412e-07, 3.147e-07, 1.543e-10]
 
+# Target net flow for optimization.
+TARGET_FLOW = 5.0e-6
+
+# Function to re-create the domain from picklable parameters.
 def create_domain():
+    # Create a new graph.
     graph = FenicsGraph()
     for node_id, pos in TEST_GRAPH_NODES.items():
         graph.add_node(node_id, pos=pos)
@@ -59,10 +64,41 @@ def create_domain():
     )
     return domain
 
-# Worker initializer: set up a global domain in each worker.
-def worker_init():
-    global WORK_DOMAIN
-    WORK_DOMAIN = create_domain()
+def optimize_for_target(fixed_index, fixed_value, default, target, maxiter=30):
+    free_init = [val for i, val in enumerate(default) if i != fixed_index]
+    free_init_log = np.log(free_init)
+    
+    # Define the objective function in log-space.
+    def objective_log(y):
+        x = default[:]  # start with a copy of the default
+        j = 0
+        for i in range(len(x)):
+            if i == fixed_index:
+                x[i] = fixed_value
+            else:
+                x[i] = np.exp(y[j])
+                j += 1
+        # We want the net flow (first value) to match the target.
+        net_flow = compute_flow(x)[0]
+        return (net_flow - target)**2
+
+    result = minimize(
+        objective_log,
+        free_init_log,
+        method='Nelder-Mead',
+        options={'maxiter': maxiter}
+    )
+    
+    # Reconstruct the full parameter vector using the optimized free parameters.
+    x_opt = default[:]
+    j = 0
+    for i in range(len(x_opt)):
+        if i == fixed_index:
+            x_opt[i] = fixed_value
+        else:
+            x_opt[i] = np.exp(result.x[j])
+            j += 1
+    return x_opt
 
 # Compute the flow using the globally initialized domain.
 def compute_flow(x):
@@ -88,13 +124,17 @@ def compute_flow(x):
     ]
     return data
 
-# Helper function: compute a chunk of values.
+# Function to be used by the process pool.
+def process_chunk(args):
+    chunk, variable_index, default, variable_name = args
+    return compute_chunk(chunk, variable_index, default, variable_name)
+
 def compute_chunk(chunk, variable_index, default, variable_name):
     chunk_rows = []
     for value in chunk:
-        x = default[:]  # make a shallow copy
-        x[variable_index] = value
-        results = compute_flow(x)
+        # Optimize the free parameters for the current fixed sweep value.
+        x_opt = optimize_for_target(variable_index, value, default, TARGET_FLOW, maxiter=30)
+        results = compute_flow(x_opt)
         chunk_rows.append({
             variable_name: value,
             "net_flow": results[0],
@@ -105,10 +145,6 @@ def compute_chunk(chunk, variable_index, default, variable_name):
         })
     return chunk_rows
 
-def process_chunk(args):
-    chunk, variable_index, default, variable_name = args
-    return compute_chunk(chunk, variable_index, default, variable_name)
-
 def sweep_variable(variable_name, variable_values, default, directory=None, n_workers=None):
     mapping = {"gamma": 0, "gamma_a": 1, "gamma_R": 2, "k_v": 3}
     if variable_name not in mapping:
@@ -118,18 +154,16 @@ def sweep_variable(variable_name, variable_values, default, directory=None, n_wo
     if n_workers is None:
         n_workers = os.cpu_count() or 1
         
-    # Split the list into chunks.
+    # Split the list of values into chunks.
     chunk_size = math.ceil(len(variable_values) / n_workers)
     def chunkify(lst, n):
         return [lst[i:i+n] for i in range(0, len(lst), n)]
     chunks_list = chunkify(variable_values, chunk_size)
     
     rows = []
-    # Build an iterable of arguments.
     tasks = [(chunk, variable_index, default, variable_name) for chunk in chunks_list]
     
     with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers, initializer=worker_init) as executor:
-        # Use executor.map with the top-level function instead of a lambda.
         for chunk_rows in executor.map(process_chunk, tasks):
             rows.extend(chunk_rows)
     
@@ -180,6 +214,10 @@ def plot_flow_data_semilog(df, directory=None):
     plot2_filename = os.path.join(plot_dir, f"upper_cube_flux_{timestamp}.png")
     plt.savefig(plot2_filename)
     plt.close()
+
+def worker_init():
+    global WORK_DOMAIN
+    WORK_DOMAIN = create_domain()
 
 if __name__ == '__main__':
     values = np.logspace(-10, 2, 50)
