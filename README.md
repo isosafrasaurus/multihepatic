@@ -4,13 +4,19 @@
 2. `docker run` the image with `-p 127.0.0.1:8888:8888` to expose the Jupyter port, and optionally mount a local directory on your host machine to `/root/3d-1d/export` to receive ParaView files
 
 ### Via Linux and Python venv
-This assumes you have already installed legacy DOLFIN/FEniCS on your Linux system using the instructions on the website and wish to run this library natively.
-Create a `venv` with the `--system-site-packages` option and run the following shell script within the venv
+This will allow you to run the repo natively on your Linux machine. First, install legacy DOLFIN/FEniCS on your system via
+```
+sudo apt-get install software-properties-common
+sudo add-apt-repository ppa:fenics-packages/fenics
+sudo apt-get update
+sudo apt-get install fenics
+```
+Then, create a `venv` with the `--system-site-packages` option and run the following shell script within the venv
 ```
 #!/bin/bash
 set -e
-
-bin/pip install ipykernel tqdm ipywidgets vtk meshio pyvista Rtree
+    
+bin/pip install numpy pandas matplotlib scipy networkx plotly jupyter ipykernel tqdm ipywidgets vtk meshio pyvista Rtree
 
 git clone "https://bitbucket.org/fenics-apps/cbc.block/src/master/"
 bin/pip install master/
@@ -24,7 +30,6 @@ bin/pip install graphnics/
 
 bin/pip install git+https://github.com/dolfin-adjoint/pyadjoint.git --upgrade
 ```
-
 Then, you must register the kernel. Run `python -m ipykernel install --user --name=<your_venv_kernel_name> --display-name="Python (<your_venv_name>)"`
 
 ### Via Google Colab
