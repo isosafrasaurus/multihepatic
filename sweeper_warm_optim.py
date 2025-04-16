@@ -1,18 +1,19 @@
-import sys, os, pytz, datetime, math, concurrent.futures
+import sys, os, pytz, datetime, math
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from graphnics import FenicsGraph
 from scipy.optimize import minimize
 
+
 WORK_PATH = "./"
 SOURCE_PATH = os.path.join(WORK_PATH, "src")
 EXPORT_PATH = os.path.join("..", "export2")
 DATA_PATH = os.path.join("..", "data")
-
 sys.path.append(SOURCE_PATH)
 
 import fem, tissue, visualize
+
 
 TEST_NUM_NODES_EXP = 5
 
@@ -26,6 +27,7 @@ TEST_GRAPH_NODES = {
     6: [0.038, 0.005, 0.015],
     7: [0.038, 0.035, 0.015]
 }
+
 TEST_GRAPH_EDGES = [
     (0, 1, 0.004),
     (1, 2, 0.003),
@@ -36,13 +38,15 @@ TEST_GRAPH_EDGES = [
     (3, 7, 0.003)
 ]
 
+
+
 X_DEFAULT = [2.570e-06, 1.412e-07, 3.147e-07, 1.543e-10]
 
 
 TARGET_FLOW = 5.0e-6
 
-
 def create_domain():
+    
     
     graph = FenicsGraph()
     for node_id, pos in TEST_GRAPH_NODES.items():
@@ -53,7 +57,7 @@ def create_domain():
     graph.make_mesh(n=TEST_NUM_NODES_EXP)
     graph.make_submeshes()
     
-    omega_build = tissue.OmegaBuild(graph, bounds=[[0, 0, 0], [0.05, 0.04, 0.03]])
+    omega_build = tissue.OmegaBuild(graph, bounds=[[0,0,0], [0.05, 0.04, 0.03]])
     x_zero_plane = tissue.AxisPlane(0, 0.0)
     
     domain = tissue.DomainBuild(
@@ -64,13 +68,21 @@ def create_domain():
     )
     return domain
 
-def optimize_for_target(fixed_index, fixed_value, default, target, maxiter=30):
-    free_init = [val for i, val in enumerate(default) if i != fixed_index]
-    free_init_log = np.log(free_init)
+
+WORK_DOMAIN = create_domain()
+
+def optimize_for_target(fixed_index, fixed_value, default, target, y_prev=None, lambda_reg=1e-3, maxiter=30):
     
+    free_params = [default[i] for i in range(len(default)) if i != fixed_index]
+    if y_prev is None:
+        
+        y_prev = np.log(free_params)
+    
+    free_init_log = y_prev.copy()
     
     def objective_log(y):
-        x = default[:]  
+        
+        x = default[:]
         j = 0
         for i in range(len(x)):
             if i == fixed_index:
@@ -78,10 +90,10 @@ def optimize_for_target(fixed_index, fixed_value, default, target, maxiter=30):
             else:
                 x[i] = np.exp(y[j])
                 j += 1
-        
         net_flow = compute_flow(x)[0]
-        return (net_flow - target)**2
-
+        
+        return (net_flow - target)**2 + lambda_reg * np.sum((y - y_prev)**2)
+    
     result = minimize(
         objective_log,
         free_init_log,
@@ -92,14 +104,16 @@ def optimize_for_target(fixed_index, fixed_value, default, target, maxiter=30):
     
     x_opt = default[:]
     j = 0
+    optimized_y = []
     for i in range(len(x_opt)):
         if i == fixed_index:
             x_opt[i] = fixed_value
         else:
-            x_opt[i] = np.exp(result.x[j])
+            val = np.exp(result.x[j])
+            x_opt[i] = val
+            optimized_y.append(result.x[j])
             j += 1
-    return x_opt
-
+    return x_opt, np.array(optimized_y)
 
 def compute_flow(x):
     solution = fem.SubCubes(
@@ -124,50 +138,33 @@ def compute_flow(x):
     ]
     return data
 
-
-def process_chunk(args):
-    chunk, variable_index, default, variable_name = args
-    return compute_chunk(chunk, variable_index, default, variable_name)
-
-def compute_chunk(chunk, variable_index, default, variable_name):
-    chunk_rows = []
-    for value in chunk:
-        
-        x_opt = optimize_for_target(variable_index, value, default, TARGET_FLOW, maxiter=30)
-        results = compute_flow(x_opt)
-        chunk_rows.append({
-            variable_name: value,
-            "net_flow": results[0],
-            "lower_cube_flux_out": results[1],
-            "upper_cube_flux_in": results[2],
-            "upper_cube_flux_out": results[3],
-            "upper_cube_flux": results[4]
-        })
-    return chunk_rows
-
-def sweep_variable(variable_name, variable_values, default, directory=None, n_workers=None):
+def sweep_variable_sequential(variable_name, variable_values, default, directory=None):
     mapping = {"gamma": 0, "gamma_a": 1, "gamma_R": 2, "k_v": 3}
     if variable_name not in mapping:
         raise ValueError("Invalid variable choice")
     variable_index = mapping[variable_name]
     
-    if n_workers is None:
-        n_workers = os.cpu_count() or 1
+    
+    y_prev = None
+    results_rows = []
+    
+    for value in variable_values:
         
+        
+        x_opt, y_prev = optimize_for_target(variable_index, value, default, TARGET_FLOW,
+                                            y_prev=y_prev, lambda_reg=1e-3, maxiter=30)
+        flow_results = compute_flow(x_opt)
+        results_rows.append({
+            variable_name: value,
+            "net_flow": flow_results[0],
+            "lower_cube_flux_out": flow_results[1],
+            "upper_cube_flux_in": flow_results[2],
+            "upper_cube_flux_out": flow_results[3],
+            "upper_cube_flux": flow_results[4]
+        })
+        print(f"Swept {variable_name} = {value:.3e} -> net_flow = {flow_results[0]:.3e}")
     
-    chunk_size = math.ceil(len(variable_values) / n_workers)
-    def chunkify(lst, n):
-        return [lst[i:i+n] for i in range(0, len(lst), n)]
-    chunks_list = chunkify(variable_values, chunk_size)
-    
-    rows = []
-    tasks = [(chunk, variable_index, default, variable_name) for chunk in chunks_list]
-    
-    with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers, initializer=worker_init) as executor:
-        for chunk_rows in executor.map(process_chunk, tasks):
-            rows.extend(chunk_rows)
-    
-    df = pd.DataFrame(rows).set_index(variable_name)
+    df = pd.DataFrame(results_rows).set_index(variable_name)
     if directory is not None:
         os.makedirs(directory, exist_ok=True)
         cst = pytz.timezone("America/Chicago")
@@ -178,7 +175,6 @@ def sweep_variable(variable_name, variable_values, default, directory=None, n_wo
     return df
 
 def plot_flow_data_semilog(df, directory=None):
-    
     plot_dir = os.path.join(directory, "plot_flow_data_semilog")
     os.makedirs(plot_dir, exist_ok=True)
     cst = pytz.timezone("America/Chicago")
@@ -215,11 +211,8 @@ def plot_flow_data_semilog(df, directory=None):
     plt.savefig(plot2_filename)
     plt.close()
 
-def worker_init():
-    global WORK_DOMAIN
-    WORK_DOMAIN = create_domain()
-
 if __name__ == '__main__':
-    values = np.logspace(-10, 2, 50)
-    data = sweep_variable("gamma", values, X_DEFAULT, directory=EXPORT_PATH)
-    plot_flow_data_semilog(data, directory=EXPORT_PATH)
+    
+    values = np.logspace(-10, 2, 20)
+    df = sweep_variable_sequential("gamma", values, X_DEFAULT, directory=EXPORT_PATH)
+    plot_flow_data_semilog(df, directory=EXPORT_PATH)
