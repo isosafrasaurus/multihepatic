@@ -1,43 +1,35 @@
-import os
+import os, fem, tissue, visualize
 import numpy as np
-from dolfin import (
-    FunctionSpace, TrialFunction, TestFunction,
-    Constant, inner, grad, DirichletBC,
-    LUSolver, UserExpression, Point, File
-)
-from xii import (
-    ii_assemble, apply_bc, ii_convert, ii_Function,
-    Circle, Average
-)
+from dolfin import FunctionSpace, TrialFunction, TestFunction, Constant, inner, grad, DirichletBC, PETScKrylovSolver, LUSolver, UserExpression, BoundingBoxTree, Point
 from graphnics import TubeFile
+from xii import ii_assemble, apply_bc, ii_convert, ii_Function, Circle, Average
 
 class Sink:
     def __init__(
         self,
-        domain: "tissue.DomainBuild",
+        domain: tissue.DomainBuild,
         gamma: float,
         gamma_a: float,
         gamma_R: float,
         mu: float,
         k_t: float,
+        k_v: float,
         P_in: float,
         P_cvp: float
     ):
-        self.domain = domain
+        self.domain = domain        
         V3 = FunctionSpace(domain.Omega, "CG", 1)
         V1 = FunctionSpace(domain.Lambda, "CG", 1)
         W = [V3, V1]
         u3, u1 = map(TrialFunction, W)
         v3, v1 = map(TestFunction, W)
 
-        # compute local radius and use it to define k_v(s) = R(s)^2/8
         class AveragingRadius(UserExpression):
             def __init__(self, **kwargs):
                 self.G = domain.fenics_graph
                 self.tree = domain.Lambda.bounding_box_tree()
                 self.tree.build(domain.Lambda)
                 super().__init__(**kwargs)
-
             def eval(self, value, x):
                 p = Point(x[0], x[1], x[2])
                 cell = self.tree.compute_first_entity_collision(p)
@@ -48,38 +40,30 @@ class Sink:
                     edge = list(self.G.edges())[edge_ix]
                     value[0] = self.G.edges()[edge]['radius']
 
-        self.radius = AveragingRadius(degree=2)
-        # use area-average on cross-sectional disk
-        circle = Circle(radius=self.radius, degree=2)
-        u3_avg = Average(u3, domain.Lambda, circle)
-        v3_avg = Average(v3, domain.Lambda, circle)
-
-        # geometric factors
+        self.radius = AveragingRadius()
+        cylinder = Circle(radius = self.radius, degree = 2)
+        u3_avg = Average(u3, domain.Lambda, cylinder)
+        v3_avg = Average(v3, domain.Lambda, cylinder)
         D_area = np.pi * self.radius**2
-
-        # define spatially‐varying k_v(s) = radius^2 / 8
-        k_v_expr = (self.radius**2) / Constant(8.0)
-
-        # bilinear forms
+        D_perimeter = 2.0 * np.pi * self.radius
+       
         a00 = (
             Constant(k_t / mu) * inner(grad(u3), grad(v3)) * domain.dxOmega
             + Constant(gamma_R) * u3 * v3 * domain.dsOmegaSink
-            + Constant(gamma) * u3_avg * v3_avg * D_area * domain.dxLambda
+            + Constant(gamma) * u3_avg * v3_avg * D_perimeter * domain.dxLambda
         )
         a01 = (
-            - Constant(gamma) * u1 * v3_avg * D_area * domain.dxLambda
+            - Constant(gamma) * u1 * v3_avg * D_perimeter * domain.dxLambda
             - Constant(gamma_a / mu) * u1 * v3_avg * D_area * domain.dsLambdaRobin
         )
         a10 = (
-            - Constant(gamma) * u3_avg * v1 * D_area * domain.dxLambda
+            - Constant(gamma) * u3_avg * v1 * D_perimeter * domain.dxLambda
         )
         a11 = (
-            k_v_expr / Constant(mu) * D_area * inner(grad(u1), grad(v1)) * domain.dxLambda
-            + Constant(gamma) * u1 * v1 * D_area * domain.dxLambda
+            Constant(k_v / mu) * D_area * inner(grad(u1), grad(v1)) * domain.dxLambda
+            + Constant(gamma) * u1 * v1 * D_perimeter * domain.dxLambda
             + Constant(gamma_a / mu) * u1 * v1 * D_area * domain.dsLambdaRobin
         )
-
-        # linear forms
         L0 = (
             Constant(gamma_R * P_cvp) * v3 * domain.dsOmegaSink
             + Constant(gamma_a * P_cvp / mu) * v3_avg * D_area * domain.dsLambdaRobin
@@ -87,11 +71,11 @@ class Sink:
         L1 = (
             Constant(gamma_a * P_cvp / mu) * v1 * D_area * domain.dsLambdaRobin
         )
-
-        a = [[a00, a01], [a10, a11]]
+        
+        a = [[a00, a01],
+             [a10, a11]]
         L = [L0, L1]
 
-        # inlet Dirichlet BC
         inlet_bc = DirichletBC(V1, Constant(P_in), domain.boundary_Lambda, 1)
         inlet_bcs = [inlet_bc] if inlet_bc.get_boundary_values() else []
         W_bcs = [[], inlet_bcs]
@@ -100,7 +84,6 @@ class Sink:
         if any(W_bcs[0]) or any(W_bcs[1]):
             A, b = apply_bc(A, b, W_bcs)
         A, b = map(ii_convert, (A, b))
-
         wh = ii_Function(W)
         solver = LUSolver(A, "mumps")
         solver.solve(wh.vector(), b)
@@ -110,5 +93,5 @@ class Sink:
 
     def save_vtk(self, directory):
         os.makedirs(directory, exist_ok=True)
-        TubeFile(self.domain.fenics_graph, os.path.join(directory, "pressure1d.pvd")) << self.uh1d
-        File(os.path.join(directory, "pressure3d.pvd")) << self.uh3d
+        TubeFile(self.fenics_graph, os.path.join(directory, "pressure1d.pvd")) << self.uh1d
+        File(os.path.join(directory, "pressure1d.pvd")) << self.uh3d
