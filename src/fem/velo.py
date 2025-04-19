@@ -1,7 +1,7 @@
 import os, tissue
 import numpy as np
 from dolfin import *
-from .sink import Sink
+from .sink_kvc import Sink
 
 class Velo(Sink):
     def __init__(

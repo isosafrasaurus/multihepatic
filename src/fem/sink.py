@@ -1,14 +1,7 @@
 import os
 import numpy as np
-from dolfin import (
-    FunctionSpace, TrialFunction, TestFunction,
-    Constant, inner, grad, DirichletBC,
-    LUSolver, UserExpression, Point, File
-)
-from xii import (
-    ii_assemble, apply_bc, ii_convert, ii_Function,
-    Circle, Average
-)
+from dolfin import FunctionSpace, TrialFunction, TestFunction, Constant, inner, grad, DirichletBC, LUSolver, UserExpression, Point, File
+from xii import ii_assemble, apply_bc, ii_convert, ii_Function, Circle, Average
 from graphnics import TubeFile
 
 class Sink:
@@ -30,7 +23,6 @@ class Sink:
         u3, u1 = map(TrialFunction, W)
         v3, v1 = map(TestFunction, W)
 
-        # compute local radius and use it to define k_v(s) = R(s)^2/8
         class AveragingRadius(UserExpression):
             def __init__(self, **kwargs):
                 self.G = domain.fenics_graph
@@ -49,7 +41,6 @@ class Sink:
                     value[0] = self.G.edges()[edge]['radius']
 
         self.radius = AveragingRadius(degree=2)
-        # use area-average on cross-sectional disk
         circle = Circle(radius=self.radius, degree=2)
         u3_avg = Average(u3, domain.Lambda, circle)
         v3_avg = Average(v3, domain.Lambda, circle)
