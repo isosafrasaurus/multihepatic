@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from graphnics import FenicsGraph
 from scipy.optimize import minimize
+import gc
 
 WORK_PATH = "./"
 SOURCE_PATH = os.path.join(WORK_PATH, "src")
@@ -104,6 +105,7 @@ def compute_flow(x):
     ]
     
     del solution
+    gc.collect()
     return data
 
 def process_chunk(args):
@@ -147,6 +149,8 @@ def sweep_variable(variable_name, variable_values, default, directory=None, n_wo
     with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers, initializer=worker_init) as executor:
         for chunk_rows in executor.map(process_chunk, tasks):
             rows.extend(chunk_rows)
+            
+            gc.collect()
     
     df = pd.DataFrame(rows).set_index(variable_name)
     if directory is not None:
@@ -156,6 +160,7 @@ def sweep_variable(variable_name, variable_values, default, directory=None, n_wo
         timestamp = now.strftime("%Y%m%d_%H%M")
         filename = os.path.join(directory, f"{variable_name}_sweeps_{timestamp}.csv")
         df.to_csv(filename)
+    gc.collect()
     return df
 
 def plot_flow_data_semilog(df, directory=None):
