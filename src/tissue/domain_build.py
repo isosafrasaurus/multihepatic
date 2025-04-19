@@ -1,6 +1,5 @@
 import numpy as np
 from dolfin import SubDomain, MeshFunction, Measure, UnitCubeMesh, facets, near, UserExpression
-from .radius_map import RadiusMap
 from .geometry import BoundaryPoint
 
 class DomainBuild:
@@ -18,7 +17,6 @@ class DomainBuild:
         self.fenics_graph = fenics_graph
         self.Lambda = fenics_graph.mesh
         self.Omega = Omega_build.Omega
-        self.radius_map = RadiusMap(fenics_graph, fenics_graph.mf)
         self.boundary_Omega = MeshFunction("size_t", self.Omega, Omega_build.Omega.topology().dim() - 1, 0)
         self.boundary_Lambda = MeshFunction("size_t", self.Lambda, fenics_graph.mesh.topology().dim() - 1, 0)
 
