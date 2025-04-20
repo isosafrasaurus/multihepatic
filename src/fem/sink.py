@@ -6,6 +6,7 @@ from graphnics import TubeFile
 
 class Sink:
     def __init__(self, domain, order = 2):
+        self.domain = domain
         self.V3 = FunctionSpace(domain.Omega, "CG", 1)
         self.V1 = FunctionSpace(domain.Lambda, "CG", 1)
         self.W = [self.V3, self.V1]
