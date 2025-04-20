@@ -73,7 +73,6 @@ class Sink:
         self.uh3d, self.uh1d = wh
         self.uh3d.rename("3D Pressure (Pa)", "3D Pressure Distribution")
         self.uh1d.rename("1D Pressure (Pa)", "1D Pressure Distribution")
-        return self.uh3d, self.uh1d
 
     def save_vtk(self, directory: str):
         if self.uh3d is None or self.uh1d is None:
