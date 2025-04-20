@@ -1,14 +1,21 @@
-import sys
+#!/usr/bin/env python3
 import os
-import pytz
-import datetime
-import scipy
+from mpi4py import MPI
+
+rank = MPI.COMM_WORLD.Get_rank()
+size = MPI.COMM_WORLD.Get_size()
+jobid = os.environ.get("SLURM_JOB_ID", "nojob")
+user = os.environ.get("USER", "user")
+cache_dir = f"/scratch/{user}/dijitso_cache_{jobid}_{rank}"
+os.makedirs(cache_dir, exist_ok=True)
+os.environ["DIJITSO_CACHE_DIR"] = cache_dir
+
+import sys
 import numpy as np
 import pandas as pd
+import datetime
+import pytz
 import matplotlib.pyplot as plt
-from concurrent.futures import ProcessPoolExecutor
-from multiprocessing import get_context
-from graphnics import FenicsGraph
 
 
 WORK_PATH   = "./"
@@ -19,9 +26,11 @@ sys.path.append(SOURCE_PATH)
 import fem
 import tissue
 
-TEST_NUM_NODES_EXP = 5
-TEST_GRAPH = FenicsGraph()
+from graphnics import FenicsGraph
+import scipy.optimize
+import dolfin  
 
+TEST_NUM_NODES_EXP = 5
 TEST_GRAPH_NODES = {
     0: [0.000, 0.020, 0.015],
     1: [0.010, 0.020, 0.015],
@@ -41,38 +50,29 @@ TEST_GRAPH_EDGES = [
     (3, 5, 0.002),
     (3, 7, 0.003),
 ]
-
-for nid, pos in TEST_GRAPH_NODES.items():
-    TEST_GRAPH.add_node(nid, pos=pos)
-for u, v, r in TEST_GRAPH_EDGES:
-    TEST_GRAPH.add_edge(u, v, radius=r)
-
-TEST_GRAPH.make_mesh(n=TEST_NUM_NODES_EXP)
-TEST_GRAPH.make_submeshes()
-
-OMEGA_BOUNDS  = [[0.0, 0.0, 0.0], [0.05, 0.04, 0.03]]
-OMEGA_BUILD   = tissue.OmegaBuild(TEST_GRAPH, bounds=OMEGA_BOUNDS)
-X_ZERO_PLANE = tissue.AxisPlane(0, 0.0)
-TEST_DOMAIN   = tissue.DomainBuild(
-    TEST_GRAPH,
-    OMEGA_BUILD,
-    Lambda_inlet_nodes=[0],
-    Omega_sink_subdomain=X_ZERO_PLANE,
-)
-
-X_DEFAULT   = [4.855e-05, 3.568e-08, 1.952e-07]  
-TARGET_FLOW = 5.0e-6
-LAMBDA_REG  = 1e-3
-
-LOWER_BOUNDS = [[0.0, 0.0, 0.0], [0.010, 0.010, 0.010]]
+OMEGA_BOUNDS = [[0.0, 0.0, 0.0], [0.05, 0.04, 0.03]]
+LOWER_BOUNDS = [[0.0,    0.0,    0.0],   [0.010, 0.010, 0.010]]
 UPPER_BOUNDS = [[0.033, 0.030, 0.010], [0.043, 0.040, 0.020]]
+X_DEFAULT    = [4.855e-05, 3.568e-08, 1.952e-07]  
+TARGET_FLOW  = 5.0e-6
+LAMBDA_REG   = 1e-3
 
-def worker_init():
+def build_test_graph(n_nodes_exp: int) -> FenicsGraph:
+    g = FenicsGraph()
+    for nid, pos in TEST_GRAPH_NODES.items():
+        g.add_node(nid, pos=pos)
+    for u, v, r in TEST_GRAPH_EDGES:
+        g.add_edge(u, v, radius=r)
+    g.make_mesh(n=n_nodes_exp)
+    g.make_submeshes()
+    return g
+
+def worker_init(domain, lower_bounds, upper_bounds):
     global SOLVER
     SOLVER = fem.SubCubes(
-        domain=TEST_DOMAIN,
-        lower_cube_bounds=LOWER_BOUNDS,
-        upper_cube_bounds=UPPER_BOUNDS,
+        domain=domain,
+        lower_cube_bounds=lower_bounds,
+        upper_cube_bounds=upper_bounds,
         order=2,
     )
     
@@ -87,7 +87,6 @@ def worker_init():
     )
 
 def compute_flow(params: np.ndarray) -> float:
-    
     SOLVER.solve(
         gamma=params[0],
         gamma_a=params[1],
@@ -97,7 +96,6 @@ def compute_flow(params: np.ndarray) -> float:
         P_in=100.0 * 133.322,
         P_cvp=1.0 * 133.322,
     )
-    
     try:
         dolfin.cpp.la.clear_petsc()
     except AttributeError:
@@ -118,9 +116,9 @@ def sweep_job(args):
         xk = np.exp(yk)
         xk[fixed_index] = fixed_value
         flow_k = compute_flow(xk)
-        print(f"[val={fixed_value:.3e}] iter log-params={yk}")
-        print(f"               params={xk}")
-        print(f"               flow  ={flow_k:.3e}\n")
+        print(f"[rank={rank}] [val={fixed_value:.3e}] iter log-params={yk}")
+        print(f"                   params={xk}")
+        print(f"                   flow  ={flow_k:.3e}\n")
 
     res = scipy.optimize.minimize(
         fun=obj,
@@ -153,35 +151,13 @@ def sweep_job(args):
         'upper_net':   upper_net,
     }
 
-def sweep_variable_parallel(variable_name: str,
-                            values: np.ndarray,
-                            default: list,
-                            max_workers=None):
-    mapping = {'gamma': 0, 'gamma_a': 1, 'gamma_R': 2}
-    if variable_name not in mapping:
-        raise ValueError(f"Invalid variable '{variable_name}' for sweep")
-    idx = mapping[variable_name]
-    jobs = [(idx, v, default) for v in values]
-
-    ctx = get_context('spawn')
-    with ProcessPoolExecutor(
-        max_workers=max_workers,
-        mp_context=ctx,
-        initializer=worker_init
-    ) as exe:
-        results = list(exe.map(sweep_job, jobs))
-
-    df = pd.DataFrame(results).set_index('value')
-    df.index.name = variable_name
-    return df
-
 def plot_flow_data_semilog(df: pd.DataFrame, directory: str):
     plot_dir = os.path.join(directory, "plot_flow_data_semilog")
     os.makedirs(plot_dir, exist_ok=True)
     tz = pytz.timezone("America/Chicago")
     timestamp = datetime.datetime.now(tz).strftime("%Y%m%d_%H%M")
 
-    var = df.index.values
+    var  = df.index.values
     name = df.index.name
 
     plt.figure(figsize=(8, 6))
@@ -206,14 +182,47 @@ def plot_flow_data_semilog(df: pd.DataFrame, directory: str):
     plt.close()
 
 if __name__ == "__main__":
-    varname = 'gamma'
-    values  = np.logspace(-10, 2, 20)
+    
+    TEST_GRAPH = build_test_graph(TEST_NUM_NODES_EXP)
+    OMEGA_BUILD = tissue.OmegaBuild(TEST_GRAPH, bounds=OMEGA_BOUNDS)
+    X_ZERO_PLANE = tissue.AxisPlane(0, 0.0)
+    TEST_DOMAIN = tissue.DomainBuild(
+        TEST_GRAPH,
+        OMEGA_BUILD,
+        Lambda_inlet_nodes=[0],
+        Omega_sink_subdomain=X_ZERO_PLANE,
+    )
 
-    df = sweep_variable_parallel(varname, values, X_DEFAULT)
+    
+    worker_init(TEST_DOMAIN, LOWER_BOUNDS, UPPER_BOUNDS)
 
-    os.makedirs(EXPORT_PATH, exist_ok=True)
-    tz = pytz.timezone("America/Chicago")
-    ts = datetime.datetime.now(tz).strftime("%Y%m%d_%H%M")
-    df.to_csv(os.path.join(EXPORT_PATH, f"{varname}_parallel_{ts}.csv"))
+    
+    varname    = 'gamma'
+    all_values = np.logspace(-10, 2, 20)
+    my_values  = all_values[rank::size]
+    jobs       = [(0, v, X_DEFAULT) for v in my_values]
 
-    plot_flow_data_semilog(df, EXPORT_PATH)
+    
+    my_results = [sweep_job(args) for args in jobs]
+
+    
+    gathered = MPI.COMM_WORLD.gather(my_results, root=0)
+
+    if rank == 0:
+        
+        all_results = [r for subset in gathered for r in subset]
+        df = pd.DataFrame(all_results).set_index('value')
+        df.index.name = varname
+
+        
+        export = os.path.join("..", "export")
+        os.makedirs(export, exist_ok=True)
+        tz = pytz.timezone("America/Chicago")
+        ts = datetime.datetime.now(tz).strftime("%Y%m%d_%H%M")
+        df.to_csv(os.path.join(export, f"{varname}_mpi_{ts}.csv"))
+        plot_flow_data_semilog(df, export)
+
+    
+    MPI.COMM_WORLD.Barrier()
+
+
