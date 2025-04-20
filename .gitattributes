@@ -1,3 +1,4 @@
 *.ipynb	diff=jupyternotebook
 *.ipynb	merge=jupyternotebook
 *.ipynb linguist-detectable=false
+*.bib linguist-detectable=false
