@@ -11,7 +11,7 @@ class Velo(Sink):
         self.velocity = None
 
     def solve(self, gamma, gamma_a, gamma_R, mu, k_t, P_in, P_cvp):
-        uh3d, uh1d = super().solve(gamma, gamma_a, gamma_R, mu, k_t, P_in, P_cvp)
+        super().solve(gamma, gamma_a, gamma_R, mu, k_t, P_in, P_cvp)
         self.k_t, self.mu = k_t, mu
         V_vec   = VectorFunctionSpace(self.domain.Omega, "CG", 1)
         v_trial = TrialFunction(V_vec)
@@ -22,7 +22,6 @@ class Velo(Sink):
         solve(a_proj == L_proj, velocity, solver_parameters={"linear_solver": "mumps"})
         velocity.rename("3D Velocity (m/s)", "3D Velocity Distribution")
         self.velocity = velocity
-        return uh3d, uh1d, velocity
 
     def compute_inflow_sink(self):
         n = FacetNormal(self.domain.Omega)
