@@ -7,8 +7,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor
+from multiprocessing import get_context
 from graphnics import FenicsGraph
 
+# Paths
 WORK_PATH   = "./"
 SOURCE_PATH = os.path.join(WORK_PATH, "src")
 EXPORT_PATH = os.path.join("..", "export")
@@ -58,30 +60,34 @@ TEST_DOMAIN   = tissue.DomainBuild(
     Omega_sink_subdomain=X_ZERO_PLANE,
 )
 
-X_DEFAULT   = [4.855e-05, 3.568e-08, 1.952e-07]
+X_DEFAULT   = [4.855e-05, 3.568e-08, 1.952e-07]  # [gamma, gamma_a, gamma_R]
 TARGET_FLOW = 5.0e-6
 LAMBDA_REG  = 1e-3
 
 LOWER_BOUNDS = [[0.0, 0.0, 0.0], [0.010, 0.010, 0.010]]
 UPPER_BOUNDS = [[0.033, 0.030, 0.010], [0.043, 0.040, 0.020]]
 
-SOLVER = fem.SubCubes(
-    domain=TEST_DOMAIN,
-    lower_cube_bounds=LOWER_BOUNDS,
-    upper_cube_bounds=UPPER_BOUNDS,
-    order=2,
-)
-SOLVER.solve(
-    gamma=X_DEFAULT[0],
-    gamma_a=X_DEFAULT[1],
-    gamma_R=X_DEFAULT[2],
-    mu=1.0e-3,
-    k_t=1.0e-10,
-    P_in=100.0 * 133.322,
-    P_cvp=1.0 * 133.322,
-)
+def worker_init():
+    global SOLVER
+    SOLVER = fem.SubCubes(
+        domain=TEST_DOMAIN,
+        lower_cube_bounds=LOWER_BOUNDS,
+        upper_cube_bounds=UPPER_BOUNDS,
+        order=2,
+    )
+    # one initial solve to pre-build caches
+    SOLVER.solve(
+        gamma=X_DEFAULT[0],
+        gamma_a=X_DEFAULT[1],
+        gamma_R=X_DEFAULT[2],
+        mu=1.0e-3,
+        k_t=1.0e-10,
+        P_in=100.0 * 133.322,
+        P_cvp=1.0 * 133.322,
+    )
 
 def compute_flow(params: np.ndarray) -> float:
+    # rerun solve on the per-process SOLVER
     SOLVER.solve(
         gamma=params[0],
         gamma_a=params[1],
@@ -91,6 +97,11 @@ def compute_flow(params: np.ndarray) -> float:
         P_in=100.0 * 133.322,
         P_cvp=1.0 * 133.322,
     )
+    # clear PETSc solver cache
+    try:
+        dolfin.cpp.la.clear_petsc()
+    except AttributeError:
+        pass
     return SOLVER.compute_net_flow_all_dolfin()
 
 def sweep_job(args):
@@ -100,8 +111,8 @@ def sweep_job(args):
     def obj(y):
         x = np.exp(y)
         x[fixed_index] = fixed_value
-        flow = compute_flow(x)
-        return (flow - TARGET_FLOW)**2 + LAMBDA_REG * np.sum(y**2)
+        f = compute_flow(x)
+        return (f - TARGET_FLOW)**2 + LAMBDA_REG * np.sum(y**2)
 
     def callback(yk):
         xk = np.exp(yk)
@@ -123,9 +134,9 @@ def sweep_job(args):
     x_opt = np.exp(y_opt)
     x_opt[fixed_index] = fixed_value
 
-    # final solve + metrics
+    # final metrics
     flow      = compute_flow(x_opt)
-    lower_out = SOLVER.compute_lower_cube_flux_out()
+    lower     = SOLVER.compute_lower_cube_flux_out()
     upper_in  = SOLVER.compute_upper_cube_flux_in()
     upper_out = SOLVER.compute_upper_cube_flux_out()
     upper_net = SOLVER.compute_upper_cube_flux()
@@ -136,7 +147,7 @@ def sweep_job(args):
         'opt_gamma_a': x_opt[1],
         'opt_gamma_R': x_opt[2],
         'net_flow':    flow,
-        'lower_out':   lower_out,
+        'lower_out':   lower,
         'upper_in':    upper_in,
         'upper_out':   upper_out,
         'upper_net':   upper_net,
@@ -150,10 +161,14 @@ def sweep_variable_parallel(variable_name: str,
     if variable_name not in mapping:
         raise ValueError(f"Invalid variable '{variable_name}' for sweep")
     idx = mapping[variable_name]
-
     jobs = [(idx, v, default) for v in values]
 
-    with ProcessPoolExecutor(max_workers=max_workers) as exe:
+    ctx = get_context('spawn')
+    with ProcessPoolExecutor(
+        max_workers=max_workers,
+        mp_context=ctx,
+        initializer=worker_init
+    ) as exe:
         results = list(exe.map(sweep_job, jobs))
 
     df = pd.DataFrame(results).set_index('value')
@@ -179,7 +194,7 @@ def plot_flow_data_semilog(df: pd.DataFrame, directory: str):
     plt.close()
 
     plt.figure(figsize=(8, 6))
-    plt.semilogx(var, df['upper_in'], marker='s', label='Upper In')
+    plt.semilogx(var, df['upper_in'],  marker='s', label='Upper In')
     plt.semilogx(var, df['upper_out'], marker='^', label='Upper Out')
     plt.semilogx(var, df['upper_net'], marker='d', label='Upper Net')
     plt.xlabel(f"{name} (log scale)")
