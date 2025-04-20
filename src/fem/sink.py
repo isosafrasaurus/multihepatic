@@ -5,55 +5,47 @@ from xii import ii_assemble, apply_bc, ii_convert, ii_Function, Circle, Average
 from graphnics import TubeFile
 
 class Sink:
-    def __init__(self, domain: dict):
-        for key, value in vars(domain).items():
-                setattr(self, key, value)
-        
+    def __init__(self, domain, order = 2):
         self.V3 = FunctionSpace(domain.Omega, "CG", 1)
         self.V1 = FunctionSpace(domain.Lambda, "CG", 1)
         self.W = [self.V3, self.V1]
-        self.u3 = TrialFunction(self.V3)
-        self.u1 = TrialFunction(self.V1)
-        self.v3 = TestFunction(self.V3)
-        self.v1 = TestFunction(self.V1)
-
-        self.radius = AveragingRadius(domain, degree=2)
-        self.circle = Circle(radius=self.radius, degree=2)
-
+        self.u3, self.u1 = map(TrialFunction, (self.V3, self.V1))
+        self.v3, self.v1 = map(TestFunction, (self.V3, self.V1))
+        self.radius = AveragingRadius(domain, degree = order)
+        self.circle = Circle(radius = self.radius, degree = order)
         self.u3_avg = Average(self.u3, domain.Lambda, self.circle)
         self.v3_avg = Average(self.v3, domain.Lambda, self.circle)
-        
         self.uh3d = None
         self.uh1d = None
 
     def solve(self, gamma, gamma_a, gamma_R, mu, k_t, P_in, P_cvp):
-
-        D_area = np.pi * self.radius**2
-        k_v_expr = (self.radius**2) / Constant(8.0)
+        D_area = Constant(np.pi) * self.radius ** 2
+        D_perimeter = Constant(2.0 * np.pi) * self.radius
+        k_v_expr = self.radius ** 2 / Constant(8.0)
         
         a00 = (
-            Constant(k_t/mu) * inner(grad(self.u3), grad(self.v3)) * self.dxOmega
-            + Constant(gamma_R) * self.u3 * self.v3 * self.dsOmegaSink
-            + Constant(gamma) * self.u3_avg * self.v3_avg * D_area * self.dxLambda
+            Constant(k_t / mu) * inner(grad(self.u3), grad(self.v3)) * self.domain.dxOmega
+            + Constant(gamma_R) * self.u3 * self.v3 * self.domain.dsOmegaSink
+            + Constant(gamma) * self.u3_avg * self.v3_avg * D_perimeter * self.domain.dxLambda
         )
         a01 = (
-            - Constant(gamma) * self.u1 * self.v3_avg * D_area * self.dxLambda
-            - Constant(gamma_a/mu) * self.u1 * self.v3_avg * D_area * self.dsLambdaRobin
+            - Constant(gamma) * self.u1 * self.v3_avg * D_perimeter * self.domain.dxLambda
+            - Constant(gamma_a / mu) * self.u1 * self.v3_avg * D_area * self.domain.dsLambdaRobin
         )
         a10 = (
-            - Constant(gamma) * self.u3_avg * self.v1 * D_area * self.dxLambda
+            - Constant(gamma) * self.u3_avg * self.v1 * D_perimeter * self.domain.dxLambda
         )
         a11 = (
-            k_v_expr/Constant(mu) * D_area * inner(grad(self.u1), grad(self.v1)) * self.dxLambda
-            + Constant(gamma) * self.u1 * self.v1 * D_area * self.dxLambda
-            + Constant(gamma_a/mu) * self.u1 * self.v1 * D_area * self.dsLambdaRobin
+            k_v_expr / Constant(mu) * D_area * inner(grad(self.u1), grad(self.v1)) * self.domain.dxLambda
+            + Constant(gamma) * self.u1 * self.v1 * D_perimeter * self.domain.dxLambda
+            + Constant(gamma_a / mu) * self.u1 * self.v1 * D_area * self.domain.dsLambdaRobin
         )
         L0 = (
-            Constant(gamma_R * P_cvp) * self.v3 * self.dsOmegaSink
-            + Constant(gamma_a * P_cvp/mu) * self.v3_avg * D_area * self.dsLambdaRobin
+            Constant(gamma_R * P_cvp) * self.v3 * self.domain.dsOmegaSink
+            + Constant(gamma_a * P_cvp / mu) * self.v3_avg * D_area * self.domain.dsLambdaRobin
         )
         L1 = (
-            Constant(gamma_a * P_cvp/mu) * self.v1 * D_area * self.dsLambdaRobin
+            Constant(gamma_a * P_cvp / mu) * self.v1 * D_area * self.domain.dsLambdaRobin
         )
 
         
@@ -61,7 +53,7 @@ class Sink:
         L_forms = [L0, L1]
 
         
-        inlet_bc = DirichletBC(self.V1, P_in, self.boundary_Lambda, 1)
+        inlet_bc = DirichletBC(self.V1, P_in, self.domain.boundary_Lambda, 1)
         inlet_bcs = [inlet_bc] if inlet_bc.get_boundary_values() else []
         W_bcs = [[], inlet_bcs]
 
