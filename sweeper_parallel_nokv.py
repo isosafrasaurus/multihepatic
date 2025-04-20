@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from graphnics import FenicsGraph
 from scipy.optimize import minimize
-import gc
+import gc, psutil
 
 WORK_PATH = "./"
 SOURCE_PATH = os.path.join(WORK_PATH, "src")
@@ -105,7 +105,9 @@ def compute_flow(x):
     ]
     
     del solution
-    gc.collect()
+    proc = psutil.Process(os.getpid())
+    print(f"[worker {os.getpid()}] after iter {compute_flow.count}: RSS = {proc.memory_info().rss/1e6:.1f} MB")
+    compute_flow.count += 1
     return data
 
 def process_chunk(args):
