@@ -1,0 +1,110 @@
+--------------------------------------------------------------------------
+A requested component was not found, or was unable to be opened.  This
+means that this component is either not installed or is unable to be
+used on your system (e.g., sometimes this means that shared libraries
+that the component requires are unable to be found/loaded).  Note that
+PMIx stopped checking at the first component that it did not find.
+
+Host:      bb2u22c1
+Framework: psec
+Component: munge
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+A requested component was not found, or was unable to be opened.  This
+means that this component is either not installed or is unable to be
+used on your system (e.g., sometimes this means that shared libraries
+that the component requires are unable to be found/loaded).  Note that
+PMIx stopped checking at the first component that it did not find.
+
+Host:      bb2u22c1
+Framework: psec
+Component: munge
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+A requested component was not found, or was unable to be opened.  This
+means that this component is either not installed or is unable to be
+used on your system (e.g., sometimes this means that shared libraries
+that the component requires are unable to be found/loaded).  Note that
+PMIx stopped checking at the first component that it did not find.
+
+Host:      bb2u22c1
+Framework: psec
+Component: munge
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+A requested component was not found, or was unable to be opened.  This
+means that this component is either not installed or is unable to be
+used on your system (e.g., sometimes this means that shared libraries
+that the component requires are unable to be found/loaded).  Note that
+PMIx stopped checking at the first component that it did not find.
+
+Host:      bb2u22c1
+Framework: psec
+Component: munge
+--------------------------------------------------------------------------
+/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+Traceback (most recent call last):
+  File "/scratch/pzz1/3d-1d/sweep_array.py", line 62, in <module>
+Traceback (most recent call last):
+  File "/scratch/pzz1/3d-1d/sweep_array.py", line 62, in <module>
+    domain = build_graph_and_domain()
+  File "/scratch/pzz1/3d-1d/sweep_array.py", line 51, in build_graph_and_domain
+    domain = build_graph_and_domain()
+  File "/scratch/pzz1/3d-1d/sweep_array.py", line 51, in build_graph_and_domain
+    G.make_mesh(n=exp); G.make_submeshes()
+  File "/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/graphnics/fenics_graph.py", line 121, in make_mesh
+    mesh, mf = self.get_mesh(n)
+  File "/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/graphnics/fenics_graph.py", line 96, in get_mesh
+    mesh = refine(mesh)
+RuntimeError: 
+
+*** -------------------------------------------------------------------------
+*** DOLFIN encountered an error. If you are not able to resolve this issue
+*** using the information listed below, you can ask for help at
+***
+***     fenics-support@googlegroups.com
+***
+*** Remember to include the error message listed below and, if possible,
+*** include a *minimal* running example to reproduce the error.
+***
+*** -------------------------------------------------------------------------
+*** Error:   Unable to get shared mesh entities.
+*** Reason:  Shared mesh entities have not been computed for dim 1.
+*** Where:   This error was encountered inside MeshTopology.cpp.
+*** Process: 0
+*** 
+*** DOLFIN version: 2019.1.0
+*** Git changeset:  a10cc860ba4dcc869b1716a015cad5d45efc17cd
+*** -------------------------------------------------------------------------
+
+    G.make_mesh(n=exp); G.make_submeshes()
+  File "/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/graphnics/fenics_graph.py", line 121, in make_mesh
+    mesh, mf = self.get_mesh(n)
+  File "/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/graphnics/fenics_graph.py", line 96, in get_mesh
+    mesh = refine(mesh)
+RuntimeError: 
+
+*** -------------------------------------------------------------------------
+*** DOLFIN encountered an error. If you are not able to resolve this issue
+*** using the information listed below, you can ask for help at
+***
+***     fenics-support@googlegroups.com
+***
+*** Remember to include the error message listed below and, if possible,
+*** include a *minimal* running example to reproduce the error.
+***
+*** -------------------------------------------------------------------------
+*** Error:   Unable to get shared mesh entities.
+*** Reason:  Shared mesh entities have not been computed for dim 1.
+*** Where:   This error was encountered inside MeshTopology.cpp.
+*** Process: 1
+*** 
+*** DOLFIN version: 2019.1.0
+*** Git changeset:  a10cc860ba4dcc869b1716a015cad5d45efc17cd
+*** -------------------------------------------------------------------------
+
+srun: error: bb2u22c1: task 1: Exited with exit code 1
+srun: error: bb2u22c1: task 0: Exited with exit code 1
