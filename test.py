@@ -19,7 +19,7 @@ import fem
 import tissue
 
 def main():
-    TEST_NUM_NODES_EXP = 5
+    TEST_NUM_NODES_EXP = 7
     G = FenicsGraph()
     nodes = {
         0: [0.000, 0.020, 0.015],
@@ -48,7 +48,7 @@ def main():
     G.make_submeshes()
 
     OMEGA_BOUNDS = [[0.0, 0.0, 0.0], [0.05, 0.04, 0.03]]
-    omega = tissue.OmegaBuild(G, bounds=OMEGA_BOUNDS)
+    omega = tissue.OmegaBuild(G, bounds=OMEGA_BOUNDS, voxel_dim = (32, 32, 32))
     x0plane = tissue.AxisPlane(0, 0.0)
     domain = tissue.DomainBuild(
         G,
@@ -83,7 +83,7 @@ def main():
     )
 
     flow = solver.compute_net_flow_all_dolfin()
-    print(f"Default net flow = {flow:.6e} m³/s")
+    print(f"Default net flow = {flow:.6e} m^3/s")
 
 if __name__ == "__main__":
     main()
