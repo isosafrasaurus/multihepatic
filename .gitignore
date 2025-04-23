@@ -10,3 +10,7 @@ __pycache__/
 
 # C
 *.so
+
+# NOTS
+export/
+logs/
