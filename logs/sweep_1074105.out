@@ -1,0 +1,2893 @@
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+[rank=0] [val=1.000e-10] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[1.00000000e-10 1.98235925e-07 9.01579035e-08]
+                   flow  =2.394e-04
+
+[rank=0] [val=1.000e-10] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[1.00000000e-10 1.98235925e-07 9.01579035e-08]
+                   flow  =2.394e-04
+
+[rank=0] [val=1.000e-10] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[1.00000000e-10 1.98235925e-07 4.22625622e-07]
+                   flow  =2.396e-04
+
+[rank=0] [val=1.000e-10] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[1.00000000e-10 1.98235925e-07 4.22625622e-07]
+                   flow  =2.396e-04
+
+[rank=0] [val=1.000e-10] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[1.00000000e-10 1.10138682e-06 1.95200000e-07]
+                   flow  =1.157e-03
+
+[rank=0] [val=1.000e-10] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[1.00000000e-10 1.10138682e-06 1.95200000e-07]
+                   flow  =1.157e-03
+
+[rank=0] [val=1.000e-10] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[1.00000000e-10 3.39981204e-05 1.95200000e-07]
+                   flow  =7.068e-03
+
+[rank=0] [val=1.000e-10] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[1.00000000e-10 3.39981204e-05 1.95200000e-07]
+                   flow  =7.068e-03
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.00000000e-10 1.88891503e-04 1.98110658e-06]
+                   flow  =1.185e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.00000000e-10 1.88891503e-04 1.98110658e-06]
+                   flow  =1.185e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.00000000e-10 1.88891503e-04 1.98110658e-06]
+                   flow  =1.185e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.00000000e-10 1.88891503e-04 1.98110658e-06]
+                   flow  =1.185e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.00000000e-10 1.88891503e-04 1.98110658e-06]
+                   flow  =1.185e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.00000000e-10 1.88891503e-04 1.98110658e-06]
+                   flow  =1.185e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.00000000e-10 4.81921851e-03 7.17851353e-06]
+                   flow  =1.268e-01
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.00000000e-10 4.81921851e-03 7.17851353e-06]
+                   flow  =1.268e-01
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.00000000e-10 4.81921851e-03 7.17851353e-06]
+                   flow  =1.268e-01
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.00000000e-10 4.81921851e-03 7.17851353e-06]
+                   flow  =1.268e-01
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.00000000e-10 4.81921851e-03 7.17851353e-06]
+                   flow  =1.268e-01
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.00000000e-10 4.81921851e-03 7.17851353e-06]
+                   flow  =1.268e-01
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.00000000e-10 2.72097226e-03 3.41518764e-04]
+                   flow  =7.481e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.00000000e-10 2.72097226e-03 3.41518764e-04]
+                   flow  =7.481e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.00000000e-10 2.72097226e-03 3.41518764e-04]
+                   flow  =7.481e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.00000000e-10 2.72097226e-03 3.41518764e-04]
+                   flow  =7.481e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.00000000e-10 2.72097226e-03 3.41518764e-04]
+                   flow  =7.481e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.00000000e-10 2.72097226e-03 3.41518764e-04]
+                   flow  =7.481e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.00000000e-10 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.00000000e-10 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.00000000e-10 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.00000000e-10 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.00000000e-10 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.00000000e-10 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.94223727  -5.45642052  -4.61004791]
+                   params=[1.00000000e-10 4.26880854e-03 9.95134151e-03]
+                   flow  =1.132e-01
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.94223727  -5.45642052  -4.61004791]
+                   params=[1.00000000e-10 4.26880854e-03 9.95134151e-03]
+                   flow  =1.132e-01
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[1.00000000e-10 9.92121098e-04 1.71367386e+00]
+                   flow  =3.196e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[1.00000000e-10 9.92121098e-04 1.71367386e+00]
+                   flow  =3.196e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[1.00000000e-10 9.92121098e-04 1.71367386e+00]
+                   flow  =3.196e-02
+
+[rank=0] [val=1.000e-10] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[1.00000000e-10 9.92121098e-04 1.71367386e+00]
+                   flow  =3.196e-02
+
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+[rank=0] [val=4.281e-10] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[4.28133240e-10 1.98235925e-07 9.01579035e-08]
+                   flow  =2.385e-04
+
+[rank=0] [val=4.281e-10] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[4.28133240e-10 1.98235925e-07 9.01579035e-08]
+                   flow  =2.385e-04
+
+[rank=0] [val=4.281e-10] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[4.28133240e-10 1.98235925e-07 4.22625622e-07]
+                   flow  =2.394e-04
+
+[rank=0] [val=4.281e-10] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[4.28133240e-10 1.98235925e-07 4.22625622e-07]
+                   flow  =2.394e-04
+
+[rank=0] [val=4.281e-10] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[4.28133240e-10 1.10138682e-06 1.95200000e-07]
+                   flow  =1.155e-03
+
+[rank=0] [val=4.281e-10] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[4.28133240e-10 1.10138682e-06 1.95200000e-07]
+                   flow  =1.155e-03
+
+[rank=0] [val=4.281e-10] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[4.28133240e-10 3.39981204e-05 1.95200000e-07]
+                   flow  =7.062e-03
+
+[rank=0] [val=4.281e-10] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[4.28133240e-10 3.39981204e-05 1.95200000e-07]
+                   flow  =7.062e-03
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.28133240e-10 1.88891503e-04 1.98110658e-06]
+                   flow  =1.184e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.28133240e-10 1.88891503e-04 1.98110658e-06]
+                   flow  =1.184e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.28133240e-10 1.88891503e-04 1.98110658e-06]
+                   flow  =1.184e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.28133240e-10 1.88891503e-04 1.98110658e-06]
+                   flow  =1.184e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.28133240e-10 1.88891503e-04 1.98110658e-06]
+                   flow  =1.184e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.28133240e-10 1.88891503e-04 1.98110658e-06]
+                   flow  =1.184e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[4.28133240e-10 4.81921851e-03 7.17851353e-06]
+                   flow  =1.268e-01
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[4.28133240e-10 4.81921851e-03 7.17851353e-06]
+                   flow  =1.268e-01
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[4.28133240e-10 4.81921851e-03 7.17851353e-06]
+                   flow  =1.268e-01
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[4.28133240e-10 4.81921851e-03 7.17851353e-06]
+                   flow  =1.268e-01
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[4.28133240e-10 4.81921851e-03 7.17851353e-06]
+                   flow  =1.268e-01
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[4.28133240e-10 4.81921851e-03 7.17851353e-06]
+                   flow  =1.268e-01
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[4.28133240e-10 2.72097226e-03 3.41518764e-04]
+                   flow  =7.481e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[4.28133240e-10 2.72097226e-03 3.41518764e-04]
+                   flow  =7.481e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[4.28133240e-10 2.72097226e-03 3.41518764e-04]
+                   flow  =7.481e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[4.28133240e-10 2.72097226e-03 3.41518764e-04]
+                   flow  =7.481e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[4.28133240e-10 2.72097226e-03 3.41518764e-04]
+                   flow  =7.481e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[4.28133240e-10 2.72097226e-03 3.41518764e-04]
+                   flow  =7.481e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+[rank=0] [val=4.281e-10] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[4.28133240e-10 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+                   params=[4.28133240e-10 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[4.28133240e-10 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[4.28133240e-10 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[4.28133240e-10 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[4.28133240e-10 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.94223727  -5.45642052  -4.61004791]
+                   params=[4.28133240e-10 4.26880854e-03 9.95134151e-03]
+                   flow  =1.132e-01
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.94223727  -5.45642052  -4.61004791]
+                   params=[4.28133240e-10 4.26880854e-03 9.95134151e-03]
+                   flow  =1.132e-01
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[4.28133240e-10 9.92121098e-04 1.71367386e+00]
+                   flow  =3.195e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[4.28133240e-10 9.92121098e-04 1.71367386e+00]
+                   flow  =3.195e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[4.28133240e-10 9.92121098e-04 1.71367386e+00]
+                   flow  =3.195e-02
+
+[rank=0] [val=4.281e-10] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[4.28133240e-10 9.92121098e-04 1.71367386e+00]
+                   flow  =3.195e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[1.83298071e-09 1.98235925e-07 9.01579035e-08]
+                   flow  =2.351e-04
+
+[rank=0] [val=1.833e-09] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[1.83298071e-09 1.98235925e-07 9.01579035e-08]
+                   flow  =2.351e-04
+
+[rank=0] [val=1.833e-09] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[1.83298071e-09 1.98235925e-07 4.22625622e-07]
+                   flow  =2.386e-04
+
+[rank=0] [val=1.833e-09] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[1.83298071e-09 1.98235925e-07 4.22625622e-07]
+                   flow  =2.386e-04
+
+[rank=0] [val=1.833e-09] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[1.83298071e-09 1.10138682e-06 1.95200000e-07]
+                   flow  =1.148e-03
+
+[rank=0] [val=1.833e-09] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[1.83298071e-09 1.10138682e-06 1.95200000e-07]
+                   flow  =1.148e-03
+
+[rank=0] [val=1.833e-09] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[1.83298071e-09 3.39981204e-05 1.95200000e-07]
+                   flow  =7.033e-03
+
+[rank=0] [val=1.833e-09] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[1.83298071e-09 3.39981204e-05 1.95200000e-07]
+                   flow  =7.033e-03
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.83298071e-09 1.88891503e-04 1.98110658e-06]
+                   flow  =1.184e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.83298071e-09 1.88891503e-04 1.98110658e-06]
+                   flow  =1.184e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.83298071e-09 1.88891503e-04 1.98110658e-06]
+                   flow  =1.184e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.83298071e-09 1.88891503e-04 1.98110658e-06]
+                   flow  =1.184e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.83298071e-09 1.88891503e-04 1.98110658e-06]
+                   flow  =1.184e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.83298071e-09 1.88891503e-04 1.98110658e-06]
+                   flow  =1.184e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.83298071e-09 4.81921851e-03 7.17851353e-06]
+                   flow  =1.267e-01
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.83298071e-09 4.81921851e-03 7.17851353e-06]
+                   flow  =1.267e-01
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.83298071e-09 4.81921851e-03 7.17851353e-06]
+                   flow  =1.267e-01
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.83298071e-09 4.81921851e-03 7.17851353e-06]
+                   flow  =1.267e-01
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.83298071e-09 4.81921851e-03 7.17851353e-06]
+                   flow  =1.267e-01
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.83298071e-09 4.81921851e-03 7.17851353e-06]
+                   flow  =1.267e-01
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.83298071e-09 2.72097226e-03 3.41518764e-04]
+                   flow  =7.480e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.83298071e-09 2.72097226e-03 3.41518764e-04]
+                   flow  =7.480e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.83298071e-09 2.72097226e-03 3.41518764e-04]
+                   flow  =7.480e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.83298071e-09 2.72097226e-03 3.41518764e-04]
+                   flow  =7.480e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.83298071e-09 2.72097226e-03 3.41518764e-04]
+                   flow  =7.480e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.83298071e-09 2.72097226e-03 3.41518764e-04]
+                   flow  =7.480e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.83298071e-09 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.83298071e-09 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.83298071e-09 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.83298071e-09 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.83298071e-09 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.83298071e-09 5.63979753e-04 1.47699092e-02]
+                   flow  =2.131e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.94223727  -5.45642052  -4.61004791]
+                   params=[1.83298071e-09 4.26880854e-03 9.95134151e-03]
+                   flow  =1.131e-01
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.94223727  -5.45642052  -4.61004791]
+                   params=[1.83298071e-09 4.26880854e-03 9.95134151e-03]
+                   flow  =1.131e-01
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[1.83298071e-09 9.92121098e-04 1.71367386e+00]
+                   flow  =3.195e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[1.83298071e-09 9.92121098e-04 1.71367386e+00]
+                   flow  =3.195e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[1.83298071e-09 9.92121098e-04 1.71367386e+00]
+                   flow  =3.195e-02
+
+[rank=0] [val=1.833e-09] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[1.83298071e-09 9.92121098e-04 1.71367386e+00]
+                   flow  =3.195e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[7.84759970e-09 1.98235925e-07 9.01579035e-08]
+                   flow  =2.215e-04
+
+[rank=0] [val=7.848e-09] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[7.84759970e-09 1.98235925e-07 9.01579035e-08]
+                   flow  =2.215e-04
+
+[rank=0] [val=7.848e-09] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[7.84759970e-09 1.98235925e-07 4.22625622e-07]
+                   flow  =2.354e-04
+
+[rank=0] [val=7.848e-09] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[7.84759970e-09 1.98235925e-07 4.22625622e-07]
+                   flow  =2.354e-04
+
+[rank=0] [val=7.848e-09] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[7.84759970e-09 1.10138682e-06 1.95200000e-07]
+                   flow  =1.117e-03
+
+[rank=0] [val=7.848e-09] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[7.84759970e-09 1.10138682e-06 1.95200000e-07]
+                   flow  =1.117e-03
+
+[rank=0] [val=7.848e-09] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[7.84759970e-09 3.39981204e-05 1.95200000e-07]
+                   flow  =6.915e-03
+
+[rank=0] [val=7.848e-09] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[7.84759970e-09 3.39981204e-05 1.95200000e-07]
+                   flow  =6.915e-03
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[7.84759970e-09 1.88891503e-04 1.98110658e-06]
+                   flow  =1.182e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[7.84759970e-09 1.88891503e-04 1.98110658e-06]
+                   flow  =1.182e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[7.84759970e-09 1.88891503e-04 1.98110658e-06]
+                   flow  =1.182e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[7.84759970e-09 1.88891503e-04 1.98110658e-06]
+                   flow  =1.182e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[7.84759970e-09 1.88891503e-04 1.98110658e-06]
+                   flow  =1.182e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[7.84759970e-09 1.88891503e-04 1.98110658e-06]
+                   flow  =1.182e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[7.84759970e-09 4.81921851e-03 7.17851353e-06]
+                   flow  =1.266e-01
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[7.84759970e-09 4.81921851e-03 7.17851353e-06]
+                   flow  =1.266e-01
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[7.84759970e-09 4.81921851e-03 7.17851353e-06]
+                   flow  =1.266e-01
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[7.84759970e-09 4.81921851e-03 7.17851353e-06]
+                   flow  =1.266e-01
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[7.84759970e-09 4.81921851e-03 7.17851353e-06]
+                   flow  =1.266e-01
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[7.84759970e-09 4.81921851e-03 7.17851353e-06]
+                   flow  =1.266e-01
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[7.84759970e-09 2.72097226e-03 3.41518764e-04]
+                   flow  =7.477e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[7.84759970e-09 2.72097226e-03 3.41518764e-04]
+                   flow  =7.477e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[7.84759970e-09 2.72097226e-03 3.41518764e-04]
+                   flow  =7.477e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[7.84759970e-09 2.72097226e-03 3.41518764e-04]
+                   flow  =7.477e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[7.84759970e-09 2.72097226e-03 3.41518764e-04]
+                   flow  =7.477e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[7.84759970e-09 2.72097226e-03 3.41518764e-04]
+                   flow  =7.477e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[7.84759970e-09 5.63979753e-04 1.47699092e-02]
+                   flow  =2.130e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[7.84759970e-09 5.63979753e-04 1.47699092e-02]
+                   flow  =2.130e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[7.84759970e-09 5.63979753e-04 1.47699092e-02]
+                   flow  =2.130e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[7.84759970e-09 5.63979753e-04 1.47699092e-02]
+                   flow  =2.130e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[7.84759970e-09 5.63979753e-04 1.47699092e-02]
+                   flow  =2.130e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[7.84759970e-09 5.63979753e-04 1.47699092e-02]
+                   flow  =2.130e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.94223727  -5.45642052  -4.61004791]
+                   params=[7.84759970e-09 4.26880854e-03 9.95134151e-03]
+                   flow  =1.131e-01
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.94223727  -5.45642052  -4.61004791]
+                   params=[7.84759970e-09 4.26880854e-03 9.95134151e-03]
+                   flow  =1.131e-01
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[7.84759970e-09 9.92121098e-04 1.71367386e+00]
+                   flow  =3.194e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[7.84759970e-09 9.92121098e-04 1.71367386e+00]
+                   flow  =3.194e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[7.84759970e-09 9.92121098e-04 1.71367386e+00]
+                   flow  =3.194e-02
+
+[rank=0] [val=7.848e-09] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[7.84759970e-09 9.92121098e-04 1.71367386e+00]
+                   flow  =3.194e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[3.35981829e-08 1.98235925e-07 9.01579035e-08]
+                   flow  =1.786e-04
+
+[rank=0] [val=3.360e-08] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[3.35981829e-08 1.98235925e-07 9.01579035e-08]
+                   flow  =1.786e-04
+
+[rank=0] [val=3.360e-08] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[3.35981829e-08 1.98235925e-07 4.22625622e-07]
+                   flow  =2.225e-04
+
+[rank=0] [val=3.360e-08] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[3.35981829e-08 1.98235925e-07 4.22625622e-07]
+                   flow  =2.225e-04
+
+[rank=0] [val=3.360e-08] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[3.35981829e-08 1.10138682e-06 1.95200000e-07]
+                   flow  =1.004e-03
+
+[rank=0] [val=3.360e-08] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[3.35981829e-08 1.10138682e-06 1.95200000e-07]
+                   flow  =1.004e-03
+
+[rank=0] [val=3.360e-08] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[3.35981829e-08 3.39981204e-05 1.95200000e-07]
+                   flow  =6.455e-03
+
+[rank=0] [val=3.360e-08] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[3.35981829e-08 3.39981204e-05 1.95200000e-07]
+                   flow  =6.455e-03
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[3.35981829e-08 1.88891503e-04 1.98110658e-06]
+                   flow  =1.172e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[3.35981829e-08 1.88891503e-04 1.98110658e-06]
+                   flow  =1.172e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[3.35981829e-08 1.88891503e-04 1.98110658e-06]
+                   flow  =1.172e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[3.35981829e-08 1.88891503e-04 1.98110658e-06]
+                   flow  =1.172e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[3.35981829e-08 1.88891503e-04 1.98110658e-06]
+                   flow  =1.172e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[3.35981829e-08 1.88891503e-04 1.98110658e-06]
+                   flow  =1.172e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[3.35981829e-08 4.81921851e-03 7.17851353e-06]
+                   flow  =1.262e-01
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[3.35981829e-08 4.81921851e-03 7.17851353e-06]
+                   flow  =1.262e-01
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[3.35981829e-08 4.81921851e-03 7.17851353e-06]
+                   flow  =1.262e-01
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[3.35981829e-08 4.81921851e-03 7.17851353e-06]
+                   flow  =1.262e-01
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[3.35981829e-08 4.81921851e-03 7.17851353e-06]
+                   flow  =1.262e-01
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[3.35981829e-08 4.81921851e-03 7.17851353e-06]
+                   flow  =1.262e-01
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[3.35981829e-08 2.72097226e-03 3.41518764e-04]
+                   flow  =7.466e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[3.35981829e-08 2.72097226e-03 3.41518764e-04]
+                   flow  =7.466e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[3.35981829e-08 2.72097226e-03 3.41518764e-04]
+                   flow  =7.466e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[3.35981829e-08 2.72097226e-03 3.41518764e-04]
+                   flow  =7.466e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[3.35981829e-08 2.72097226e-03 3.41518764e-04]
+                   flow  =7.466e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[3.35981829e-08 2.72097226e-03 3.41518764e-04]
+                   flow  =7.466e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[3.35981829e-08 5.63979753e-04 1.47699092e-02]
+                   flow  =2.127e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[3.35981829e-08 5.63979753e-04 1.47699092e-02]
+                   flow  =2.127e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[3.35981829e-08 5.63979753e-04 1.47699092e-02]
+                   flow  =2.127e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[3.35981829e-08 5.63979753e-04 1.47699092e-02]
+                   flow  =2.127e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[3.35981829e-08 5.63979753e-04 1.47699092e-02]
+                   flow  =2.127e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[3.35981829e-08 5.63979753e-04 1.47699092e-02]
+                   flow  =2.127e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.94223727  -5.45642052  -4.61004791]
+                   params=[3.35981829e-08 4.26880854e-03 9.95134151e-03]
+                   flow  =1.129e-01
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.94223727  -5.45642052  -4.61004791]
+                   params=[3.35981829e-08 4.26880854e-03 9.95134151e-03]
+                   flow  =1.129e-01
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[3.35981829e-08 9.92121098e-04 1.71367386e+00]
+                   flow  =3.189e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[3.35981829e-08 9.92121098e-04 1.71367386e+00]
+                   flow  =3.189e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[3.35981829e-08 9.92121098e-04 1.71367386e+00]
+                   flow  =3.189e-02
+
+[rank=0] [val=3.360e-08] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[3.35981829e-08 9.92121098e-04 1.71367386e+00]
+                   flow  =3.189e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[1.43844989e-07 1.98235925e-07 9.01579035e-08]
+                   flow  =1.023e-04
+
+[rank=0] [val=1.438e-07] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[1.43844989e-07 1.98235925e-07 9.01579035e-08]
+                   flow  =1.023e-04
+
+[rank=0] [val=1.438e-07] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[1.43844989e-07 1.98235925e-07 4.22625622e-07]
+                   flow  =1.812e-04
+
+[rank=0] [val=1.438e-07] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[1.43844989e-07 1.98235925e-07 4.22625622e-07]
+                   flow  =1.812e-04
+
+[rank=0] [val=1.438e-07] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[1.43844989e-07 1.10138682e-06 1.95200000e-07]
+                   flow  =7.096e-04
+
+[rank=0] [val=1.438e-07] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[1.43844989e-07 1.10138682e-06 1.95200000e-07]
+                   flow  =7.096e-04
+
+[rank=0] [val=1.438e-07] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[1.43844989e-07 3.39981204e-05 1.95200000e-07]
+                   flow  =5.085e-03
+
+[rank=0] [val=1.438e-07] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[1.43844989e-07 3.39981204e-05 1.95200000e-07]
+                   flow  =5.085e-03
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.43844989e-07 1.88891503e-04 1.98110658e-06]
+                   flow  =1.135e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.43844989e-07 1.88891503e-04 1.98110658e-06]
+                   flow  =1.135e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.43844989e-07 1.88891503e-04 1.98110658e-06]
+                   flow  =1.135e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.43844989e-07 1.88891503e-04 1.98110658e-06]
+                   flow  =1.135e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.43844989e-07 1.88891503e-04 1.98110658e-06]
+                   flow  =1.135e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.43844989e-07 1.88891503e-04 1.98110658e-06]
+                   flow  =1.135e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.43844989e-07 4.81921851e-03 7.17851353e-06]
+                   flow  =1.245e-01
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.43844989e-07 4.81921851e-03 7.17851353e-06]
+                   flow  =1.245e-01
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.43844989e-07 4.81921851e-03 7.17851353e-06]
+                   flow  =1.245e-01
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.43844989e-07 4.81921851e-03 7.17851353e-06]
+                   flow  =1.245e-01
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.43844989e-07 4.81921851e-03 7.17851353e-06]
+                   flow  =1.245e-01
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.43844989e-07 4.81921851e-03 7.17851353e-06]
+                   flow  =1.245e-01
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.43844989e-07 2.72097226e-03 3.41518764e-04]
+                   flow  =7.417e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.43844989e-07 2.72097226e-03 3.41518764e-04]
+                   flow  =7.417e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.43844989e-07 2.72097226e-03 3.41518764e-04]
+                   flow  =7.417e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.43844989e-07 2.72097226e-03 3.41518764e-04]
+                   flow  =7.417e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.43844989e-07 2.72097226e-03 3.41518764e-04]
+                   flow  =7.417e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[1.43844989e-07 2.72097226e-03 3.41518764e-04]
+                   flow  =7.417e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.43844989e-07 5.63979753e-04 1.47699092e-02]
+                   flow  =2.113e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.43844989e-07 5.63979753e-04 1.47699092e-02]
+                   flow  =2.113e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.43844989e-07 5.63979753e-04 1.47699092e-02]
+                   flow  =2.113e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.43844989e-07 5.63979753e-04 1.47699092e-02]
+                   flow  =2.113e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.43844989e-07 5.63979753e-04 1.47699092e-02]
+                   flow  =2.113e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.7124979   -7.48049221  -4.21516333]
+                   params=[1.43844989e-07 5.63979753e-04 1.47699092e-02]
+                   flow  =2.113e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.94223727  -5.45642052  -4.61004791]
+                   params=[1.43844989e-07 4.26880854e-03 9.95134151e-03]
+                   flow  =1.122e-01
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.94223727  -5.45642052  -4.61004791]
+                   params=[1.43844989e-07 4.26880854e-03 9.95134151e-03]
+                   flow  =1.122e-01
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[1.43844989e-07 9.92121098e-04 1.71367386e+00]
+                   flow  =3.168e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[1.43844989e-07 9.92121098e-04 1.71367386e+00]
+                   flow  =3.168e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[1.43844989e-07 9.92121098e-04 1.71367386e+00]
+                   flow  =3.168e-02
+
+[rank=0] [val=1.438e-07] iter log-params=[-12.52552713  -6.91566538   0.53863952]
+                   params=[1.43844989e-07 9.92121098e-04 1.71367386e+00]
+                   flow  =3.168e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[6.15848211e-07 1.98235925e-07 9.01579035e-08]
+                   flow  =4.561e-05
+
+[rank=0] [val=6.158e-07] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[6.15848211e-07 1.98235925e-07 9.01579035e-08]
+                   flow  =4.561e-05
+
+[rank=0] [val=6.158e-07] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[6.15848211e-07 1.98235925e-07 4.22625622e-07]
+                   flow  =1.065e-04
+
+[rank=0] [val=6.158e-07] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[6.15848211e-07 1.98235925e-07 4.22625622e-07]
+                   flow  =1.065e-04
+
+[rank=0] [val=6.158e-07] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[6.15848211e-07 1.10138682e-06 1.95200000e-07]
+                   flow  =3.488e-04
+
+[rank=0] [val=6.158e-07] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[6.15848211e-07 1.10138682e-06 1.95200000e-07]
+                   flow  =3.488e-04
+
+[rank=0] [val=6.158e-07] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[6.15848211e-07 3.39981204e-05 1.95200000e-07]
+                   flow  =2.936e-03
+
+[rank=0] [val=6.158e-07] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[6.15848211e-07 3.39981204e-05 1.95200000e-07]
+                   flow  =2.936e-03
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[6.15848211e-07 1.88891503e-04 1.98110658e-06]
+                   flow  =1.001e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[6.15848211e-07 1.88891503e-04 1.98110658e-06]
+                   flow  =1.001e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[6.15848211e-07 1.88891503e-04 1.98110658e-06]
+                   flow  =1.001e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[6.15848211e-07 1.88891503e-04 1.98110658e-06]
+                   flow  =1.001e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[6.15848211e-07 1.88891503e-04 1.98110658e-06]
+                   flow  =1.001e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[6.15848211e-07 1.88891503e-04 1.98110658e-06]
+                   flow  =1.001e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[6.15848211e-07 4.81921851e-03 7.17851353e-06]
+                   flow  =1.179e-01
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[6.15848211e-07 4.81921851e-03 7.17851353e-06]
+                   flow  =1.179e-01
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[6.15848211e-07 4.81921851e-03 7.17851353e-06]
+                   flow  =1.179e-01
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[6.15848211e-07 4.81921851e-03 7.17851353e-06]
+                   flow  =1.179e-01
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[6.15848211e-07 4.81921851e-03 7.17851353e-06]
+                   flow  =1.179e-01
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[6.15848211e-07 4.81921851e-03 7.17851353e-06]
+                   flow  =1.179e-01
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[6.15848211e-07 2.72097226e-03 3.41518764e-04]
+                   flow  =7.217e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[6.15848211e-07 2.72097226e-03 3.41518764e-04]
+                   flow  =7.217e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[6.15848211e-07 2.72097226e-03 3.41518764e-04]
+                   flow  =7.217e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[6.15848211e-07 2.72097226e-03 3.41518764e-04]
+                   flow  =7.217e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[6.15848211e-07 2.72097226e-03 3.41518764e-04]
+                   flow  =7.217e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[6.15848211e-07 2.72097226e-03 3.41518764e-04]
+                   flow  =7.217e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[6.15848211e-07 7.20564440e-03 8.41431482e-03]
+                   flow  =1.795e-01
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[6.15848211e-07 7.20564440e-03 8.41431482e-03]
+                   flow  =1.795e-01
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.64709598  -6.91592676  -2.53672725]
+                   params=[6.15848211e-07 9.91861818e-04 7.91249324e-02]
+                   flow  =3.084e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.64709598  -6.91592676  -2.53672725]
+                   params=[6.15848211e-07 9.91861818e-04 7.91249324e-02]
+                   flow  =3.084e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.64709598  -6.91592676  -2.53672725]
+                   params=[6.15848211e-07 9.91861818e-04 7.91249324e-02]
+                   flow  =3.084e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-12.64709598  -6.91592676  -2.53672725]
+                   params=[6.15848211e-07 9.91861818e-04 7.91249324e-02]
+                   flow  =3.084e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-11.58703988  -6.76302361   1.69433036]
+                   params=[6.15848211e-07 1.15572941e-03 5.44299988e+00]
+                   flow  =3.476e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-11.58703988  -6.76302361   1.69433036]
+                   params=[6.15848211e-07 1.15572941e-03 5.44299988e+00]
+                   flow  =3.476e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-11.58703988  -6.76302361   1.69433036]
+                   params=[6.15848211e-07 1.15572941e-03 5.44299988e+00]
+                   flow  =3.476e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-11.58703988  -6.76302361   1.69433036]
+                   params=[6.15848211e-07 1.15572941e-03 5.44299988e+00]
+                   flow  =3.476e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-11.58703988  -6.76302361   1.69433036]
+                   params=[6.15848211e-07 1.15572941e-03 5.44299988e+00]
+                   flow  =3.476e-02
+
+[rank=0] [val=6.158e-07] iter log-params=[-11.58703988  -6.76302361   1.69433036]
+                   params=[6.15848211e-07 1.15572941e-03 5.44299988e+00]
+                   flow  =3.476e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[2.63665090e-06 1.98235925e-07 9.01579035e-08]
+                   flow  =2.431e-05
+
+[rank=0] [val=2.637e-06] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[2.63665090e-06 1.98235925e-07 9.01579035e-08]
+                   flow  =2.431e-05
+
+[rank=0] [val=2.637e-06] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[2.63665090e-06 1.98235925e-07 4.22625622e-07]
+                   flow  =4.947e-05
+
+[rank=0] [val=2.637e-06] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[2.63665090e-06 1.98235925e-07 4.22625622e-07]
+                   flow  =4.947e-05
+
+[rank=0] [val=2.637e-06] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[2.63665090e-06 1.10138682e-06 1.95200000e-07]
+                   flow  =1.590e-04
+
+[rank=0] [val=2.637e-06] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[2.63665090e-06 1.10138682e-06 1.95200000e-07]
+                   flow  =1.590e-04
+
+[rank=0] [val=2.637e-06] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[2.63665090e-06 3.39981204e-05 1.95200000e-07]
+                   flow  =1.543e-03
+
+[rank=0] [val=2.637e-06] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[2.63665090e-06 3.39981204e-05 1.95200000e-07]
+                   flow  =1.543e-03
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.63665090e-06 1.88891503e-04 1.98110658e-06]
+                   flow  =6.989e-03
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.63665090e-06 1.88891503e-04 1.98110658e-06]
+                   flow  =6.989e-03
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.63665090e-06 1.88891503e-04 1.98110658e-06]
+                   flow  =6.989e-03
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.63665090e-06 1.88891503e-04 1.98110658e-06]
+                   flow  =6.989e-03
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.63665090e-06 1.88891503e-04 1.98110658e-06]
+                   flow  =6.989e-03
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.63665090e-06 1.88891503e-04 1.98110658e-06]
+                   flow  =6.989e-03
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.63665090e-06 4.81921851e-03 7.17851353e-06]
+                   flow  =9.761e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.63665090e-06 4.81921851e-03 7.17851353e-06]
+                   flow  =9.761e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.63665090e-06 4.81921851e-03 7.17851353e-06]
+                   flow  =9.761e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.63665090e-06 4.81921851e-03 7.17851353e-06]
+                   flow  =9.761e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.63665090e-06 4.81921851e-03 7.17851353e-06]
+                   flow  =9.761e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.63665090e-06 4.81921851e-03 7.17851353e-06]
+                   flow  =9.761e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[2.63665090e-06 2.72097226e-03 3.41518764e-04]
+                   flow  =6.520e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[2.63665090e-06 2.72097226e-03 3.41518764e-04]
+                   flow  =6.520e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[2.63665090e-06 2.72097226e-03 3.41518764e-04]
+                   flow  =6.520e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[2.63665090e-06 2.72097226e-03 3.41518764e-04]
+                   flow  =6.520e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[2.63665090e-06 2.72097226e-03 3.41518764e-04]
+                   flow  =6.520e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[2.63665090e-06 2.72097226e-03 3.41518764e-04]
+                   flow  =6.520e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[2.63665090e-06 7.20564440e-03 8.41431482e-03]
+                   flow  =1.625e-01
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[2.63665090e-06 7.20564440e-03 8.41431482e-03]
+                   flow  =1.625e-01
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.64709598  -6.91592676  -2.53672725]
+                   params=[2.63665090e-06 9.91861818e-04 7.91249324e-02]
+                   flow  =2.789e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.64709598  -6.91592676  -2.53672725]
+                   params=[2.63665090e-06 9.91861818e-04 7.91249324e-02]
+                   flow  =2.789e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.64709598  -6.91592676  -2.53672725]
+                   params=[2.63665090e-06 9.91861818e-04 7.91249324e-02]
+                   flow  =2.789e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.64709598  -6.91592676  -2.53672725]
+                   params=[2.63665090e-06 9.91861818e-04 7.91249324e-02]
+                   flow  =2.789e-02
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.21380827  -5.39865711   0.94412029]
+                   params=[2.63665090e-06 4.52265028e-03 2.57055105e+00]
+                   flow  =1.044e-01
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.21380827  -5.39865711   0.94412029]
+                   params=[2.63665090e-06 4.52265028e-03 2.57055105e+00]
+                   flow  =1.044e-01
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.21380827  -5.39865711   0.94412029]
+                   params=[2.63665090e-06 4.52265028e-03 2.57055105e+00]
+                   flow  =1.044e-01
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.21380827  -5.39865711   0.94412029]
+                   params=[2.63665090e-06 4.52265028e-03 2.57055105e+00]
+                   flow  =1.044e-01
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.21380827  -5.39865711   0.94412029]
+                   params=[2.63665090e-06 4.52265028e-03 2.57055105e+00]
+                   flow  =1.044e-01
+
+[rank=0] [val=2.637e-06] iter log-params=[-12.21380827  -5.39865711   0.94412029]
+                   params=[2.63665090e-06 4.52265028e-03 2.57055105e+00]
+                   flow  =1.044e-01
+
+[rank=0] [val=1.129e-05] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[1.12883789e-05 1.98235925e-07 9.01579035e-08]
+                   flow  =1.686e-05
+
+[rank=0] [val=1.129e-05] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[1.12883789e-05 1.98235925e-07 9.01579035e-08]
+                   flow  =1.686e-05
+
+[rank=0] [val=1.129e-05] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[1.12883789e-05 1.98235925e-07 4.22625622e-07]
+                   flow  =2.707e-05
+
+[rank=0] [val=1.129e-05] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[1.12883789e-05 1.98235925e-07 4.22625622e-07]
+                   flow  =2.707e-05
+
+[rank=0] [val=1.129e-05] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[1.12883789e-05 1.10138682e-06 1.95200000e-07]
+                   flow  =9.353e-05
+
+[rank=0] [val=1.129e-05] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[1.12883789e-05 1.10138682e-06 1.95200000e-07]
+                   flow  =9.353e-05
+
+[rank=0] [val=1.129e-05] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[1.12883789e-05 3.39981204e-05 1.95200000e-07]
+                   flow  =1.083e-03
+
+[rank=0] [val=1.129e-05] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[1.12883789e-05 3.39981204e-05 1.95200000e-07]
+                   flow  =1.083e-03
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.12883789e-05 1.88891503e-04 1.98110658e-06]
+                   flow  =4.048e-03
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.12883789e-05 1.88891503e-04 1.98110658e-06]
+                   flow  =4.048e-03
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.12883789e-05 1.88891503e-04 1.98110658e-06]
+                   flow  =4.048e-03
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.12883789e-05 1.88891503e-04 1.98110658e-06]
+                   flow  =4.048e-03
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.07833988  -5.71622518 -13.90431705]
+                   params=[1.12883789e-05 3.29211463e-03 9.15022624e-07]
+                   flow  =2.418e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.07833988  -5.71622518 -13.90431705]
+                   params=[1.12883789e-05 3.29211463e-03 9.15022624e-07]
+                   flow  =2.418e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.91279127  -5.14460266 -13.13185499]
+                   params=[1.12883789e-05 5.83079072e-03 1.98110658e-06]
+                   flow  =5.371e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.91279127  -5.14460266 -13.13185499]
+                   params=[1.12883789e-05 5.83079072e-03 1.98110658e-06]
+                   flow  =5.371e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.91279127  -5.14460266 -13.13185499]
+                   params=[1.12883789e-05 5.83079072e-03 1.98110658e-06]
+                   flow  =5.371e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.91279127  -5.14460266 -13.13185499]
+                   params=[1.12883789e-05 5.83079072e-03 1.98110658e-06]
+                   flow  =5.371e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.91279127  -5.14460266 -13.13185499]
+                   params=[1.12883789e-05 5.83079072e-03 1.98110658e-06]
+                   flow  =5.371e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.91279127  -5.14460266 -13.13185499]
+                   params=[1.12883789e-05 5.83079072e-03 1.98110658e-06]
+                   flow  =5.371e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.87600269  -7.58987676 -10.5140669 ]
+                   params=[1.12883789e-05 5.05543352e-04 2.71518085e-05]
+                   flow  =1.215e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.87600269  -7.58987676 -10.5140669 ]
+                   params=[1.12883789e-05 5.05543352e-04 2.71518085e-05]
+                   flow  =1.215e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.61177428  -4.98581863  -9.56994661]
+                   params=[1.12883789e-05 6.83418110e-03 6.97951099e-05]
+                   flow  =1.150e-01
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.61177428  -4.98581863  -9.56994661]
+                   params=[1.12883789e-05 6.83418110e-03 6.97951099e-05]
+                   flow  =1.150e-01
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.91279127  -5.14460266 -10.04200676]
+                   params=[1.12883789e-05 5.83079072e-03 4.35323266e-05]
+                   flow  =9.688e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-12.91279127  -5.14460266 -10.04200676]
+                   params=[1.12883789e-05 5.83079072e-03 4.35323266e-05]
+                   flow  =9.688e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.5749857   -7.43109273  -3.86231029]
+                   params=[1.12883789e-05 5.92539673e-04 2.10193825e-02]
+                   flow  =1.470e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.5749857   -7.43109273  -3.86231029]
+                   params=[1.12883789e-05 5.92539673e-04 2.10193825e-02]
+                   flow  =1.470e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.5749857   -7.43109273  -3.86231029]
+                   params=[1.12883789e-05 5.92539673e-04 2.10193825e-02]
+                   flow  =1.470e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.5749857   -7.43109273  -3.86231029]
+                   params=[1.12883789e-05 5.92539673e-04 2.10193825e-02]
+                   flow  =1.470e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.12125989  -6.72185738   0.10013397]
+                   params=[1.12883789e-05 1.20429929e-03 1.10531899e+00]
+                   flow  =2.497e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.12125989  -6.72185738   0.10013397]
+                   params=[1.12883789e-05 1.20429929e-03 1.10531899e+00]
+                   flow  =2.497e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.12125989  -6.72185738   0.10013397]
+                   params=[1.12883789e-05 1.20429929e-03 1.10531899e+00]
+                   flow  =2.497e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.12125989  -6.72185738   0.10013397]
+                   params=[1.12883789e-05 1.20429929e-03 1.10531899e+00]
+                   flow  =2.497e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.12125989  -6.72185738   0.10013397]
+                   params=[1.12883789e-05 1.20429929e-03 1.10531899e+00]
+                   flow  =2.497e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.12125989  -6.72185738   0.10013397]
+                   params=[1.12883789e-05 1.20429929e-03 1.10531899e+00]
+                   flow  =2.497e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.12125989  -6.72185738   0.10013397]
+                   params=[1.12883789e-05 1.20429929e-03 1.10531899e+00]
+                   flow  =2.497e-02
+
+[rank=0] [val=1.129e-05] iter log-params=[-13.12125989  -6.72185738   0.10013397]
+                   params=[1.12883789e-05 1.20429929e-03 1.10531899e+00]
+                   flow  =2.497e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[4.83293024e-05 1.98235925e-07 9.01579035e-08]
+                   flow  =1.173e-05
+
+[rank=0] [val=4.833e-05] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[4.83293024e-05 1.98235925e-07 9.01579035e-08]
+                   flow  =1.173e-05
+
+[rank=0] [val=4.833e-05] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[4.83293024e-05 1.98235925e-07 4.22625622e-07]
+                   flow  =1.823e-05
+
+[rank=0] [val=4.833e-05] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[4.83293024e-05 1.98235925e-07 4.22625622e-07]
+                   flow  =1.823e-05
+
+[rank=0] [val=4.833e-05] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[4.83293024e-05 1.10138682e-06 1.95200000e-07]
+                   flow  =6.106e-05
+
+[rank=0] [val=4.833e-05] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[4.83293024e-05 1.10138682e-06 1.95200000e-07]
+                   flow  =6.106e-05
+
+[rank=0] [val=4.833e-05] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[4.83293024e-05 3.39981204e-05 1.95200000e-07]
+                   flow  =9.073e-04
+
+[rank=0] [val=4.833e-05] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[4.83293024e-05 3.39981204e-05 1.95200000e-07]
+                   flow  =9.073e-04
+
+[rank=0] [val=4.833e-05] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.83293024e-05 1.88891503e-04 1.98110658e-06]
+                   flow  =2.882e-03
+
+[rank=0] [val=4.833e-05] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.83293024e-05 1.88891503e-04 1.98110658e-06]
+                   flow  =2.882e-03
+
+[rank=0] [val=4.833e-05] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.83293024e-05 1.88891503e-04 1.98110658e-06]
+                   flow  =2.882e-03
+
+[rank=0] [val=4.833e-05] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.83293024e-05 1.88891503e-04 1.98110658e-06]
+                   flow  =2.882e-03
+
+[rank=0] [val=4.833e-05] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.83293024e-05 1.88891503e-04 1.98110658e-06]
+                   flow  =2.882e-03
+
+[rank=0] [val=4.833e-05] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.83293024e-05 1.88891503e-04 1.98110658e-06]
+                   flow  =2.882e-03
+
+[rank=0] [val=4.833e-05] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.83293024e-05 1.88891503e-04 1.98110658e-06]
+                   flow  =2.882e-03
+
+[rank=0] [val=4.833e-05] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[4.83293024e-05 1.88891503e-04 1.98110658e-06]
+                   flow  =2.882e-03
+
+[rank=0] [val=4.833e-05] iter log-params=[-13.15804847  -5.3563147  -13.76126852]
+                   params=[4.83293024e-05 4.71826231e-03 1.05574010e-06]
+                   flow  =2.875e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-13.15804847  -5.3563147  -13.76126852]
+                   params=[4.83293024e-05 4.71826231e-03 1.05574010e-06]
+                   flow  =2.875e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-13.02928844  -3.95901521 -12.38800264]
+                   params=[4.83293024e-05 1.90818966e-02 4.16829851e-06]
+                   flow  =1.514e-01
+
+[rank=0] [val=4.833e-05] iter log-params=[-13.02928844  -3.95901521 -12.38800264]
+                   params=[4.83293024e-05 1.90818966e-02 4.16829851e-06]
+                   flow  =1.514e-01
+
+[rank=0] [val=4.833e-05] iter log-params=[-14.10228866  -5.31397229  -9.92756793]
+                   params=[4.83293024e-05 4.92233487e-03 4.88103620e-05]
+                   flow  =5.914e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-14.10228866  -5.31397229  -9.92756793]
+                   params=[4.83293024e-05 4.92233487e-03 4.88103620e-05]
+                   flow  =5.914e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-14.10228866  -5.31397229  -9.92756793]
+                   params=[4.83293024e-05 4.92233487e-03 4.88103620e-05]
+                   flow  =5.914e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-14.10228866  -5.31397229  -9.92756793]
+                   params=[4.83293024e-05 4.92233487e-03 4.88103620e-05]
+                   flow  =5.914e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[4.83293024e-05 5.06326361e-03 6.28755844e-04]
+                   flow  =6.439e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[4.83293024e-05 5.06326361e-03 6.28755844e-04]
+                   flow  =6.439e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[4.83293024e-05 5.06326361e-03 6.28755844e-04]
+                   flow  =6.439e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[4.83293024e-05 5.06326361e-03 6.28755844e-04]
+                   flow  =6.439e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[4.83293024e-05 5.06326361e-03 6.28755844e-04]
+                   flow  =6.439e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[4.83293024e-05 5.06326361e-03 6.28755844e-04]
+                   flow  =6.439e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[4.83293024e-05 5.06326361e-03 6.28755844e-04]
+                   flow  =6.439e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[4.83293024e-05 5.06326361e-03 6.28755844e-04]
+                   flow  =6.439e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-14.55939559  -6.8024038   -2.55780189]
+                   params=[4.83293024e-05 1.11110107e-03 7.74748515e-02]
+                   flow  =1.684e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-14.55939559  -6.8024038   -2.55780189]
+                   params=[4.83293024e-05 1.11110107e-03 7.74748515e-02]
+                   flow  =1.684e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-14.40124844  -5.03982117  -3.12991752]
+                   params=[4.83293024e-05 6.47490612e-03 4.37214033e-02]
+                   flow  =8.179e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-14.40124844  -5.03982117  -3.12991752]
+                   params=[4.83293024e-05 6.47490612e-03 4.37214033e-02]
+                   flow  =8.179e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-12.9511022   -5.2841177   -3.61969685]
+                   params=[4.83293024e-05 5.07150480e-03 2.67907970e-02]
+                   flow  =6.481e-02
+
+[rank=0] [val=4.833e-05] iter log-params=[-12.9511022   -5.2841177   -3.61969685]
+                   params=[4.83293024e-05 5.07150480e-03 2.67907970e-02]
+                   flow  =6.481e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[2.06913808e-04 1.98235925e-07 9.01579035e-08]
+                   flow  =6.583e-06
+
+[rank=0] [val=2.069e-04] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[2.06913808e-04 1.98235925e-07 9.01579035e-08]
+                   flow  =6.583e-06
+
+[rank=0] [val=2.069e-04] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[2.06913808e-04 1.98235925e-07 4.22625622e-07]
+                   flow  =1.210e-05
+
+[rank=0] [val=2.069e-04] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[2.06913808e-04 1.98235925e-07 4.22625622e-07]
+                   flow  =1.210e-05
+
+[rank=0] [val=2.069e-04] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[2.06913808e-04 1.10138682e-06 1.95200000e-07]
+                   flow  =3.232e-05
+
+[rank=0] [val=2.069e-04] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[2.06913808e-04 1.10138682e-06 1.95200000e-07]
+                   flow  =3.232e-05
+
+[rank=0] [val=2.069e-04] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[2.06913808e-04 3.39981204e-05 1.95200000e-07]
+                   flow  =5.782e-04
+
+[rank=0] [val=2.069e-04] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[2.06913808e-04 3.39981204e-05 1.95200000e-07]
+                   flow  =5.782e-04
+
+[rank=0] [val=2.069e-04] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.06913808e-04 1.88891503e-04 1.98110658e-06]
+                   flow  =2.108e-03
+
+[rank=0] [val=2.069e-04] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.06913808e-04 1.88891503e-04 1.98110658e-06]
+                   flow  =2.108e-03
+
+[rank=0] [val=2.069e-04] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.06913808e-04 1.88891503e-04 1.98110658e-06]
+                   flow  =2.108e-03
+
+[rank=0] [val=2.069e-04] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.06913808e-04 1.88891503e-04 1.98110658e-06]
+                   flow  =2.108e-03
+
+[rank=0] [val=2.069e-04] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.06913808e-04 1.88891503e-04 1.98110658e-06]
+                   flow  =2.108e-03
+
+[rank=0] [val=2.069e-04] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.06913808e-04 1.88891503e-04 1.98110658e-06]
+                   flow  =2.108e-03
+
+[rank=0] [val=2.069e-04] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.06913808e-04 1.88891503e-04 1.98110658e-06]
+                   flow  =2.108e-03
+
+[rank=0] [val=2.069e-04] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.06913808e-04 1.88891503e-04 1.98110658e-06]
+                   flow  =2.108e-03
+
+[rank=0] [val=2.069e-04] iter log-params=[-13.15804847  -5.3563147  -13.76126852]
+                   params=[2.06913808e-04 4.71826231e-03 1.05574010e-06]
+                   flow  =2.359e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-13.15804847  -5.3563147  -13.76126852]
+                   params=[2.06913808e-04 4.71826231e-03 1.05574010e-06]
+                   flow  =2.359e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-13.02928844  -3.95901521 -12.38800264]
+                   params=[2.06913808e-04 1.90818966e-02 4.16829851e-06]
+                   flow  =1.183e-01
+
+[rank=0] [val=2.069e-04] iter log-params=[-13.02928844  -3.95901521 -12.38800264]
+                   params=[2.06913808e-04 1.90818966e-02 4.16829851e-06]
+                   flow  =1.183e-01
+
+[rank=0] [val=2.069e-04] iter log-params=[-14.10228866  -5.31397229  -9.92756793]
+                   params=[2.06913808e-04 4.92233487e-03 4.88103620e-05]
+                   flow  =4.561e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-14.10228866  -5.31397229  -9.92756793]
+                   params=[2.06913808e-04 4.92233487e-03 4.88103620e-05]
+                   flow  =4.561e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-14.10228866  -5.31397229  -9.92756793]
+                   params=[2.06913808e-04 4.92233487e-03 4.88103620e-05]
+                   flow  =4.561e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-14.10228866  -5.31397229  -9.92756793]
+                   params=[2.06913808e-04 4.92233487e-03 4.88103620e-05]
+                   flow  =4.561e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[0.00020691 0.00506326 0.00062876]
+                   flow  =4.987e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[0.00020691 0.00506326 0.00062876]
+                   flow  =4.987e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[0.00020691 0.00506326 0.00062876]
+                   flow  =4.987e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[0.00020691 0.00506326 0.00062876]
+                   flow  =4.987e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[0.00020691 0.00506326 0.00062876]
+                   flow  =4.987e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[0.00020691 0.00506326 0.00062876]
+                   flow  =4.987e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[0.00020691 0.00506326 0.00062876]
+                   flow  =4.987e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-13.73849049  -5.28574402  -7.37176754]
+                   params=[0.00020691 0.00506326 0.00062876]
+                   flow  =4.987e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-14.55939559  -6.8024038   -2.55780189]
+                   params=[0.00020691 0.0011111  0.07747485]
+                   flow  =1.291e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-14.55939559  -6.8024038   -2.55780189]
+                   params=[0.00020691 0.0011111  0.07747485]
+                   flow  =1.291e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-14.40124844  -5.03982117  -3.12991752]
+                   params=[0.00020691 0.00647491 0.0437214 ]
+                   flow  =6.341e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-14.40124844  -5.03982117  -3.12991752]
+                   params=[0.00020691 0.00647491 0.0437214 ]
+                   flow  =6.341e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-12.9511022   -5.2841177   -3.61969685]
+                   params=[0.00020691 0.0050715  0.0267908 ]
+                   flow  =5.021e-02
+
+[rank=0] [val=2.069e-04] iter log-params=[-12.9511022   -5.2841177   -3.61969685]
+                   params=[0.00020691 0.0050715  0.0267908 ]
+                   flow  =5.021e-02
+
+[rank=0] [val=8.859e-04] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[8.85866790e-04 1.98235925e-07 9.01579035e-08]
+                   flow  =2.631e-06
+
+[rank=0] [val=8.859e-04] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[8.85866790e-04 1.98235925e-07 9.01579035e-08]
+                   flow  =2.631e-06
+
+[rank=0] [val=8.859e-04] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[8.85866790e-04 1.98235925e-07 4.22625622e-07]
+                   flow  =7.705e-06
+
+[rank=0] [val=8.859e-04] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[8.85866790e-04 1.98235925e-07 4.22625622e-07]
+                   flow  =7.705e-06
+
+[rank=0] [val=8.859e-04] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[8.85866790e-04 1.10138682e-06 1.95200000e-07]
+                   flow  =1.032e-05
+
+[rank=0] [val=8.859e-04] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[8.85866790e-04 1.10138682e-06 1.95200000e-07]
+                   flow  =1.032e-05
+
+[rank=0] [val=8.859e-04] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[8.85866790e-04 3.39981204e-05 1.95200000e-07]
+                   flow  =1.627e-04
+
+[rank=0] [val=8.859e-04] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[8.85866790e-04 3.39981204e-05 1.95200000e-07]
+                   flow  =1.627e-04
+
+[rank=0] [val=8.859e-04] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[8.85866790e-04 1.88891503e-04 1.98110658e-06]
+                   flow  =9.133e-04
+
+[rank=0] [val=8.859e-04] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[8.85866790e-04 1.88891503e-04 1.98110658e-06]
+                   flow  =9.133e-04
+
+[rank=0] [val=8.859e-04] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[8.85866790e-04 1.88891503e-04 1.98110658e-06]
+                   flow  =9.133e-04
+
+[rank=0] [val=8.859e-04] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[8.85866790e-04 1.88891503e-04 1.98110658e-06]
+                   flow  =9.133e-04
+
+[rank=0] [val=8.859e-04] iter log-params=[-13.96126578  -3.04865343 -13.38934234]
+                   params=[8.85866790e-04 4.74227396e-02 1.53137836e-06]
+                   flow  =1.131e-01
+
+[rank=0] [val=8.859e-04] iter log-params=[-13.96126578  -3.04865343 -13.38934234]
+                   params=[8.85866790e-04 4.74227396e-02 1.53137836e-06]
+                   flow  =1.131e-01
+
+[rank=0] [val=8.859e-04] iter log-params=[-13.96126578  -3.04865343 -13.38934234]
+                   params=[8.85866790e-04 4.74227396e-02 1.53137836e-06]
+                   flow  =1.131e-01
+
+[rank=0] [val=8.859e-04] iter log-params=[-13.96126578  -3.04865343 -13.38934234]
+                   params=[8.85866790e-04 4.74227396e-02 1.53137836e-06]
+                   flow  =1.131e-01
+
+[rank=0] [val=8.859e-04] iter log-params=[-13.35425422  -3.81081678 -12.87436764]
+                   params=[8.85866790e-04 2.21300961e-02 2.56290895e-06]
+                   flow  =6.307e-02
+
+[rank=0] [val=8.859e-04] iter log-params=[-13.35425422  -3.81081678 -12.87436764]
+                   params=[8.85866790e-04 2.21300961e-02 2.56290895e-06]
+                   flow  =6.307e-02
+
+[rank=0] [val=8.859e-04] iter log-params=[-14.23718012  -4.00135762 -11.58693087]
+                   params=[8.85866790e-04 1.82907900e-02 9.28666672e-06]
+                   flow  =8.005e-02
+
+[rank=0] [val=8.859e-04] iter log-params=[-14.23718012  -4.00135762 -11.58693087]
+                   params=[8.85866790e-04 1.82907900e-02 9.28666672e-06]
+                   flow  =8.005e-02
+
+[rank=0] [val=8.859e-04] iter log-params=[-14.23718012  -4.00135762 -11.58693087]
+                   params=[8.85866790e-04 1.82907900e-02 9.28666672e-06]
+                   flow  =8.005e-02
+
+[rank=0] [val=8.859e-04] iter log-params=[-14.23718012  -4.00135762 -11.58693087]
+                   params=[8.85866790e-04 1.82907900e-02 9.28666672e-06]
+                   flow  =8.005e-02
+
+[rank=0] [val=8.859e-04] iter log-params=[-12.80242553  -7.81217441 -10.55698146]
+                   params=[8.8586679e-04 4.0477694e-04 2.6011249e-05]
+                   flow  =3.288e-03
+
+[rank=0] [val=8.859e-04] iter log-params=[-12.80242553  -7.81217441 -10.55698146]
+                   params=[8.8586679e-04 4.0477694e-04 2.6011249e-05]
+                   flow  =3.288e-03
+
+[rank=0] [val=8.859e-04] iter log-params=[-13.79571717  -4.31892569 -10.47115234]
+                   params=[8.85866790e-04 1.33141794e-02 2.83423801e-05]
+                   flow  =7.375e-02
+
+[rank=0] [val=8.859e-04] iter log-params=[-13.79571717  -4.31892569 -10.47115234]
+                   params=[8.85866790e-04 1.33141794e-02 2.83423801e-05]
+                   flow  =7.375e-02
+
+[rank=0] [val=8.859e-04] iter log-params=[-14.12681438  -8.51082415  -6.86632941]
+                   params=[0.00088587 0.00020128 0.0010423 ]
+                   flow  =2.511e-03
+
+[rank=0] [val=8.859e-04] iter log-params=[-14.12681438  -8.51082415  -6.86632941]
+                   params=[0.00088587 0.00020128 0.0010423 ]
+                   flow  =2.511e-03
+
+[rank=0] [val=8.859e-04] iter log-params=[-12.91279127  -9.75992521  -7.00937794]
+                   params=[8.85866790e-04 5.77189389e-05 9.03370369e-04]
+                   flow  =1.257e-03
+
+[rank=0] [val=8.859e-04] iter log-params=[-12.91279127  -9.75992521  -7.00937794]
+                   params=[8.85866790e-04 5.77189389e-05 9.03370369e-04]
+                   flow  =1.257e-03
+
+[rank=0] [val=8.859e-04] iter log-params=[-15.23047176  -6.96532623  -3.23289676]
+                   params=[0.00088587 0.00094405 0.03944308]
+                   flow  =7.471e-03
+
+[rank=0] [val=8.859e-04] iter log-params=[-15.23047176  -6.96532623  -3.23289676]
+                   params=[0.00088587 0.00094405 0.03944308]
+                   flow  =7.471e-03
+
+[rank=0] [val=8.859e-04] iter log-params=[-15.23047176  -6.96532623  -3.23289676]
+                   params=[0.00088587 0.00094405 0.03944308]
+                   flow  =7.471e-03
+
+[rank=0] [val=8.859e-04] iter log-params=[-15.23047176  -6.96532623  -3.23289676]
+                   params=[0.00088587 0.00094405 0.03944308]
+                   flow  =7.471e-03
+
+[rank=0] [val=8.859e-04] iter log-params=[-13.83250575  -6.06907858  -4.59662607]
+                   params=[0.00088587 0.0023133  0.01008581]
+                   flow  =1.622e-02
+
+[rank=0] [val=8.859e-04] iter log-params=[-13.83250575  -6.06907858  -4.59662607]
+                   params=[0.00088587 0.0023133  0.01008581]
+                   flow  =1.622e-02
+
+[rank=0] [val=8.859e-04] iter log-params=[-13.83250575  -6.06907858  -4.59662607]
+                   params=[0.00088587 0.0023133  0.01008581]
+                   flow  =1.622e-02
+
+[rank=0] [val=8.859e-04] iter log-params=[-13.83250575  -6.06907858  -4.59662607]
+                   params=[0.00088587 0.0023133  0.01008581]
+                   flow  =1.622e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[3.79269019e-03 1.98235925e-07 9.01579035e-08]
+                   flow  =2.239e-07
+
+[rank=0] [val=3.793e-03] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[3.79269019e-03 1.98235925e-07 9.01579035e-08]
+                   flow  =2.239e-07
+
+[rank=0] [val=3.793e-03] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[3.79269019e-03 1.98235925e-07 4.22625622e-07]
+                   flow  =5.092e-06
+
+[rank=0] [val=3.793e-03] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[3.79269019e-03 1.98235925e-07 4.22625622e-07]
+                   flow  =5.092e-06
+
+[rank=0] [val=3.793e-03] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[3.79269019e-03 1.10138682e-06 1.95200000e-07]
+                   flow  =-3.153e-06
+
+[rank=0] [val=3.793e-03] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[3.79269019e-03 1.10138682e-06 1.95200000e-07]
+                   flow  =-3.153e-06
+
+[rank=0] [val=3.793e-03] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[3.79269019e-03 3.39981204e-05 1.95200000e-07]
+                   flow  =-1.739e-04
+
+[rank=0] [val=3.793e-03] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[3.79269019e-03 3.39981204e-05 1.95200000e-07]
+                   flow  =-1.739e-04
+
+[rank=0] [val=3.793e-03] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[3.79269019e-03 1.88891503e-04 1.98110658e-06]
+                   flow  =-4.796e-04
+
+[rank=0] [val=3.793e-03] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[3.79269019e-03 1.88891503e-04 1.98110658e-06]
+                   flow  =-4.796e-04
+
+[rank=0] [val=3.793e-03] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[3.79269019e-03 1.88891503e-04 1.98110658e-06]
+                   flow  =-4.796e-04
+
+[rank=0] [val=3.793e-03] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[3.79269019e-03 1.88891503e-04 1.98110658e-06]
+                   flow  =-4.796e-04
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.96126578  -3.04865343 -13.38934234]
+                   params=[3.79269019e-03 4.74227396e-02 1.53137836e-06]
+                   flow  =-9.416e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.96126578  -3.04865343 -13.38934234]
+                   params=[3.79269019e-03 4.74227396e-02 1.53137836e-06]
+                   flow  =-9.416e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.83250575  -1.65135394 -12.01607646]
+                   params=[3.79269019e-03 1.91790061e-01 6.04622492e-06]
+                   flow  =-1.067e-01
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.83250575  -1.65135394 -12.01607646]
+                   params=[3.79269019e-03 1.91790061e-01 6.04622492e-06]
+                   flow  =-1.067e-01
+
+[rank=0] [val=3.793e-03] iter log-params=[-14.55601447  -2.56171573 -11.01473676]
+                   params=[3.79269019e-03 7.71722203e-02 1.64573766e-05]
+                   flow  =4.747e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-14.55601447  -2.56171573 -11.01473676]
+                   params=[3.79269019e-03 7.71722203e-02 1.64573766e-05]
+                   flow  =4.747e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-14.55601447  -2.56171573 -11.01473676]
+                   params=[3.79269019e-03 7.71722203e-02 1.64573766e-05]
+                   flow  =4.747e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-14.55601447  -2.56171573 -11.01473676]
+                   params=[3.79269019e-03 7.71722203e-02 1.64573766e-05]
+                   flow  =4.747e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.73235906  -3.61321888  -8.88808195]
+                   params=[0.00379269 0.02696491 0.00013802]
+                   flow  =4.914e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.73235906  -3.61321888  -8.88808195]
+                   params=[0.00379269 0.02696491 0.00013802]
+                   flow  =4.914e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.73235906  -3.61321888  -8.88808195]
+                   params=[0.00379269 0.02696491 0.00013802]
+                   flow  =4.914e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.73235906  -3.61321888  -8.88808195]
+                   params=[0.00379269 0.02696491 0.00013802]
+                   flow  =4.914e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.73235906  -3.61321888  -8.88808195]
+                   params=[0.00379269 0.02696491 0.00013802]
+                   flow  =4.914e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.73235906  -3.61321888  -8.88808195]
+                   params=[0.00379269 0.02696491 0.00013802]
+                   flow  =4.914e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.73235906  -3.61321888  -8.88808195]
+                   params=[0.00379269 0.02696491 0.00013802]
+                   flow  =4.914e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.73235906  -3.61321888  -8.88808195]
+                   params=[0.00379269 0.02696491 0.00013802]
+                   flow  =4.914e-02
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.67452681  -6.66840663  -3.30000595]
+                   params=[0.00379269 0.00127042 0.03688295]
+                   flow  =3.023e-03
+
+[rank=0] [val=3.793e-03] iter log-params=[-13.67452681  -6.66840663  -3.30000595]
+                   params=[0.00379269 0.00127042 0.03688295]
+                   flow  =3.023e-03
+
+[rank=0] [val=3.793e-03] iter log-params=[-12.2698238   -5.94100586  -2.84260386]
+                   params=[0.00379269 0.00262938 0.05827373]
+                   flow  =5.776e-03
+
+[rank=0] [val=3.793e-03] iter log-params=[-12.2698238   -5.94100586  -2.84260386]
+                   params=[0.00379269 0.00262938 0.05827373]
+                   flow  =5.776e-03
+
+[rank=0] [val=3.793e-03] iter log-params=[-12.2698238   -5.94100586  -2.84260386]
+                   params=[0.00379269 0.00262938 0.05827373]
+                   flow  =5.776e-03
+
+[rank=0] [val=3.793e-03] iter log-params=[-12.2698238   -5.94100586  -2.84260386]
+                   params=[0.00379269 0.00262938 0.05827373]
+                   flow  =5.776e-03
+
+[rank=0] [val=3.793e-03] iter log-params=[-12.2698238   -5.94100586  -2.84260386]
+                   params=[0.00379269 0.00262938 0.05827373]
+                   flow  =5.776e-03
+
+[rank=0] [val=3.793e-03] iter log-params=[-12.2698238   -5.94100586  -2.84260386]
+                   params=[0.00379269 0.00262938 0.05827373]
+                   flow  =5.776e-03
+
+[rank=0] [val=3.793e-03] iter log-params=[-11.69342734  -5.84432694   3.10699836]
+                   params=[3.79269019e-03 2.89628344e-03 2.23538454e+01]
+                   flow  =6.319e-03
+
+[rank=0] [val=3.793e-03] iter log-params=[-11.69342734  -5.84432694   3.10699836]
+                   params=[3.79269019e-03 2.89628344e-03 2.23538454e+01]
+                   flow  =6.319e-03
+
+[rank=0] [val=1.624e-02] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[1.62377674e-02 1.98235925e-07 9.01579035e-08]
+                   flow  =-6.415e-07
+
+[rank=0] [val=1.624e-02] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[1.62377674e-02 1.98235925e-07 9.01579035e-08]
+                   flow  =-6.415e-07
+
+[rank=0] [val=1.624e-02] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[1.62377674e-02 1.98235925e-07 4.22625622e-07]
+                   flow  =4.146e-06
+
+[rank=0] [val=1.624e-02] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[1.62377674e-02 1.98235925e-07 4.22625622e-07]
+                   flow  =4.146e-06
+
+[rank=0] [val=1.624e-02] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[1.62377674e-02 1.10138682e-06 1.95200000e-07]
+                   flow  =-8.060e-06
+
+[rank=0] [val=1.624e-02] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[1.62377674e-02 1.10138682e-06 1.95200000e-07]
+                   flow  =-8.060e-06
+
+[rank=0] [val=1.624e-02] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[1.62377674e-02 3.39981204e-05 1.95200000e-07]
+                   flow  =-3.307e-04
+
+[rank=0] [val=1.624e-02] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[1.62377674e-02 3.39981204e-05 1.95200000e-07]
+                   flow  =-3.307e-04
+
+[rank=0] [val=1.624e-02] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.62377674e-02 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.527e-03
+
+[rank=0] [val=1.624e-02] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.62377674e-02 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.527e-03
+
+[rank=0] [val=1.624e-02] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.62377674e-02 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.527e-03
+
+[rank=0] [val=1.624e-02] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.62377674e-02 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.527e-03
+
+[rank=0] [val=1.624e-02] iter log-params=[-13.07833988  -5.71622518 -13.90431705]
+                   params=[1.62377674e-02 3.29211463e-03 9.15022624e-07]
+                   flow  =-2.665e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-13.07833988  -5.71622518 -13.90431705]
+                   params=[1.62377674e-02 3.29211463e-03 9.15022624e-07]
+                   flow  =-2.665e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-13.24388848  -3.42973511 -12.35939293]
+                   params=[1.62377674e-02 3.23955210e-02 4.28927460e-06]
+                   flow  =-2.145e-01
+
+[rank=0] [val=1.624e-02] iter log-params=[-13.24388848  -3.42973511 -12.35939293]
+                   params=[1.62377674e-02 3.23955210e-02 4.28927460e-06]
+                   flow  =-2.145e-01
+
+[rank=0] [val=1.624e-02] iter log-params=[-14.23718012  -5.14460266 -10.04200676]
+                   params=[1.62377674e-02 5.83079072e-03 4.35323266e-05]
+                   flow  =-2.442e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-14.23718012  -5.14460266 -10.04200676]
+                   params=[1.62377674e-02 5.83079072e-03 4.35323266e-05]
+                   flow  =-2.442e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-14.23718012  -5.14460266 -10.04200676]
+                   params=[1.62377674e-02 5.83079072e-03 4.35323266e-05]
+                   flow  =-2.442e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-14.23718012  -5.14460266 -10.04200676]
+                   params=[1.62377674e-02 5.83079072e-03 4.35323266e-05]
+                   flow  =-2.442e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-14.29236299  -3.81081678  -7.20964588]
+                   params=[0.01623777 0.0221301  0.00073942]
+                   flow  =-7.868e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-14.29236299  -3.81081678  -7.20964588]
+                   params=[0.01623777 0.0221301  0.00073942]
+                   flow  =-7.868e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-14.29236299  -3.81081678  -7.20964588]
+                   params=[0.01623777 0.0221301  0.00073942]
+                   flow  =-7.868e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-14.29236299  -3.81081678  -7.20964588]
+                   params=[0.01623777 0.0221301  0.00073942]
+                   flow  =-7.868e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-14.29236299  -3.81081678  -7.20964588]
+                   params=[0.01623777 0.0221301  0.00073942]
+                   flow  =-7.868e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-14.29236299  -3.81081678  -7.20964588]
+                   params=[0.01623777 0.0221301  0.00073942]
+                   flow  =-7.868e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-15.34901273  -4.6929503   -2.41275186]
+                   params=[0.01623777 0.00915962 0.08956848]
+                   flow  =-3.215e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-15.34901273  -4.6929503   -2.41275186]
+                   params=[0.01623777 0.00915962 0.08956848]
+                   flow  =-3.215e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-15.34901273  -4.6929503   -2.41275186]
+                   params=[0.01623777 0.00915962 0.08956848]
+                   flow  =-3.215e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-15.34901273  -4.6929503   -2.41275186]
+                   params=[0.01623777 0.00915962 0.08956848]
+                   flow  =-3.215e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-15.34901273  -4.6929503   -2.41275186]
+                   params=[0.01623777 0.00915962 0.08956848]
+                   flow  =-3.215e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-15.34901273  -4.6929503   -2.41275186]
+                   params=[0.01623777 0.00915962 0.08956848]
+                   flow  =-3.215e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-13.24184467  -5.44805659  -7.05706078]
+                   params=[0.01623777 0.00430466 0.00086131]
+                   flow  =-1.524e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-13.24184467  -5.44805659  -7.05706078]
+                   params=[0.01623777 0.00430466 0.00086131]
+                   flow  =-1.524e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-13.24184467  -5.44805659  -7.05706078]
+                   params=[0.01623777 0.00430466 0.00086131]
+                   flow  =-1.524e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-13.24184467  -5.44805659  -7.05706078]
+                   params=[0.01623777 0.00430466 0.00086131]
+                   flow  =-1.524e-02
+
+[rank=0] [val=1.624e-02] iter log-params=[-13.44963202  -6.60776812  -1.54174526]
+                   params=[0.01623777 0.00134984 0.21400728]
+                   flow  =-4.654e-03
+
+[rank=0] [val=1.624e-02] iter log-params=[-13.44963202  -6.60776812  -1.54174526]
+                   params=[0.01623777 0.00134984 0.21400728]
+                   flow  =-4.654e-03
+
+[rank=0] [val=6.952e-02] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[6.95192796e-02 1.98235925e-07 9.01579035e-08]
+                   flow  =-5.411e-07
+
+[rank=0] [val=6.952e-02] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[6.95192796e-02 1.98235925e-07 9.01579035e-08]
+                   flow  =-5.411e-07
+
+[rank=0] [val=6.952e-02] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[6.95192796e-02 1.98235925e-07 4.22625622e-07]
+                   flow  =4.220e-06
+
+[rank=0] [val=6.952e-02] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[6.95192796e-02 1.98235925e-07 4.22625622e-07]
+                   flow  =4.220e-06
+
+[rank=0] [val=6.952e-02] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[6.95192796e-02 1.10138682e-06 1.95200000e-07]
+                   flow  =-7.574e-06
+
+[rank=0] [val=6.952e-02] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[6.95192796e-02 1.10138682e-06 1.95200000e-07]
+                   flow  =-7.574e-06
+
+[rank=0] [val=6.952e-02] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[6.95192796e-02 3.39981204e-05 1.95200000e-07]
+                   flow  =-3.304e-04
+
+[rank=0] [val=6.952e-02] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[6.95192796e-02 3.39981204e-05 1.95200000e-07]
+                   flow  =-3.304e-04
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[6.95192796e-02 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.882e-03
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[6.95192796e-02 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.882e-03
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[6.95192796e-02 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.882e-03
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[6.95192796e-02 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.882e-03
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[6.95192796e-02 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.882e-03
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[6.95192796e-02 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.882e-03
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[6.95192796e-02 4.81921851e-03 7.17851353e-06]
+                   flow  =-5.586e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[6.95192796e-02 4.81921851e-03 7.17851353e-06]
+                   flow  =-5.586e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[6.95192796e-02 4.81921851e-03 7.17851353e-06]
+                   flow  =-5.586e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[6.95192796e-02 4.81921851e-03 7.17851353e-06]
+                   flow  =-5.586e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[6.95192796e-02 4.81921851e-03 7.17851353e-06]
+                   flow  =-5.586e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[6.95192796e-02 4.81921851e-03 7.17851353e-06]
+                   flow  =-5.586e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[0.06951928 0.00272097 0.00034152]
+                   flow  =-2.411e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[0.06951928 0.00272097 0.00034152]
+                   flow  =-2.411e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[0.06951928 0.00272097 0.00034152]
+                   flow  =-2.411e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[0.06951928 0.00272097 0.00034152]
+                   flow  =-2.411e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[0.06951928 0.00272097 0.00034152]
+                   flow  =-2.411e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[0.06951928 0.00272097 0.00034152]
+                   flow  =-2.411e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[0.06951928 0.00720564 0.00841431]
+                   flow  =-6.566e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[0.06951928 0.00720564 0.00841431]
+                   flow  =-6.566e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[0.06951928 0.00720564 0.00841431]
+                   flow  =-6.566e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[0.06951928 0.00720564 0.00841431]
+                   flow  =-6.566e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[0.06951928 0.00720564 0.00841431]
+                   flow  =-6.566e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[0.06951928 0.00720564 0.00841431]
+                   flow  =-6.566e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.32462819  -4.85918346   2.18175498]
+                   params=[6.95192796e-02 7.75681506e-03 8.86184495e+00]
+                   flow  =-7.079e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.32462819  -4.85918346   2.18175498]
+                   params=[6.95192796e-02 7.75681506e-03 8.86184495e+00]
+                   flow  =-7.079e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.32462819  -4.85918346   2.18175498]
+                   params=[6.95192796e-02 7.75681506e-03 8.86184495e+00]
+                   flow  =-7.079e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-12.32462819  -4.85918346   2.18175498]
+                   params=[6.95192796e-02 7.75681506e-03 8.86184495e+00]
+                   flow  =-7.079e-02
+
+[rank=0] [val=6.952e-02] iter log-params=[-11.30189055  -6.99852059  -1.75614145]
+                   params=[0.06951928 0.00091323 0.17270999]
+                   flow  =-7.274e-03
+
+[rank=0] [val=6.952e-02] iter log-params=[-11.30189055  -6.99852059  -1.75614145]
+                   params=[0.06951928 0.00091323 0.17270999]
+                   flow  =-7.274e-03
+
+[rank=0] [val=2.976e-01] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[2.97635144e-01 1.98235925e-07 9.01579035e-08]
+                   flow  =2.346e-08
+
+[rank=0] [val=2.976e-01] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[2.97635144e-01 1.98235925e-07 9.01579035e-08]
+                   flow  =2.346e-08
+
+[rank=0] [val=2.976e-01] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[2.97635144e-01 1.98235925e-07 4.22625622e-07]
+                   flow  =4.781e-06
+
+[rank=0] [val=2.976e-01] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[2.97635144e-01 1.98235925e-07 4.22625622e-07]
+                   flow  =4.781e-06
+
+[rank=0] [val=2.976e-01] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[2.97635144e-01 1.10138682e-06 1.95200000e-07]
+                   flow  =-4.485e-06
+
+[rank=0] [val=2.976e-01] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[2.97635144e-01 1.10138682e-06 1.95200000e-07]
+                   flow  =-4.485e-06
+
+[rank=0] [val=2.976e-01] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[2.97635144e-01 3.39981204e-05 1.95200000e-07]
+                   flow  =-2.400e-04
+
+[rank=0] [val=2.976e-01] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[2.97635144e-01 3.39981204e-05 1.95200000e-07]
+                   flow  =-2.400e-04
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.97635144e-01 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.591e-03
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.97635144e-01 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.591e-03
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.97635144e-01 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.591e-03
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.97635144e-01 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.591e-03
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.97635144e-01 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.591e-03
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.97635144e-01 1.88891503e-04 1.98110658e-06]
+                   flow  =-1.591e-03
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.97635144e-01 4.81921851e-03 7.17851353e-06]
+                   flow  =-7.337e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.97635144e-01 4.81921851e-03 7.17851353e-06]
+                   flow  =-7.337e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.97635144e-01 4.81921851e-03 7.17851353e-06]
+                   flow  =-7.337e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.97635144e-01 4.81921851e-03 7.17851353e-06]
+                   flow  =-7.337e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.97635144e-01 4.81921851e-03 7.17851353e-06]
+                   flow  =-7.337e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.97635144e-01 4.81921851e-03 7.17851353e-06]
+                   flow  =-7.337e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[0.29763514 0.00272097 0.00034152]
+                   flow  =-3.238e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[0.29763514 0.00272097 0.00034152]
+                   flow  =-3.238e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[0.29763514 0.00272097 0.00034152]
+                   flow  =-3.238e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[0.29763514 0.00272097 0.00034152]
+                   flow  =-3.238e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[0.29763514 0.00272097 0.00034152]
+                   flow  =-3.238e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.80242553  -5.90676602  -7.98210793]
+                   params=[0.29763514 0.00272097 0.00034152]
+                   flow  =-3.238e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[0.29763514 0.00720564 0.00841431]
+                   flow  =-8.629e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[0.29763514 0.00720564 0.00841431]
+                   flow  =-8.629e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[0.29763514 0.00720564 0.00841431]
+                   flow  =-8.629e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[0.29763514 0.00720564 0.00841431]
+                   flow  =-8.629e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[0.29763514 0.00720564 0.00841431]
+                   flow  =-8.629e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.17088826  -4.93289062  -4.77782088]
+                   params=[0.29763514 0.00720564 0.00841431]
+                   flow  =-8.629e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.32462819  -4.85918346   2.18175498]
+                   params=[2.97635144e-01 7.75681506e-03 8.86184495e+00]
+                   flow  =-9.272e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.32462819  -4.85918346   2.18175498]
+                   params=[2.97635144e-01 7.75681506e-03 8.86184495e+00]
+                   flow  =-9.272e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.32462819  -4.85918346   2.18175498]
+                   params=[2.97635144e-01 7.75681506e-03 8.86184495e+00]
+                   flow  =-9.272e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-12.32462819  -4.85918346   2.18175498]
+                   params=[2.97635144e-01 7.75681506e-03 8.86184495e+00]
+                   flow  =-9.272e-02
+
+[rank=0] [val=2.976e-01] iter log-params=[-11.30189055  -6.99852059  -1.75614145]
+                   params=[0.29763514 0.00091323 0.17270999]
+                   flow  =-9.023e-03
+
+[rank=0] [val=2.976e-01] iter log-params=[-11.30189055  -6.99852059  -1.75614145]
+                   params=[0.29763514 0.00091323 0.17270999]
+                   flow  =-9.023e-03
+
+[rank=0] [val=1.274e+00] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[1.27427499e+00 1.98235925e-07 9.01579035e-08]
+                   flow  =7.228e-07
+
+[rank=0] [val=1.274e+00] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[1.27427499e+00 1.98235925e-07 9.01579035e-08]
+                   flow  =7.228e-07
+
+[rank=0] [val=1.274e+00] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[1.27427499e+00 1.98235925e-07 4.22625622e-07]
+                   flow  =5.482e-06
+
+[rank=0] [val=1.274e+00] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[1.27427499e+00 1.98235925e-07 4.22625622e-07]
+                   flow  =5.482e-06
+
+[rank=0] [val=1.274e+00] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[1.27427499e+00 1.10138682e-06 1.95200000e-07]
+                   flow  =-6.163e-07
+
+[rank=0] [val=1.274e+00] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[1.27427499e+00 1.10138682e-06 1.95200000e-07]
+                   flow  =-6.163e-07
+
+[rank=0] [val=1.274e+00] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[1.27427499e+00 3.39981204e-05 1.95200000e-07]
+                   flow  =-1.149e-04
+
+[rank=0] [val=1.274e+00] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[1.27427499e+00 3.39981204e-05 1.95200000e-07]
+                   flow  =-1.149e-04
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.27427499e+00 1.88891503e-04 1.98110658e-06]
+                   flow  =-8.282e-04
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.27427499e+00 1.88891503e-04 1.98110658e-06]
+                   flow  =-8.282e-04
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.27427499e+00 1.88891503e-04 1.98110658e-06]
+                   flow  =-8.282e-04
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.27427499e+00 1.88891503e-04 1.98110658e-06]
+                   flow  =-8.282e-04
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.27427499e+00 1.88891503e-04 1.98110658e-06]
+                   flow  =-8.282e-04
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[1.27427499e+00 1.88891503e-04 1.98110658e-06]
+                   flow  =-8.282e-04
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.27427499e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-2.136e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.27427499e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-2.136e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.27427499e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-2.136e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.27427499e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-2.136e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.27427499e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-2.136e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.27427499e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-2.136e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.27427499e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-2.136e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[1.27427499e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-2.136e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-11.79073961  -5.65271156 -11.2436144 ]
+                   params=[1.27427499e+00 3.50799173e-03 1.30906228e-05]
+                   flow  =-3.740e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-11.79073961  -5.65271156 -11.2436144 ]
+                   params=[1.27427499e+00 3.50799173e-03 1.30906228e-05]
+                   flow  =-3.740e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-11.79073961  -5.65271156 -11.2436144 ]
+                   params=[1.27427499e+00 3.50799173e-03 1.30906228e-05]
+                   flow  =-3.740e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-11.79073961  -5.65271156 -11.2436144 ]
+                   params=[1.27427499e+00 3.50799173e-03 1.30906228e-05]
+                   flow  =-3.740e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.02066823  -5.68446837 -10.25657955]
+                   params=[1.27427499e+00 3.39833943e-03 3.51256281e-05]
+                   flow  =-3.262e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.02066823  -5.68446837 -10.25657955]
+                   params=[1.27427499e+00 3.39833943e-03 3.51256281e-05]
+                   flow  =-3.262e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.02066823  -5.68446837 -10.25657955]
+                   params=[1.27427499e+00 3.39833943e-03 3.51256281e-05]
+                   flow  =-3.262e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-12.02066823  -5.68446837 -10.25657955]
+                   params=[1.27427499e+00 3.39833943e-03 3.51256281e-05]
+                   flow  =-3.262e-02
+
+[rank=0] [val=1.274e+00] iter log-params=[-11.593001    -7.54224155  -8.90477095]
+                   params=[1.27427499e+00 5.30207800e-04 1.35739772e-04]
+                   flow  =-2.876e-03
+
+[rank=0] [val=1.274e+00] iter log-params=[-11.593001    -7.54224155  -8.90477095]
+                   params=[1.27427499e+00 5.30207800e-04 1.35739772e-04]
+                   flow  =-2.876e-03
+
+[rank=0] [val=1.274e+00] iter log-params=[-11.28029807  -5.12872426  -8.21813801]
+                   params=[1.27427499e+00 5.92411331e-03 2.69716808e-04]
+                   flow  =1.551e-01
+
+[rank=0] [val=1.274e+00] iter log-params=[-11.28029807  -5.12872426  -8.21813801]
+                   params=[1.27427499e+00 5.92411331e-03 2.69716808e-04]
+                   flow  =1.551e-01
+
+[rank=0] [val=1.274e+00] iter log-params=[-11.31248808  -7.05001105  -4.8922597 ]
+                   params=[1.27427499e+00 8.67399372e-04 7.50444549e-03]
+                   flow  =-5.934e-03
+
+[rank=0] [val=1.274e+00] iter log-params=[-11.31248808  -7.05001105  -4.8922597 ]
+                   params=[1.27427499e+00 8.67399372e-04 7.50444549e-03]
+                   flow  =-5.934e-03
+
+[rank=0] [val=1.274e+00] iter log-params=[-10.14445069  -8.35204012  -1.50200956]
+                   params=[1.27427499e+00 2.35914733e-04 2.22682217e-01]
+                   flow  =-8.368e-04
+
+[rank=0] [val=1.274e+00] iter log-params=[-10.14445069  -8.35204012  -1.50200956]
+                   params=[1.27427499e+00 2.35914733e-04 2.22682217e-01]
+                   flow  =-8.368e-04
+
+[rank=0] [val=5.456e+00] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[5.45559478e+00 1.98235925e-07 9.01579035e-08]
+                   flow  =1.140e-06
+
+[rank=0] [val=5.456e+00] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[5.45559478e+00 1.98235925e-07 9.01579035e-08]
+                   flow  =1.140e-06
+
+[rank=0] [val=5.456e+00] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[5.45559478e+00 1.98235925e-07 4.22625622e-07]
+                   flow  =5.900e-06
+
+[rank=0] [val=5.456e+00] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[5.45559478e+00 1.98235925e-07 4.22625622e-07]
+                   flow  =5.900e-06
+
+[rank=0] [val=5.456e+00] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[5.45559478e+00 1.10138682e-06 1.95200000e-07]
+                   flow  =1.697e-06
+
+[rank=0] [val=5.456e+00] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[5.45559478e+00 1.10138682e-06 1.95200000e-07]
+                   flow  =1.697e-06
+
+[rank=0] [val=5.456e+00] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[5.45559478e+00 3.39981204e-05 1.95200000e-07]
+                   flow  =-3.777e-05
+
+[rank=0] [val=5.456e+00] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[5.45559478e+00 3.39981204e-05 1.95200000e-07]
+                   flow  =-3.777e-05
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[5.45559478e+00 1.88891503e-04 1.98110658e-06]
+                   flow  =-2.785e-04
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[5.45559478e+00 1.88891503e-04 1.98110658e-06]
+                   flow  =-2.785e-04
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[5.45559478e+00 1.88891503e-04 1.98110658e-06]
+                   flow  =-2.785e-04
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[5.45559478e+00 1.88891503e-04 1.98110658e-06]
+                   flow  =-2.785e-04
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[5.45559478e+00 1.88891503e-04 1.98110658e-06]
+                   flow  =-2.785e-04
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[5.45559478e+00 1.88891503e-04 1.98110658e-06]
+                   flow  =-2.785e-04
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[5.45559478e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-4.553e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[5.45559478e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-4.553e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[5.45559478e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-4.553e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[5.45559478e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-4.553e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[5.45559478e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-4.553e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[5.45559478e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-4.553e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[5.45559478e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-4.553e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[5.45559478e+00 4.81921851e-03 7.17851353e-06]
+                   flow  =-4.553e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-11.79073961  -5.65271156 -11.2436144 ]
+                   params=[5.45559478e+00 3.50799173e-03 1.30906228e-05]
+                   flow  =-2.718e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-11.79073961  -5.65271156 -11.2436144 ]
+                   params=[5.45559478e+00 3.50799173e-03 1.30906228e-05]
+                   flow  =-2.718e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.01760251  -4.97523302  -9.12649617]
+                   params=[5.45559478e+00 6.90690928e-03 1.08745946e-04]
+                   flow  =-5.118e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.01760251  -4.97523302  -9.12649617]
+                   params=[5.45559478e+00 6.90690928e-03 1.08745946e-04]
+                   flow  =-5.118e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.01760251  -4.97523302  -9.12649617]
+                   params=[5.45559478e+00 6.90690928e-03 1.08745946e-04]
+                   flow  =-5.118e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.01760251  -4.97523302  -9.12649617]
+                   params=[5.45559478e+00 6.90690928e-03 1.08745946e-04]
+                   flow  =-5.118e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.01760251  -4.97523302  -9.12649617]
+                   params=[5.45559478e+00 6.90690928e-03 1.08745946e-04]
+                   flow  =-5.118e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.01760251  -4.97523302  -9.12649617]
+                   params=[5.45559478e+00 6.90690928e-03 1.08745946e-04]
+                   flow  =-5.118e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.01760251  -4.97523302  -9.12649617]
+                   params=[5.45559478e+00 6.90690928e-03 1.08745946e-04]
+                   flow  =-5.118e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.01760251  -4.97523302  -9.12649617]
+                   params=[5.45559478e+00 6.90690928e-03 1.08745946e-04]
+                   flow  =-5.118e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.17015022  -6.11710585  -5.99346847]
+                   params=[5.45559478e+00 2.20482784e-03 2.49499520e-03]
+                   flow  =-1.179e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.17015022  -6.11710585  -5.99346847]
+                   params=[5.45559478e+00 2.20482784e-03 2.49499520e-03]
+                   flow  =-1.179e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.03877866  -4.9624911   -3.42866132]
+                   params=[5.45559478 0.00699548 0.03243033]
+                   flow  =-4.879e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.03877866  -4.9624911   -3.42866132]
+                   params=[5.45559478 0.00699548 0.03243033]
+                   flow  =-4.879e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.03877866  -4.9624911   -3.42866132]
+                   params=[5.45559478 0.00699548 0.03243033]
+                   flow  =-4.879e-02
+
+[rank=0] [val=5.456e+00] iter log-params=[-12.03877866  -4.9624911   -3.42866132]
+                   params=[5.45559478 0.00699548 0.03243033]
+                   flow  =-4.879e-02
+
+[rank=0] [val=2.336e+01] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[2.33572147e+01 1.98235925e-07 9.01579035e-08]
+                   flow  =1.297e-06
+
+[rank=0] [val=2.336e+01] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
+                   params=[2.33572147e+01 1.98235925e-07 9.01579035e-08]
+                   flow  =1.297e-06
+
+[rank=0] [val=2.336e+01] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[2.33572147e+01 1.98235925e-07 4.22625622e-07]
+                   flow  =6.058e-06
+
+[rank=0] [val=2.336e+01] iter log-params=[-10.926208   -15.43380798 -14.6767791 ]
+                   params=[2.33572147e+01 1.98235925e-07 4.22625622e-07]
+                   flow  =6.058e-06
+
+[rank=0] [val=2.336e+01] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[2.33572147e+01 1.10138682e-06 1.95200000e-07]
+                   flow  =2.572e-06
+
+[rank=0] [val=2.336e+01] iter log-params=[-10.42956218 -13.71894042 -15.44924116]
+                   params=[2.33572147e+01 1.10138682e-06 1.95200000e-07]
+                   flow  =2.572e-06
+
+[rank=0] [val=2.336e+01] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[2.33572147e+01 3.39981204e-05 1.95200000e-07]
+                   flow  =-8.257e-06
+
+[rank=0] [val=2.336e+01] iter log-params=[-11.91949964 -10.28920532 -15.44924116]
+                   params=[2.33572147e+01 3.39981204e-05 1.95200000e-07]
+                   flow  =-8.257e-06
+
+[rank=0] [val=2.336e+01] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.33572147e+01 1.88891503e-04 1.98110658e-06]
+                   flow  =-5.622e-05
+
+[rank=0] [val=2.336e+01] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.33572147e+01 1.88891503e-04 1.98110658e-06]
+                   flow  =-5.622e-05
+
+[rank=0] [val=2.336e+01] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.33572147e+01 1.88891503e-04 1.98110658e-06]
+                   flow  =-5.622e-05
+
+[rank=0] [val=2.336e+01] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.33572147e+01 1.88891503e-04 1.98110658e-06]
+                   flow  =-5.622e-05
+
+[rank=0] [val=2.336e+01] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.33572147e+01 1.88891503e-04 1.98110658e-06]
+                   flow  =-5.622e-05
+
+[rank=0] [val=2.336e+01] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
+                   params=[2.33572147e+01 1.88891503e-04 1.98110658e-06]
+                   flow  =-5.622e-05
+
+[rank=0] [val=2.336e+01] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.33572147e+01 4.81921851e-03 7.17851353e-06]
+                   flow  =-1.774e-02
+
+[rank=0] [val=2.336e+01] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.33572147e+01 4.81921851e-03 7.17851353e-06]
+                   flow  =-1.774e-02
+
+[rank=0] [val=2.336e+01] iter log-params=[-12.14023111  -5.3351435  -11.84441822]
+                   params=[2.33572147e+01 4.81921851e-03 7.17851353e-06]
+                   flow  =-1.774e-02
+
