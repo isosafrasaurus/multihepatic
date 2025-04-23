@@ -1,0 +1,28 @@
+No PMIx server was reachable, but a PMI1/2 was detected.
+If srun is being used to launch application,  4 singletons will be started.
+/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+Traceback (most recent call last):
+  File "/scratch/pzz1/3d-1d/test.py", line 23, in <module>
+Traceback (most recent call last):
+  File "/scratch/pzz1/3d-1d/test.py", line 23, in <module>
+Traceback (most recent call last):
+  File "/scratch/pzz1/3d-1d/test.py", line 23, in <module>
+Traceback (most recent call last):
+  File "/scratch/pzz1/3d-1d/test.py", line 23, in <module>
+    import fem
+ModuleNotFoundError: No module named 'fem'
+    import fem
+ModuleNotFoundError: No module named 'fem'
+    import fem
+ModuleNotFoundError: No module named 'fem'
+    import fem
+ModuleNotFoundError: No module named 'fem'
+srun: error: bb2u12c1: tasks 0-1,3: Exited with exit code 1
+srun: error: bb2u12c1: task 2: Exited with exit code 1
