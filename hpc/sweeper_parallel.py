@@ -14,14 +14,23 @@ from multiprocessing import get_context
 from mpi4py import MPI
 from graphnics import FenicsGraph
 
+# ---------------------------------------------------
+# MPI setup
+# ---------------------------------------------------
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
+# ---------------------------------------------------
+# Unique cache per process (parent & spawn children)
+# ---------------------------------------------------
 cache_dir = tempfile.mkdtemp(prefix=f"dijitso_cache_{os.getpid()}_")
 os.environ['DIJITSO_CACHE_DIR'] = cache_dir
 os.environ['FFC_CACHE_DIR']    = cache_dir
 
+# ---------------------------------------------------
+# Paths and imports
+# ---------------------------------------------------
 WORK_PATH   = "./"
 SOURCE_PATH = os.path.join(WORK_PATH, "src")
 EXPORT_PATH = os.path.join("..", "export")
@@ -30,9 +39,11 @@ sys.path.append(SOURCE_PATH)
 import fem
 import tissue
 
+# ---------------------------------------------------
+# Build test vessel graph & domain
+# ---------------------------------------------------
 TEST_NUM_NODES_EXP = 5
 TEST_GRAPH = FenicsGraph()
-
 TEST_GRAPH_NODES = {
     0: [0.000, 0.020, 0.015],
     1: [0.010, 0.020, 0.015],
@@ -52,12 +63,10 @@ TEST_GRAPH_EDGES = [
     (3, 5, 0.002),
     (3, 7, 0.003),
 ]
-
 for nid, pos in TEST_GRAPH_NODES.items():
     TEST_GRAPH.add_node(nid, pos=pos)
 for u, v, r in TEST_GRAPH_EDGES:
     TEST_GRAPH.add_edge(u, v, radius=r)
-
 TEST_GRAPH.make_mesh(n=TEST_NUM_NODES_EXP)
 TEST_GRAPH.make_submeshes()
 
@@ -71,31 +80,42 @@ TEST_DOMAIN   = tissue.DomainBuild(
     Omega_sink_subdomain=X_ZERO_PLANE,
 )
 
-X_DEFAULT   = [4.855e-05, 3.568e-08, 1.952e-07]
+# ---------------------------------------------------
+# Sweep parameters
+# ---------------------------------------------------
+X_DEFAULT   = [4.855e-05, 3.568e-08, 1.952e-07]  # [gamma, gamma_a, gamma_R]
 TARGET_FLOW = 5.0e-6
 LAMBDA_REG  = 1e-3
 LOWER_BOUNDS = [[0.0, 0.0, 0.0], [0.010, 0.010, 0.010]]
 UPPER_BOUNDS = [[0.033, 0.030, 0.010], [0.043, 0.040, 0.020]]
 
+# ---------------------------------------------------
+# Solver initializer (child processes)
+# ---------------------------------------------------
 def worker_init():
     global SOLVER
+    # each process creates its own solver instance
     SOLVER = fem.SubCubes(
         domain=TEST_DOMAIN,
         lower_cube_bounds=LOWER_BOUNDS,
         upper_cube_bounds=UPPER_BOUNDS,
         order=2,
     )
-    # warm‐up solve to populate caches
-    SOLVER.solve(
-        gamma=X_DEFAULT[0],
-        gamma_a=X_DEFAULT[1],
-        gamma_R=X_DEFAULT[2],
-        mu=1.0e-3,
-        k_t=1.0e-10,
-        P_in=100.0 * 133.322,
-        P_cvp=1.0 * 133.322,
-    )
+    # only the parent precompile phase does a warm-up solve
+    if os.environ.get("FENICS_PRECOMPILE", "0") == "1":
+        SOLVER.solve(
+            gamma=X_DEFAULT[0],
+            gamma_a=X_DEFAULT[1],
+            gamma_R=X_DEFAULT[2],
+            mu=1.0e-3,
+            k_t=1.0e-10,
+            P_in=100.0 * 133.322,
+            P_cvp=1.0 * 133.322,
+        )
 
+# ---------------------------------------------------
+# Compute flow for given parameters (per-process)
+# ---------------------------------------------------
 def compute_flow(params: np.ndarray) -> float:
     SOLVER.solve(
         gamma=params[0],
@@ -112,6 +132,9 @@ def compute_flow(params: np.ndarray) -> float:
         pass
     return SOLVER.compute_net_flow_all_dolfin()
 
+# ---------------------------------------------------
+# Single-sweep objective & solver
+# ---------------------------------------------------
 def sweep_job(args):
     fixed_index, fixed_value, default = args
     y0 = np.log(default)
@@ -126,8 +149,7 @@ def sweep_job(args):
         fun=obj,
         x0=y0,
         method='Nelder-Mead',
-        options={'maxiter': 20},
-        callback=None
+        options={'maxiter': 20}
     )
 
     y_opt = res.x
@@ -152,14 +174,20 @@ def sweep_job(args):
         'upper_net':   upper_net,
     }
 
+# ---------------------------------------------------
+# Parallel sweep over local subset of values
+# ---------------------------------------------------
 def sweep_variable_parallel(variable_name: str,
                             values: np.ndarray,
                             default: list,
                             max_workers=None):
     mapping = {'gamma': 0, 'gamma_a': 1, 'gamma_R': 2}
+    if variable_name not in mapping:
+        raise ValueError(f"Invalid variable '{variable_name}' for sweep")
     idx = mapping[variable_name]
     jobs = [(idx, v, default) for v in values]
 
+    # use spawn so FEniCS internals aren't forked
     ctx = get_context('spawn')
     with ProcessPoolExecutor(
         max_workers=max_workers,
@@ -172,11 +200,13 @@ def sweep_variable_parallel(variable_name: str,
     df.index.name = variable_name
     return df
 
+# ---------------------------------------------------
+# Plotting helper
+# ---------------------------------------------------
 def plot_flow_data_semilog(df: pd.DataFrame, directory: str):
     plot_dir = os.path.join(directory, "plot_flow_data_semilog")
     os.makedirs(plot_dir, exist_ok=True)
-    timestamp = datetime.datetime.now(pytz.timezone("America/Chicago"))\
-                .strftime("%Y%m%d_%H%M")
+    timestamp = datetime.datetime.now(pytz.timezone("America/Chicago")).strftime("%Y%m%d_%H%M")
 
     var = df.index.values
     name = df.index.name
@@ -202,38 +232,38 @@ def plot_flow_data_semilog(df: pd.DataFrame, directory: str):
     plt.savefig(os.path.join(plot_dir, f"upper_flux_{timestamp}.png"))
     plt.close()
 
+# ---------------------------------------------------
+# Main execution
+# ---------------------------------------------------
 if __name__ == "__main__":
     varname = 'gamma'
     full_values = np.logspace(-10, 2, 20)
 
-    # split the logspace among MPI ranks
-    local_values = full_values[rank::size]
+    # 1) Pre-compile all UFL forms in parent
+    os.environ["FENICS_PRECOMPILE"] = "1"
+    worker_init()
+    os.environ["FENICS_PRECOMPILE"] = "0"
 
-    # number of local workers = SLURM_CPUS_PER_TASK
+    # 2) Split values among MPI ranks
+    local_values = full_values[rank::size]
     cpus = int(os.environ.get("SLURM_CPUS_PER_TASK", "1"))
 
-    # each rank does its own local sweep
+    # 3) Each rank runs its local pool sweep
     df_local = sweep_variable_parallel(varname, local_values, X_DEFAULT,
                                        max_workers=cpus)
-    # turn into a plain dict on each rank
     dict_local = df_local.to_dict('index')
 
-    # gather all dicts to rank 0
+    # 4) Gather results on rank 0
     all_dicts = comm.gather(dict_local, root=0)
 
     if rank == 0:
-        # merge into one big dict and build DataFrame
         merged = {}
         for part in all_dicts:
             merged.update(part)
-        df = pd.DataFrame.from_dict(merged, orient='index')\
-               .sort_index()
-        # save CSV
-        os.makedirs(EXPORT_PATH, exist_ok=True)
-        ts = datetime.datetime.now(pytz.timezone("America/Chicago"))\
-             .strftime("%Y%m%d_%H%M")
-        df.to_csv(os.path.join(EXPORT_PATH,
-                               f"{varname}_mpi_parallel_{ts}.csv"))
-        # make plots
-        plot_flow_data_semilog(df, EXPORT_PATH)
+        df = pd.DataFrame.from_dict(merged, orient='index').sort_index()
 
+        os.makedirs(EXPORT_PATH, exist_ok=True)
+        ts = datetime.datetime.now(pytz.timezone("America/Chicago")).strftime("%Y%m%d_%H%M")
+        df.to_csv(os.path.join(EXPORT_PATH, f"{varname}_mpi_parallel_{ts}.csv"))
+
+        plot_flow_data_semilog(df, EXPORT_PATH)
