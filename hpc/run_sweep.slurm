@@ -2,8 +2,8 @@
 #SBATCH --job-name=gamma_sweep
 #SBATCH --account=commons
 #SBATCH --partition=commons
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
+#SBATCH --ntasks=4               # number of MPI ranks
+#SBATCH --cpus-per-task=8        # each rank gets 8 CPUs for its local pool
 #SBATCH --mem=64G
 #SBATCH --time=04:00:00
 #SBATCH --mail-type=END,FAIL
@@ -16,10 +16,13 @@ set -euo pipefail
 
 module purge
 module load Mamba
+module load mpi4py          # ensure mpi4py is available
 
 cd $SHARED_SCRATCH/$USER/3d-1d
 mkdir -p logs export plot_flow_data_semilog
 
-CONDA_BASE=$(conda info --base) 
 ENV_DIR="$CONDA_PREFIX"
-$ENV_DIR/bin/python sweeper_parallel.py
+
+# Launch 4 MPI ranks; each rank will use --cpus-per-task cores in its local pool
+srun --mpi=pmix_v3 $ENV_DIR/bin/python -u sweeper_parallel.py
+
