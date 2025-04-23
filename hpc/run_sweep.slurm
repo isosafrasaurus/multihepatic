@@ -18,6 +18,8 @@ module purge
 module load Mamba
 
 cd $SHARED_SCRATCH/$USER/3d-1d
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH:-}"
+export LD_PRELOAD="$CONDA_PREFIX/lib/libssl.so.3:$CONDA_PREFIX/lib/libcrypto.so.3"
 mkdir -p logs export plot_flow_data_semilog
 
 ENV_DIR="$CONDA_PREFIX"

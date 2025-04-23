@@ -94,15 +94,14 @@ UPPER_BOUNDS = [[0.033, 0.030, 0.010], [0.043, 0.040, 0.020]]
 # ---------------------------------------------------
 def worker_init():
     global SOLVER
-    # each process creates its own solver instance
     SOLVER = fem.SubCubes(
         domain=TEST_DOMAIN,
         lower_cube_bounds=LOWER_BOUNDS,
         upper_cube_bounds=UPPER_BOUNDS,
         order=2,
     )
-    # only the parent precompile phase does a warm-up solve
     if os.environ.get("FENICS_PRECOMPILE", "0") == "1":
+        # warm-up solve to compile all forms
         SOLVER.solve(
             gamma=X_DEFAULT[0],
             gamma_a=X_DEFAULT[1],
@@ -142,8 +141,7 @@ def sweep_job(args):
     def obj(y):
         x = np.exp(y)
         x[fixed_index] = fixed_value
-        f = compute_flow(x)
-        return (f - TARGET_FLOW)**2 + LAMBDA_REG * np.sum(y**2)
+        return (compute_flow(x) - TARGET_FLOW)**2 + LAMBDA_REG * np.sum(y**2)
 
     res = scipy.optimize.minimize(
         fun=obj,
@@ -156,6 +154,7 @@ def sweep_job(args):
     x_opt = np.exp(y_opt)
     x_opt[fixed_index] = fixed_value
 
+    # final metrics
     flow      = compute_flow(x_opt)
     lower     = SOLVER.compute_lower_cube_flux_out()
     upper_in  = SOLVER.compute_upper_cube_flux_in()
@@ -182,23 +181,16 @@ def sweep_variable_parallel(variable_name: str,
                             default: list,
                             max_workers=None):
     mapping = {'gamma': 0, 'gamma_a': 1, 'gamma_R': 2}
-    if variable_name not in mapping:
-        raise ValueError(f"Invalid variable '{variable_name}' for sweep")
     idx = mapping[variable_name]
     jobs = [(idx, v, default) for v in values]
 
-    # use spawn so FEniCS internals aren't forked
     ctx = get_context('spawn')
     with ProcessPoolExecutor(
         max_workers=max_workers,
         mp_context=ctx,
         initializer=worker_init
     ) as exe:
-        results = list(exe.map(sweep_job, jobs))
-
-    df = pd.DataFrame(results).set_index('value')
-    df.index.name = variable_name
-    return df
+        return pd.DataFrame(list(exe.map(sweep_job, jobs))).set_index('value')
 
 # ---------------------------------------------------
 # Plotting helper
@@ -239,23 +231,27 @@ if __name__ == "__main__":
     varname = 'gamma'
     full_values = np.logspace(-10, 2, 20)
 
-    # 1) Pre-compile all UFL forms in parent
+    # 1) Pre-compile all UFL forms in parent (avoids in-loop JIT races)
     os.environ["FENICS_PRECOMPILE"] = "1"
     worker_init()
+    # also compile all flux forms once
+    SOLVER.compute_lower_cube_flux_out()
+    SOLVER.compute_upper_cube_flux_in()
+    SOLVER.compute_upper_cube_flux_out()
+    SOLVER.compute_upper_cube_flux()
     os.environ["FENICS_PRECOMPILE"] = "0"
 
-    # 2) Split values among MPI ranks
+    # 2) Split the sweep across MPI ranks
     local_values = full_values[rank::size]
     cpus = int(os.environ.get("SLURM_CPUS_PER_TASK", "1"))
 
-    # 3) Each rank runs its local pool sweep
-    df_local = sweep_variable_parallel(varname, local_values, X_DEFAULT,
-                                       max_workers=cpus)
+    # 3) Run local process-pool sweep
+    df_local = sweep_variable_parallel(varname, local_values, X_DEFAULT, max_workers=cpus)
+    df_local.index.name = varname
     dict_local = df_local.to_dict('index')
 
-    # 4) Gather results on rank 0
+    # 4) Gather and merge at rank 0
     all_dicts = comm.gather(dict_local, root=0)
-
     if rank == 0:
         merged = {}
         for part in all_dicts:
@@ -265,5 +261,5 @@ if __name__ == "__main__":
         os.makedirs(EXPORT_PATH, exist_ok=True)
         ts = datetime.datetime.now(pytz.timezone("America/Chicago")).strftime("%Y%m%d_%H%M")
         df.to_csv(os.path.join(EXPORT_PATH, f"{varname}_mpi_parallel_{ts}.csv"))
-
         plot_flow_data_semilog(df, EXPORT_PATH)
+

@@ -82,14 +82,6 @@ Calling FFC just-in-time (JIT) compiler, this may take some time.
 Calling FFC just-in-time (JIT) compiler, this may take some time.
 Calling FFC just-in-time (JIT) compiler, this may take some time.
 Calling FFC just-in-time (JIT) compiler, this may take some time.
-Calling FFC just-in-time (JIT) compiler, this may take some time.
-Calling FFC just-in-time (JIT) compiler, this may take some time.
-Calling FFC just-in-time (JIT) compiler, this may take some time.
-Calling FFC just-in-time (JIT) compiler, this may take some time.
-Calling FFC just-in-time (JIT) compiler, this may take some time.
-Calling FFC just-in-time (JIT) compiler, this may take some time.
-Calling FFC just-in-time (JIT) compiler, this may take some time.
-Calling FFC just-in-time (JIT) compiler, this may take some time.
 [rank=0] [val=1.000e-10] iter log-params=[-10.42956218 -15.43380798 -16.22170322]
                    params=[1.00000000e-10 1.98235925e-07 9.01579035e-08]
                    flow  =2.394e-04
@@ -122,11 +114,11 @@ Calling FFC just-in-time (JIT) compiler, this may take some time.
                    params=[1.00000000e-10 3.39981204e-05 1.95200000e-07]
                    flow  =7.068e-03
 
+[rank=0] [val=1.000e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
 [rank=0] [val=1.000e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
                    params=[1.00000000e-10 1.88891503e-04 1.98110658e-06]
                    flow  =1.185e-02
 
-[rank=0] [val=1.000e-10] iter log-params=[-12.41614545  -8.57433776 -13.13185499]
                    params=[1.00000000e-10 1.88891503e-04 1.98110658e-06]
                    flow  =1.185e-02
 
@@ -242,7 +234,6 @@ Calling FFC just-in-time (JIT) compiler, this may take some time.
                    params=[1.00000000e-10 9.92121098e-04 1.71367386e+00]
                    flow  =3.196e-02
 
-Calling FFC just-in-time (JIT) compiler, this may take some time.
 Calling FFC just-in-time (JIT) compiler, this may take some time.
 Calling FFC just-in-time (JIT) compiler, this may take some time.
 Calling FFC just-in-time (JIT) compiler, this may take some time.
