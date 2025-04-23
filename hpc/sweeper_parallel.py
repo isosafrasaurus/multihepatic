@@ -2,27 +2,26 @@
 import os
 import sys
 import tempfile
-
-# ====================================================
-# Unique cache per process (parent & spawn children)
-# ====================================================
-cache_dir = tempfile.mkdtemp(prefix=f"dijitso_cache_{os.getpid()}_")
-os.environ['DIJITSO_CACHE_DIR'] = cache_dir
-os.environ['FFC_CACHE_DIR']    = cache_dir
-
-import sys
-import pytz
 import datetime
-import scipy
+import pytz
 import numpy as np
 import pandas as pd
+import scipy.optimize
 import matplotlib.pyplot as plt
 import dolfin
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import get_context
+from mpi4py import MPI
 from graphnics import FenicsGraph
 
-# Paths
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
+
+cache_dir = tempfile.mkdtemp(prefix=f"dijitso_cache_{os.getpid()}_")
+os.environ['DIJITSO_CACHE_DIR'] = cache_dir
+os.environ['FFC_CACHE_DIR']    = cache_dir
+
 WORK_PATH   = "./"
 SOURCE_PATH = os.path.join(WORK_PATH, "src")
 EXPORT_PATH = os.path.join("..", "export")
@@ -72,10 +71,9 @@ TEST_DOMAIN   = tissue.DomainBuild(
     Omega_sink_subdomain=X_ZERO_PLANE,
 )
 
-X_DEFAULT   = [4.855e-05, 3.568e-08, 1.952e-07]  # [gamma, gamma_a, gamma_R]
+X_DEFAULT   = [4.855e-05, 3.568e-08, 1.952e-07]
 TARGET_FLOW = 5.0e-6
 LAMBDA_REG  = 1e-3
-
 LOWER_BOUNDS = [[0.0, 0.0, 0.0], [0.010, 0.010, 0.010]]
 UPPER_BOUNDS = [[0.033, 0.030, 0.010], [0.043, 0.040, 0.020]]
 
@@ -87,7 +85,7 @@ def worker_init():
         upper_cube_bounds=UPPER_BOUNDS,
         order=2,
     )
-    # one initial solve to pre-build caches
+    # warm‐up solve to populate caches
     SOLVER.solve(
         gamma=X_DEFAULT[0],
         gamma_a=X_DEFAULT[1],
@@ -98,10 +96,7 @@ def worker_init():
         P_cvp=1.0 * 133.322,
     )
 
-worker_init()
-
 def compute_flow(params: np.ndarray) -> float:
-    # rerun solve on the per-process SOLVER
     SOLVER.solve(
         gamma=params[0],
         gamma_a=params[1],
@@ -111,7 +106,6 @@ def compute_flow(params: np.ndarray) -> float:
         P_in=100.0 * 133.322,
         P_cvp=1.0 * 133.322,
     )
-    # clear PETSc solver cache
     try:
         dolfin.cpp.la.clear_petsc()
     except AttributeError:
@@ -119,75 +113,58 @@ def compute_flow(params: np.ndarray) -> float:
     return SOLVER.compute_net_flow_all_dolfin()
 
 def sweep_job(args):
-    try:
-        fixed_index, fixed_value, default = args
-        y0 = np.log(default)
+    fixed_index, fixed_value, default = args
+    y0 = np.log(default)
 
-        def obj(y):
-            x = np.exp(y)
-            x[fixed_index] = fixed_value
-            f = compute_flow(x)
-            return (f - TARGET_FLOW)**2 + LAMBDA_REG * np.sum(y**2)
+    def obj(y):
+        x = np.exp(y)
+        x[fixed_index] = fixed_value
+        f = compute_flow(x)
+        return (f - TARGET_FLOW)**2 + LAMBDA_REG * np.sum(y**2)
 
-        def callback(yk):
-            xk = np.exp(yk)
-            xk[fixed_index] = fixed_value
-            flow_k = compute_flow(xk)
-            print(f"[val={fixed_value:.3e}] iter log-params={yk}")
-            print(f"               params={xk}")
-            print(f"               flow  ={flow_k:.3e}\n")
+    res = scipy.optimize.minimize(
+        fun=obj,
+        x0=y0,
+        method='Nelder-Mead',
+        options={'maxiter': 20},
+        callback=None
+    )
 
-        res = scipy.optimize.minimize(
-            fun=obj,
-            x0=y0,
-            method='Nelder-Mead',
-            options={'maxiter': 20},
-            callback=callback
-        )
+    y_opt = res.x
+    x_opt = np.exp(y_opt)
+    x_opt[fixed_index] = fixed_value
 
-        y_opt = res.x
-        x_opt = np.exp(y_opt)
-        x_opt[fixed_index] = fixed_value
+    flow      = compute_flow(x_opt)
+    lower     = SOLVER.compute_lower_cube_flux_out()
+    upper_in  = SOLVER.compute_upper_cube_flux_in()
+    upper_out = SOLVER.compute_upper_cube_flux_out()
+    upper_net = SOLVER.compute_upper_cube_flux()
 
-        # final metrics
-        flow      = compute_flow(x_opt)
-        lower     = SOLVER.compute_lower_cube_flux_out()
-        upper_in  = SOLVER.compute_upper_cube_flux_in()
-        upper_out = SOLVER.compute_upper_cube_flux_out()
-        upper_net = SOLVER.compute_upper_cube_flux()
-
-        return {
-            'value':      fixed_value,
-            'opt_gamma':   x_opt[0],
-            'opt_gamma_a': x_opt[1],
-            'opt_gamma_R': x_opt[2],
-            'net_flow':    flow,
-            'lower_out':   lower,
-            'upper_in':    upper_in,
-            'upper_out':   upper_out,
-            'upper_net':   upper_net,
-        }
-    except Exception:
-        import traceback
-        traceback.print_exc()
-        raise
+    return {
+        'value':      fixed_value,
+        'opt_gamma':   x_opt[0],
+        'opt_gamma_a': x_opt[1],
+        'opt_gamma_R': x_opt[2],
+        'net_flow':    flow,
+        'lower_out':   lower,
+        'upper_in':    upper_in,
+        'upper_out':   upper_out,
+        'upper_net':   upper_net,
+    }
 
 def sweep_variable_parallel(variable_name: str,
                             values: np.ndarray,
                             default: list,
                             max_workers=None):
     mapping = {'gamma': 0, 'gamma_a': 1, 'gamma_R': 2}
-    if variable_name not in mapping:
-        raise ValueError(f"Invalid variable '{variable_name}' for sweep")
     idx = mapping[variable_name]
     jobs = [(idx, v, default) for v in values]
 
-    # use fork to inherit already-compiled modules
     ctx = get_context('spawn')
     with ProcessPoolExecutor(
         max_workers=max_workers,
         mp_context=ctx,
-        initializer=None      # no need to re-run worker_init
+        initializer=worker_init
     ) as exe:
         results = list(exe.map(sweep_job, jobs))
 
@@ -198,8 +175,8 @@ def sweep_variable_parallel(variable_name: str,
 def plot_flow_data_semilog(df: pd.DataFrame, directory: str):
     plot_dir = os.path.join(directory, "plot_flow_data_semilog")
     os.makedirs(plot_dir, exist_ok=True)
-    tz = pytz.timezone("America/Chicago")
-    timestamp = datetime.datetime.now(tz).strftime("%Y%m%d_%H%M")
+    timestamp = datetime.datetime.now(pytz.timezone("America/Chicago"))\
+                .strftime("%Y%m%d_%H%M")
 
     var = df.index.values
     name = df.index.name
@@ -227,13 +204,36 @@ def plot_flow_data_semilog(df: pd.DataFrame, directory: str):
 
 if __name__ == "__main__":
     varname = 'gamma'
-    values  = np.logspace(-10, 2, 20)
+    full_values = np.logspace(-10, 2, 20)
 
-    df = sweep_variable_parallel(varname, values, X_DEFAULT)
+    # split the logspace among MPI ranks
+    local_values = full_values[rank::size]
 
-    os.makedirs(EXPORT_PATH, exist_ok=True)
-    tz = pytz.timezone("America/Chicago")
-    ts = datetime.datetime.now(tz).strftime("%Y%m%d_%H%M")
-    df.to_csv(os.path.join(EXPORT_PATH, f"{varname}_parallel_{ts}.csv"))
+    # number of local workers = SLURM_CPUS_PER_TASK
+    cpus = int(os.environ.get("SLURM_CPUS_PER_TASK", "1"))
 
-    plot_flow_data_semilog(df, EXPORT_PATH)
+    # each rank does its own local sweep
+    df_local = sweep_variable_parallel(varname, local_values, X_DEFAULT,
+                                       max_workers=cpus)
+    # turn into a plain dict on each rank
+    dict_local = df_local.to_dict('index')
+
+    # gather all dicts to rank 0
+    all_dicts = comm.gather(dict_local, root=0)
+
+    if rank == 0:
+        # merge into one big dict and build DataFrame
+        merged = {}
+        for part in all_dicts:
+            merged.update(part)
+        df = pd.DataFrame.from_dict(merged, orient='index')\
+               .sort_index()
+        # save CSV
+        os.makedirs(EXPORT_PATH, exist_ok=True)
+        ts = datetime.datetime.now(pytz.timezone("America/Chicago"))\
+             .strftime("%Y%m%d_%H%M")
+        df.to_csv(os.path.join(EXPORT_PATH,
+                               f"{varname}_mpi_parallel_{ts}.csv"))
+        # make plots
+        plot_flow_data_semilog(df, EXPORT_PATH)
+
