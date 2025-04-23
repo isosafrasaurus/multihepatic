@@ -10,6 +10,7 @@
 #SBATCH --mail-user=pzz1@rice.edu
 #SBATCH --output=logs/test_%j.out
 #SBATCH --error=logs/test_%j.err
+#SBATCH --export=ALL,OMP_NUM_THREADS=1,MKL_NUM_THREADS=1
 
 set -euo pipefail
 
