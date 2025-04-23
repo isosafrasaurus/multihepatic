@@ -1,6 +1,0 @@
-/home/pzz1/.conda/envs/cmor_mdanderson/bin/python: can't open file '/scratch/pzz1/3d-1d/hpc/test_flow.py': [Errno 2] No such file or directory
-/home/pzz1/.conda/envs/cmor_mdanderson/bin/python: can't open file '/scratch/pzz1/3d-1d/hpc/test_flow.py': [Errno 2] No such file or directory
-/home/pzz1/.conda/envs/cmor_mdanderson/bin/python: can't open file '/scratch/pzz1/3d-1d/hpc/test_flow.py': [Errno 2] No such file or directory
-/home/pzz1/.conda/envs/cmor_mdanderson/bin/python: can't open file '/scratch/pzz1/3d-1d/hpc/test_flow.py': [Errno 2] No such file or directory
-srun: error: bb2u13c1: tasks 0-1: Exited with exit code 2
-srun: error: bb2u14c1: tasks 2-3: Exited with exit code 2

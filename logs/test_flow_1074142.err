@@ -1,6 +1,0 @@
-
-Note: the module "xalt" cannot be unloaded because it was not loaded.
-
-
-CondaError: Run 'conda init' before 'conda activate'
-

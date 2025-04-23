@@ -1,6 +1,0 @@
-Lmod has detected the following error: These module(s) or extension(s) exist
-but cannot be loaded as requested: "mpi4py"
-   Try: "module spider mpi4py" to see how to load the module(s).
-
-
-
