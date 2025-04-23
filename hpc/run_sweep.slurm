@@ -16,7 +16,6 @@ set -euo pipefail
 
 module purge
 module load Mamba
-module load mpi4py          # ensure mpi4py is available
 
 cd $SHARED_SCRATCH/$USER/3d-1d
 mkdir -p logs export plot_flow_data_semilog
@@ -24,5 +23,5 @@ mkdir -p logs export plot_flow_data_semilog
 ENV_DIR="$CONDA_PREFIX"
 
 # Launch 4 MPI ranks; each rank will use --cpus-per-task cores in its local pool
-srun --mpi=pmix_v3 $ENV_DIR/bin/python -u sweeper_parallel.py
+srun --mpi=pmi2 $ENV_DIR/bin/python -u sweeper_parallel.py
 
