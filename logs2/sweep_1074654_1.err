@@ -1,0 +1,9 @@
+  File "/scratch/pzz1/3d-1d/sweep_array.py", line 15
+    module purge
+           ^^^^^
+SyntaxError: invalid syntax
+  File "/scratch/pzz1/3d-1d/sweep_array.py", line 15
+    module purge
+           ^^^^^
+SyntaxError: invalid syntax
+srun: error: bb2u12c1: tasks 0-1: Exited with exit code 1

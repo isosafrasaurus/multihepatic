@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/scratch/pzz1/3d-1d/sweep_array.py", line 4, in <module>
+Traceback (most recent call last):
+  File "/scratch/pzz1/3d-1d/sweep_array.py", line 4, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+srun: error: bb2u19c1: tasks 0-1: Exited with exit code 1
