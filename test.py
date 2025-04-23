@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 import datetime
 import pytz
 
+os.environ["OMP_NUM_THREADS"]   = "1"
+os.environ["MKL_NUM_THREADS"]   = "1"
+
 # MPI initialization
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
