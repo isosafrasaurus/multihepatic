@@ -1,0 +1,14 @@
+No PMIx server was reachable, but a PMI1/2 was detected.
+If srun is being used to launch application,  4 singletons will be started.
+/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/home/pzz1/.conda/envs/cmor_mdanderson/lib/python3.10/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+Averaging over 224 cells:   0%|          | 0/224 [00:00<?, ?it/s]Averaging over 224 cells:  71%|███████▏  | 160/224 [00:00<00:00, 1596.64it/s]Averaging over 224 cells: 100%|██████████| 224/224 [00:00<00:00, 1586.11it/s]
+Averaging over 224 cells:   0%|          | 0/224 [00:00<?, ?it/s]Averaging over 224 cells:  72%|███████▏  | 161/224 [00:00<00:00, 1605.51it/s]Averaging over 224 cells: 100%|██████████| 224/224 [00:00<00:00, 1578.68it/s]
+Averaging over 224 cells:   0%|          | 0/224 [00:00<?, ?it/s]Averaging over 224 cells:  87%|████████▋ | 194/224 [00:00<00:00, 1932.07it/s]Averaging over 224 cells: 100%|██████████| 224/224 [00:00<00:00, 1858.43it/s]
+Averaging over 224 cells:   0%|          | 0/224 [00:00<?, ?it/s]Averaging over 224 cells:  83%|████████▎ | 185/224 [00:00<00:00, 1846.23it/s]Averaging over 224 cells: 100%|██████████| 224/224 [00:00<00:00, 1837.12it/s]
