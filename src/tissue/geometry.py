@@ -1,13 +1,13 @@
 import numpy as np
-from dolfin import SubDomain, near, UserExpression, Point
+from dolfin import SubDomain, near, UserExpression, Point, DOLFIN_EPS
 
 class BoundaryPoint(SubDomain):
-    def __init__(self, coordinate, tolerance: float = 1e-8):
+    def __init__(self, coordinate, tolerance = DOLFIN_EPS):
         super().__init__()
         self.coordinate = coordinate
         self.tolerance = tolerance
 
-    def inside(self, x, on_boundary: bool) -> bool:
+    def inside(self, x, on_boundary: bool):
         return (
             on_boundary
             and near(x[0], self.coordinate[0], self.tolerance)
@@ -16,13 +16,13 @@ class BoundaryPoint(SubDomain):
         )
 
 class AxisPlane(SubDomain):
-    def __init__(self, axis: int, coordinate: float, tolerance: float = 1e-8):
+    def __init__(self, axis: int, coordinate: float, tolerance: float = DOLFIN_EPS):
         super().__init__()
         self.axis = axis
         self.coordinate = coordinate
-        self.tolerance = tolerance
+        self.tolerance = tolerance):
 
-    def inside(self, x, on_boundary: bool) -> bool:
+    def inside(self, x, on_boundary):
         return on_boundary and near(x[self.axis], self.coordinate, self.tolerance)
 
 class AveragingRadius(UserExpression):
