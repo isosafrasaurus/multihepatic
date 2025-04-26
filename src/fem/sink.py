@@ -37,7 +37,7 @@ class Sink:
             - Constant(gamma) * self.u3_avg * self.v1 * D_perimeter * self.domain.dxLambda
         )
         a11 = (
-            k_v_expr / Constant(mu) * D_area * inner(grad(self.u1), grad(self.v1)) * self.domain.dxLambda
+            (k_v_expr / Constant(mu)) * D_area * inner(grad(self.u1), grad(self.v1)) * self.domain.dxLambda
             + Constant(gamma) * self.u1 * self.v1 * D_perimeter * self.domain.dxLambda
             + Constant(gamma_a / mu) * self.u1 * self.v1 * D_area * self.domain.dsLambdaRobin
         )
