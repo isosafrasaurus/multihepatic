@@ -2,8 +2,8 @@ import numpy as np
 from dolfin import SubDomain, near, UserExpression, Point, DOLFIN_EPS
 
 class BoundaryPoint(SubDomain):
-    def __init__(self, coordinate, tolerance = DOLFIN_EPS):
-        super().__init__()
+    def __init__(self, coordinate, tolerance = DOLFIN_EPS, **kwargs):
+        super().__init__(**kwargs)
         self.coordinate = coordinate
         self.tolerance = tolerance
 
@@ -16,8 +16,8 @@ class BoundaryPoint(SubDomain):
         )
 
 class AxisPlane(SubDomain):
-    def __init__(self, axis: int, coordinate: float, tolerance: float = DOLFIN_EPS):
-        super().__init__()
+    def __init__(self, axis, coordinate, tolerance = DOLFIN_EPS, **kwargs):
+        super().__init__(**kwargs)
         self.axis = axis
         self.coordinate = coordinate
         self.tolerance = tolerance
