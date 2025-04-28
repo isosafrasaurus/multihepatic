@@ -33,7 +33,7 @@ export MKL_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=4
 export VECLIB_MAXIMUM_THREADS=4
 
-srun --mpi=pmi2 -n $SLURM_NTASKS --cpu-bind=cores python 3d-1d/sweep_mpi_driver.py
+srun --mpi=pmi2 -n $SLURM_NTASKS --cpu-bind=cores python 3d-1d/sweeper_mpi.py
 
 DEST=$HOME/export/$SLURM_JOB_ID
 mkdir -p $DEST
