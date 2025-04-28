@@ -10,8 +10,7 @@ from concurrent.futures import ProcessPoolExecutor
 
 WORK_PATH = "./"
 SOURCE_PATH = os.path.join(WORK_PATH, "src")
-EXPORT_PATH = os.path.join("..", "export")
-DATA_PATH = os.path.join("..", "data")
+EXPORT_PATH = os.path.join(WORK_PATH, "export")
 
 sys.path.append(SOURCE_PATH)
 
@@ -54,9 +53,10 @@ def create_solver():
     graph.make_mesh(n=TEST_NUM_NODES_EXP)
     graph.make_submeshes()
 
-    Omega, _ = tissue.get_Omega_rect(
+    Omega, _ = tissue.get_Omega_rect_from_res(
         graph,
-        bounds=[[0, 0, 0], [0.05, 0.04, 0.03]]
+        bounds=[[0, 0, 0], [0.05, 0.04, 0.03]],
+        voxel_res=0.002
     )
 
     solver = fem.SubCubes(
