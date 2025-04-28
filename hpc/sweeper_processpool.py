@@ -8,7 +8,12 @@ import matplotlib.pyplot as plt
 from graphnics import FenicsGraph
 from concurrent.futures import ProcessPoolExecutor
 
-WORK_PATH = "./"
+import os
+from mpi4py import MPI
+rank = MPI.COMM_WORLD.Get_rank()
+os.environ["DIJITSO_CACHE_DIR"] = f"/scratch/{os.environ['USER']}/dijitso_cache_{rank}"
+
+WORK_PATH = os.path.join(os.getcwd(), "3d-1d")
 SOURCE_PATH = os.path.join(WORK_PATH, "src")
 EXPORT_PATH = os.path.join(WORK_PATH, "export")
 
