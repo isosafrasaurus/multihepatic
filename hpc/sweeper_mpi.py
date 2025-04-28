@@ -12,7 +12,7 @@ from mpi4py import MPI
 import dolfin
 
 
-WORK_PATH   = os.path.join(os.getcwd(), "3d-1d")
+WORK_PATH   = os.path.join("3d-1d")
 SOURCE_PATH = os.path.join(WORK_PATH, "src")
 EXPORT_PATH = os.path.join("..", "export")
 DATA_PATH   = os.path.join("..", "data")
