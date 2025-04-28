@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys, os
 import numpy as np
 import pytz
@@ -9,11 +10,12 @@ from graphnics import FenicsGraph
 from concurrent.futures import ProcessPoolExecutor
 
 import os
-from mpi4py import MPI
-rank = MPI.COMM_WORLD.Get_rank()
-os.environ["DIJITSO_CACHE_DIR"] = f"/scratch/{os.environ['USER']}/dijitso_cache_{rank}"
+from multiprocessing import get_context
 
-WORK_PATH = os.path.join(os.getcwd(), "3d-1d")
+# Use spawn to isolate each worker from any inherited MPI state
+os.environ["DIJITSO_CACHE_DIR"] = f"/scratch/{os.environ['USER']}/dijitso_cache_{os.getpid()}"
+
+WORK_PATH   = os.path.join(os.getcwd(), "3d-1d")
 SOURCE_PATH = os.path.join(WORK_PATH, "src")
 EXPORT_PATH = os.path.join(WORK_PATH, "export")
 
@@ -49,6 +51,7 @@ UPPER_CUBE_BOUNDS = [[0.033, 0.030, 0.010], [0.043, 0.040, 0.020]]
 LAMBDA_INLET_NODES = [0]
 X_ZERO_PLANE = tissue.AxisPlane(0, 0.0)
 
+
 def create_solver():
     graph = FenicsGraph()
     for node_id, pos in TEST_GRAPH_NODES.items():
@@ -74,6 +77,7 @@ def create_solver():
     )
     return solver
 
+
 TEST_CUBES_SOLVER = create_solver()
 TEST_CUBES_SOLVER.solve(
     gamma=3.6145827741262347e-05,
@@ -84,6 +88,7 @@ TEST_CUBES_SOLVER.solve(
     P_in=100.0 * 133.322,
     P_cvp=1.0 * 133.322
 )
+
 
 def compute_flow(x, solver):
     solver.solve(
@@ -103,6 +108,7 @@ def compute_flow(x, solver):
         solver.compute_upper_cube_flux()
     ]
 
+
 def objective_log_free(y_free, solver, target, fixed_index, fixed_value, free_indices):
     log_x = np.zeros(3)
     log_x[fixed_index] = np.log(fixed_value)
@@ -110,7 +116,8 @@ def objective_log_free(y_free, solver, target, fixed_index, fixed_value, free_in
         log_x[idx] = y_free[i]
     x = np.exp(log_x)
     net_flow = compute_flow(x, solver)[0]
-    return (net_flow - target)**2
+    return (net_flow - target) ** 2
+
 
 def optimization_callback(yk, fixed_index, fixed_value, free_indices):
     log_x = np.zeros(3)
@@ -123,15 +130,15 @@ def optimization_callback(yk, fixed_index, fixed_value, free_indices):
     print(f"  Current log_params: {log_x}")
     print(f"  Current parameters (gamma, gamma_a, gamma_R): {current_params}")
 
+
 def _sweep_variable_worker(args):
     variable_name, variable_index, free_indices, default, target_flow, value = args
 
-    # create a local solver to avoid pickling issues
+    # create a fresh solver in each worker
     solver = create_solver()
 
     fixed_value = value
-    log_default = np.log(default)
-    y0 = log_default[free_indices]
+    y0 = np.log(default)[free_indices]
 
     result = scipy.optimize.minimize(
         objective_log_free,
@@ -162,7 +169,9 @@ def _sweep_variable_worker(args):
         "gamma_R_opt":           x_opt[2],
     }
 
-def sweep_variable(variable_name, variable_values, default, solver, directory=None, target_flow=5.0e-6):
+
+def sweep_variable(variable_name, variable_values, default, solver,
+                   directory=None, target_flow=5.0e-6):
     match variable_name:
         case "gamma":
             variable_index = 0
@@ -180,7 +189,9 @@ def sweep_variable(variable_name, variable_values, default, solver, directory=No
         for value in variable_values
     ]
 
-    with ProcessPoolExecutor() as executor:
+    # spawn new Python interpreters so no MPI state is inherited
+    ctx = get_context("spawn")
+    with ProcessPoolExecutor(mp_context=ctx) as executor:
         rows = list(executor.map(_sweep_variable_worker, args_list))
 
     df = pd.DataFrame(rows).set_index(variable_name)
@@ -190,6 +201,7 @@ def sweep_variable(variable_name, variable_values, default, solver, directory=No
         cst = pytz.timezone("America/Chicago")
         now = datetime.datetime.now(cst)
         timestamp = now.strftime("%Y%m%d_%H%M")
+
         # save CSV
         csv_path = os.path.join(directory, f"{variable_name}_sweeps_{timestamp}.csv")
         df.to_csv(csv_path)
@@ -200,7 +212,7 @@ def sweep_variable(variable_name, variable_values, default, solver, directory=No
 
         # plot lower_cube_flux_out
         x = df.index.values
-        plt.figure(figsize=(8,6))
+        plt.figure(figsize=(8, 6))
         plt.semilogx(x, df['lower_cube_flux_out'], marker='o', linestyle='-')
         plt.xlabel(f"{variable_name} (log scale)")
         plt.ylabel('Lower Cube Flux Out')
@@ -211,7 +223,7 @@ def sweep_variable(variable_name, variable_values, default, solver, directory=No
         plt.close()
 
         # plot upper cube fluxes
-        plt.figure(figsize=(8,6))
+        plt.figure(figsize=(8, 6))
         plt.semilogx(x, df['upper_cube_flux_in'],  marker='s', linestyle='-',  label='Upper Cube Flux In')
         plt.semilogx(x, df['upper_cube_flux_out'], marker='^', linestyle='--', label='Upper Cube Flux Out')
         plt.semilogx(x, df['upper_cube_flux'],     marker='d', linestyle='-.', label='Upper Cube Net Flux')
@@ -225,6 +237,7 @@ def sweep_variable(variable_name, variable_values, default, solver, directory=No
         plt.close()
 
     return df
+
 
 if __name__ == "__main__":
     x_default = [
