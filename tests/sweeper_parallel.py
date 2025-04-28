@@ -4,9 +4,9 @@ import pytz
 import datetime
 import scipy.optimize
 import pandas as pd
-from concurrent.futures import ProcessPoolExecutor
-import itertools
+import matplotlib.pyplot as plt
 from graphnics import FenicsGraph
+from concurrent.futures import ProcessPoolExecutor
 
 WORK_PATH = "./"
 SOURCE_PATH = os.path.join(WORK_PATH, "src")
@@ -19,8 +19,6 @@ import fem, tissue
 
 TEST_NUM_NODES_EXP = 5
 
-TEST_GRAPH = FenicsGraph()
-
 TEST_GRAPH_NODES = {
     0: [0.000, 0.020, 0.015],
     1: [0.010, 0.020, 0.015],
@@ -31,6 +29,7 @@ TEST_GRAPH_NODES = {
     6: [0.038, 0.005, 0.015],
     7: [0.038, 0.035, 0.015]
 }
+
 TEST_GRAPH_EDGES = [
     (0, 1, 0.004),
     (1, 2, 0.003),
@@ -41,31 +40,36 @@ TEST_GRAPH_EDGES = [
     (3, 7, 0.003)
 ]
 
-for node_id, pos in TEST_GRAPH_NODES.items():
-    TEST_GRAPH.add_node(node_id, pos=pos)
-
-for (u, v, radius) in TEST_GRAPH_EDGES:
-    TEST_GRAPH.add_edge(u, v, radius=radius)
-
-TEST_GRAPH.make_mesh(n=TEST_NUM_NODES_EXP)
-TEST_GRAPH.make_submeshes()
-
-TEST_OMEGA, _ = tissue.get_Omega_rect(
-    TEST_GRAPH,
-    bounds=[[0, 0, 0], [0.05, 0.04, 0.03]]
-)
-
+LOWER_CUBE_BOUNDS = [[0.0, 0.0, 0.0], [0.010, 0.010, 0.010]]
+UPPER_CUBE_BOUNDS = [[0.033, 0.030, 0.010], [0.043, 0.040, 0.020]]
+LAMBDA_INLET_NODES = [0]
 X_ZERO_PLANE = tissue.AxisPlane(0, 0.0)
 
-TEST_CUBES_SOLVER = fem.SubCubes(
-    TEST_GRAPH,
-    TEST_OMEGA,
-    Lambda_inlet_nodes=[0],
-    Omega_sink_subdomain=X_ZERO_PLANE,
-    lower_cube_bounds=[[0.0, 0.0, 0.0], [0.010, 0.010, 0.010]],
-    upper_cube_bounds=[[0.033, 0.030, 0.010], [0.043, 0.040, 0.020]]
-)
+def create_solver():
+    graph = FenicsGraph()
+    for node_id, pos in TEST_GRAPH_NODES.items():
+        graph.add_node(node_id, pos=pos)
+    for u, v, radius in TEST_GRAPH_EDGES:
+        graph.add_edge(u, v, radius=radius)
+    graph.make_mesh(n=TEST_NUM_NODES_EXP)
+    graph.make_submeshes()
 
+    Omega, _ = tissue.get_Omega_rect(
+        graph,
+        bounds=[[0, 0, 0], [0.05, 0.04, 0.03]]
+    )
+
+    solver = fem.SubCubes(
+        graph,
+        Omega,
+        Lambda_inlet_nodes=LAMBDA_INLET_NODES,
+        Omega_sink_subdomain=X_ZERO_PLANE,
+        lower_cube_bounds=LOWER_CUBE_BOUNDS,
+        upper_cube_bounds=UPPER_CUBE_BOUNDS
+    )
+    return solver
+
+TEST_CUBES_SOLVER = create_solver()
 TEST_CUBES_SOLVER.solve(
     gamma=3.6145827741262347e-05,
     gamma_a=8.225197366649115e-08,
@@ -75,7 +79,6 @@ TEST_CUBES_SOLVER.solve(
     P_in=100.0 * 133.322,
     P_cvp=1.0 * 133.322
 )
-
 
 def compute_flow(x, solver):
     solver.solve(
@@ -95,7 +98,6 @@ def compute_flow(x, solver):
         solver.compute_upper_cube_flux()
     ]
 
-
 def objective_log_free(y_free, solver, target, fixed_index, fixed_value, free_indices):
     log_x = np.zeros(3)
     log_x[fixed_index] = np.log(fixed_value)
@@ -103,8 +105,7 @@ def objective_log_free(y_free, solver, target, fixed_index, fixed_value, free_in
         log_x[idx] = y_free[i]
     x = np.exp(log_x)
     net_flow = compute_flow(x, solver)[0]
-    return (net_flow - target) ** 2
-
+    return (net_flow - target)**2
 
 def optimization_callback(yk, fixed_index, fixed_value, free_indices):
     log_x = np.zeros(3)
@@ -117,39 +118,44 @@ def optimization_callback(yk, fixed_index, fixed_value, free_indices):
     print(f"  Current log_params: {log_x}")
     print(f"  Current parameters (gamma, gamma_a, gamma_R): {current_params}")
 
+def _sweep_variable_worker(args):
+    variable_name, variable_index, free_indices, default, target_flow, value = args
 
-def _process_value(value, variable_name, default, variable_index, free_indices, target_flow):
-    solver = TEST_CUBES_SOLVER
+    
+    solver = create_solver()
+
     fixed_value = value
     log_default = np.log(default)
     y0 = log_default[free_indices]
+
     result = scipy.optimize.minimize(
         objective_log_free,
         y0,
         args=(solver, target_flow, variable_index, fixed_value, free_indices),
         method='Nelder-Mead',
-        options={'maxiter': 50},
+        options={'maxiter': 20},
         callback=lambda yk, fi=variable_index, fv=fixed_value, fi_list=free_indices:
-            optimization_callback(yk, fi, fv, fi_list)
+                 optimization_callback(yk, fi, fv, fi_list)
     )
+
     log_x_opt = np.zeros(3)
     log_x_opt[variable_index] = np.log(fixed_value)
     for i, idx in enumerate(free_indices):
         log_x_opt[idx] = result.x[i]
     x_opt = np.exp(log_x_opt)
+
     flows = compute_flow(x_opt, solver)
     return {
-        variable_name: value,
-        "net_flow":            flows[0],
-        "lower_cube_flux_out": flows[1],
-        "upper_cube_flux_in":  flows[2],
-        "upper_cube_flux_out": flows[3],
-        "upper_cube_flux":     flows[4],
-        "gamma_opt":           x_opt[0],
-        "gamma_a_opt":         x_opt[1],
-        "gamma_R_opt":         x_opt[2],
+        variable_name:           value,
+        "net_flow":              flows[0],
+        "lower_cube_flux_out":   flows[1],
+        "upper_cube_flux_in":    flows[2],
+        "upper_cube_flux_out":   flows[3],
+        "upper_cube_flux":       flows[4],
+        "gamma_opt":             x_opt[0],
+        "gamma_a_opt":           x_opt[1],
+        "gamma_R_opt":           x_opt[2],
     }
-
 
 def sweep_variable(variable_name, variable_values, default, solver, directory=None, target_flow=5.0e-6):
     match variable_name:
@@ -164,22 +170,13 @@ def sweep_variable(variable_name, variable_values, default, solver, directory=No
 
     free_indices = [i for i in range(3) if i != variable_index]
 
-    
-    args_iterables = (
-        variable_values,
-        itertools.repeat(variable_name),
-        itertools.repeat(default),
-        itertools.repeat(variable_index),
-        itertools.repeat(free_indices),
-        itertools.repeat(target_flow),
-    )
+    args_list = [
+        (variable_name, variable_index, free_indices, default, target_flow, value)
+        for value in variable_values
+    ]
 
-    
     with ProcessPoolExecutor() as executor:
-        rows = list(executor.map(
-            _process_value,
-            *args_iterables
-        ))
+        rows = list(executor.map(_sweep_variable_worker, args_list))
 
     df = pd.DataFrame(rows).set_index(variable_name)
 
@@ -188,21 +185,57 @@ def sweep_variable(variable_name, variable_values, default, solver, directory=No
         cst = pytz.timezone("America/Chicago")
         now = datetime.datetime.now(cst)
         timestamp = now.strftime("%Y%m%d_%H%M")
-        filename = os.path.join(directory, f"{variable_name}_sweeps_{timestamp}.csv")
-        df.to_csv(filename)
+        
+        csv_path = os.path.join(directory, f"{variable_name}_sweeps_{timestamp}.csv")
+        df.to_csv(csv_path)
+
+        
+        plots_dir = os.path.join(directory, f"{variable_name}_plots_{timestamp}")
+        os.makedirs(plots_dir, exist_ok=True)
+
+        
+        x = df.index.values
+        plt.figure(figsize=(8,6))
+        plt.semilogx(x, df['lower_cube_flux_out'], marker='o', linestyle='-')
+        plt.xlabel(f"{variable_name} (log scale)")
+        plt.ylabel('Lower Cube Flux Out')
+        plt.title(f"{variable_name} vs Lower Cube Flux Out")
+        plt.grid(True, which="both", ls="--")
+        plt.tight_layout()
+        plt.savefig(os.path.join(plots_dir, f"{variable_name}_lower_cube_flux_out.png"))
+        plt.close()
+
+        
+        plt.figure(figsize=(8,6))
+        plt.semilogx(x, df['upper_cube_flux_in'],  marker='s', linestyle='-',  label='Upper Cube Flux In')
+        plt.semilogx(x, df['upper_cube_flux_out'], marker='^', linestyle='--', label='Upper Cube Flux Out')
+        plt.semilogx(x, df['upper_cube_flux'],     marker='d', linestyle='-.', label='Upper Cube Net Flux')
+        plt.xlabel(f"{variable_name} (log scale)")
+        plt.ylabel('Flux')
+        plt.title(f"{variable_name} vs Upper Cube Flux (In, Out, Net)")
+        plt.legend()
+        plt.grid(True, which="both", ls="--")
+        plt.tight_layout()
+        plt.savefig(os.path.join(plots_dir, f"{variable_name}_upper_cube_flux.png"))
+        plt.close()
 
     return df
 
+if __name__ == "__main__":
+    x_default = [
+        3.587472583336982e-05,
+        8.220701444028143e-08,
+        8.587334091365098e-08
+    ]
 
-x_default = [3.587472583336982e-05, 8.220701444028143e-08, 8.587334091365098e-08]
+    data = sweep_variable(
+        "gamma",
+        np.logspace(-10, 2, 50),
+        x_default,
+        TEST_CUBES_SOLVER,
+        directory=EXPORT_PATH,
+        target_flow=5.0e-6
+    )
 
-data = sweep_variable(
-    "gamma",
-    np.logspace(-10, 2, 50),
-    x_default,
-    TEST_CUBES_SOLVER,
-    directory=EXPORT_PATH,
-    target_flow=5.0e-6
-)
+    print(data.head())
 
-data.head()
