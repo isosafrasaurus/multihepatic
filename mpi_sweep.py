@@ -3,13 +3,13 @@ import os
 import sys
 import tempfile
 import numpy as np
-from mpi4py import MPI
 import scipy.optimize
 import pandas as pd
 import matplotlib.pyplot as plt
 import datetime
 import pytz
 import dolfin
+from mpi4py import MPI
 from graphnics import FenicsGraph
 
 

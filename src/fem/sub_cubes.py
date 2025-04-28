@@ -49,20 +49,20 @@ class SubCubes(Velo):
 
     def compute_lower_cube_flux_in(self):
         n = FacetNormal(self.domain.Omega)
-        expr = conditional( lt(dot(avg(self.velocity), n('-')), 0), dot(avg(self.velocity), n('-')), 0.0)
+        expr = conditional(lt(dot(avg(self.velocity), n('-')), 0), dot(avg(self.velocity), n('-')), 0.0)
         return assemble(expr * self.dS_lower(1))
 
     def compute_lower_cube_flux_out(self):
         n = FacetNormal(self.domain.Omega)
-        expr = conditional( gt(dot(avg(self.velocity), n('-')), 0), dot(avg(self.velocity), n('-')), 0.0)
+        expr = conditional(gt(dot(avg(self.velocity), n('-')), 0), dot(avg(self.velocity), n('-')), 0.0)
         return assemble(expr * self.dS_lower(1))
 
     def compute_upper_cube_flux_in(self):
         n = FacetNormal(self.domain.Omega)
-        expr = conditional( lt(dot(avg(self.velocity), n('-')), 0), dot(avg(self.velocity), n('-')), 0.0)
+        expr = conditional(lt(dot(avg(self.velocity), n('-')), 0), dot(avg(self.velocity), n('-')), 0.0)
         return assemble(expr * self.dS_upper(1))
 
     def compute_upper_cube_flux_out(self):
         n = FacetNormal(self.domain.Omega)
-        expr = conditional( gt(dot(avg(self.velocity), n('-')), 0), dot(avg(self.velocity), n('-')), 0.0)
+        expr = conditional(gt(dot(avg(self.velocity), n('-')), 0), dot(avg(self.velocity), n('-')), 0.0)
         return assemble(expr * self.dS_upper(1))
