@@ -10,6 +10,7 @@ module load HDF5/1.14.0
 module load PETSc/3.20.3
 module load SLEPc
 module load Cython/3.0.8
+module load Eigen/3.4.0
 
 if [ ! -d "$PREFIX" ]; then
     python3 -m venv "$PREFIX"
@@ -29,11 +30,14 @@ python -m pip install --upgrade pip wheel cmake
 python -m pip install numpy
 python -m pip install --no-binary=petsc4py petsc4py==3.20.3
 
-python -m pip install mpi4py pybind11 dev-fenics-ffc --no-cache-dir
-
+python -m pip install mpi4py pybind11 --no-cache-dir
 python -m pip install h5py --no-binary=h5py
+python -m pip install 'sympy<1.10'
 
-git clone https://bitbucket.org/fenics-project/dolfin.git dolfin
+pip3 install fenics-ffc --upgrade
+FENICS_VERSION=$(python3 -c"import ffc; print(ffc.__version__)")
+
+git clone --branch=$FENICS_VERSION https://bitbucket.org/fenics-project/dolfin
 cd dolfin
 cmake -B build \
     -DCMAKE_BUILD_TYPE=Release \
