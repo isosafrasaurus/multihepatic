@@ -24,3 +24,16 @@ class AxisPlane(SubDomain):
 
     def inside(self, x, on_boundary):
         return on_boundary and near(x[self.axis], self.coordinate, self.tolerance)
+
+class CubeSubBoundary(SubDomain):
+    def __init__(self, corner_1, corner_2):
+        super().__init__()
+        self.corner_1 = corner_1
+        self.corner_2 = corner_2
+
+    def inside(self, x, on_boundary):
+        return (
+            self.corner_1[0] <= x[0] <= self.corner_2[0] and
+            self.corner_1[1] <= x[1] <= self.corner_2[1] and
+            self.corner_1[2] <= x[2] <= self.corner_2[2]
+        )
