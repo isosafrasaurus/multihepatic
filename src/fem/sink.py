@@ -124,3 +124,5 @@ class Sink:
             os.makedirs(directory, exist_ok = True)
             TubeFile(self.G, os.path.join(directory, "pressure1d.pvd")) << self.uh1d
             File(os.path.join(directory, "pressure3d.pvd")) << self.uh3d
+
+        return self.uh3d, self.uh1d
