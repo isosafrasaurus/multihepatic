@@ -11,7 +11,7 @@ class Velo(Sink):
         self.velocity = None
 
     def solve(self, gamma, gamma_a, gamma_R, mu, k_t, P_in, P_cvp, directory = None):
-        super().solve(gamma, gamma_a, gamma_R, mu, k_t, P_in, P_cvp, directory = None)
+        uh3d, uh1d = super().solve(gamma, gamma_a, gamma_R, mu, k_t, P_in, P_cvp, directory = None)
 
         # Set constants
         self.k_t = k_t
@@ -32,6 +32,8 @@ class Velo(Sink):
         if directory is not None:
             os.makedirs(directory, exist_ok = True)
             File(os.path.join(directory, "velocity3d.pvd")) << self.velocity
+
+        return uh3d, uh1d, self.velocity
 
     def compute_inflow_sink(self):
         n = FacetNormal(self.Omega)
