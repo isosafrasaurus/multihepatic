@@ -22,7 +22,7 @@ class SubCubes(Velo):
         self.dS_upper = Measure("dS", domain = self.Omega, subdomain_data = self.upper_boundaries)
 
     def solve(self, gamma, gamma_a, gamma_R, mu, k_t, P_in, P_cvp):
-        super().solve(gamma, gamma_a, gamma_R, mu, k_t, P_in, P_cvp)
+        return super().solve(gamma, gamma_a, gamma_R, mu, k_t, P_in, P_cvp)
 
     def compute_lower_cube_flux(self):
         n = FacetNormal(self.Omega)

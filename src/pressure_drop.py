@@ -59,9 +59,9 @@ def get_path_pressure(G, uh1d, path, directory = None):
     path_coords, path_pressure = coords[node_ids], pressure[node_ids]
     culum_dist = np.concatenate(([0], np.cumsum(np.linalg.norm(np.diff(path_coords, axis=0), axis=1))))
 
+    df_data = {"culum_dist": culum_dist, "path_pressure": path_pressure}
+    df = pd.DataFrame(df_data)
     if directory is not None:
-        df_data = {"culum_dist": culum_dist, "path_pressure": path_pressure}
-        df = pd.DataFrame(df_data)
+        os.makedirs(directory, exist_ok = True)
         df.to_csv(directory, index = False)
-    
-    return culum_dist, path_pressure
+    return df
