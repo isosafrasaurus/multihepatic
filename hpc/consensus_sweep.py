@@ -92,6 +92,7 @@ def sweep_variable(sweep_name, sweep_i, sweep_values, x_default, target, solver,
 
     # For each sweep value
     for sweep_value in sweep_values:
+        # Get free parameters vector
         x0_log_free = np.delete(x_default_log, sweep_i)
         sweep_log = np.log(sweep_value)
         # Optimize only the free logs
@@ -222,7 +223,7 @@ def run_sweep(sweep_name, sweep_values, target, x_default = None, maxiter_o = 50
     test_graph.make_submeshes()
 
     # Get Omega mesh from Lambda
-    test_Omega, _ = tissue.get_Omega_rect(test_graph, bounds = [[0, 0, 0], [0.05, 0.04, 0.03]])
+    test_Omega, _ = tissue.get_Omega_rect_from_res(test_graph, bounds = [[0, 0, 0], [0.05, 0.04, 0.03]], voxel_res = 0.0015)
     
     x_zero_plane = tissue.AxisPlane(0, 0.0)
 
