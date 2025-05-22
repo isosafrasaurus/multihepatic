@@ -48,7 +48,7 @@ export PYTHONPATH="${PYTHONPATH}:$SRC_PATH"
 echo "Added $SRC_PATH to PYTHONPATH."
 
 # Run sweep
-$CONDA_PREFIX/bin/python $SCRATCH_JOB_PATH/3d-1d/hpc/consensus_sweep.py \
+$CONDA_PREFIX/bin/python -u $SCRATCH_JOB_PATH/3d-1d/hpc/consensus_sweep.py \
 	--sweep_name "gamma" \
 	--sweep_values "np.logspace(-10, -2, 50)" \
 	--maxiter_o 30 \
