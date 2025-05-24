@@ -14,10 +14,6 @@ except ImportError:
 
 X_DIMENSION = 3  # gamma, gamma_a, gamma_R
 
-
-# -----------------------------------------------------------------------------#
-# 1.  Build once‑for‑all consensus FEM solver
-# -----------------------------------------------------------------------------#
 def build_consensus_solver():
     """Returns a fem.SubCubes instance parameterised exactly as before."""
     test_num_nodes_exp = 5
@@ -65,8 +61,6 @@ def build_consensus_solver():
         upper_cube_bounds=[[0.033, 0.030, 0.010], [0.043, 0.040, 0.020]],
     )
 
-
-# -----------------------------------------------------------------------------#
 def compute_flow(x, solver):
     solver.solve(
         gamma=x[0],
@@ -212,8 +206,6 @@ def run_sweep_sublist(
     print(f"[part {part_idx}] wrote {outfile}")
     return outfile
 
-
-# -----------------------------------------------------------------------------#
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--sweep_name", required=True, choices=["gamma", "gamma_a", "gamma_R"])
