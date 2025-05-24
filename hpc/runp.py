@@ -14,10 +14,6 @@ except ImportError:
 
 X_DIMENSION = 3  
 
-
-
-
-
 def build_consensus_solver():
     
     test_num_nodes_exp = 5
@@ -64,8 +60,6 @@ def build_consensus_solver():
         lower_cube_bounds=[[0.0, 0.0, 0.0], [0.010, 0.010, 0.010]],
         upper_cube_bounds=[[0.033, 0.030, 0.010], [0.043, 0.040, 0.020]],
     )
-
-
 
 def compute_flow(x, solver):
     solver.solve(
@@ -211,8 +205,6 @@ def run_sweep_sublist(
     df.to_csv(outfile, index=False)
     print(f"[part {part_idx}] wrote {outfile}")
     return outfile
-
-
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()

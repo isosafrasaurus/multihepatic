@@ -29,7 +29,6 @@ if [[ -z "$SLURM_ARRAY_TASK_ID" || -z "$PART_COUNT" || -z "$SWEEP_NAME" || -z "$
     exit 1
 fi
 
-# Preserve original behaviour -------------------------------------------------
 export CONDA_BACKUP_CXX="${CONDA_BACKUP_CXX:-}"
 export CXX="${CXX:-}"
 
@@ -54,9 +53,6 @@ mamba activate cmor_mdanderson
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH:-}"
 export LD_PRELOAD="$CONDA_PREFIX/lib/libssl.so.3:$CONDA_PREFIX/lib/libcrypto.so.3"
 
-# -----------------------------------------------------------------------------#
-# 1.  Run the shard assigned to this array task
-# -----------------------------------------------------------------------------#
 $CONDA_PREFIX/bin/python "$SCRATCH_JOB_PATH/3d-1d/hpc/runp.py" \
     --sweep_name  "$SWEEP_NAME" \
     --sweep_values "$SWEEP_VALUES" \
@@ -68,9 +64,6 @@ $CONDA_PREFIX/bin/python "$SCRATCH_JOB_PATH/3d-1d/hpc/runp.py" \
 
 cp -r "$SCRATCH_EXPORT_PATH"/*.csv "$HOME_EXPORT_PATH"
 
-# -----------------------------------------------------------------------------#
-# 2.  If this is task 0, wait for all *.csv then merge them
-# -----------------------------------------------------------------------------#
 if [[ "$SLURM_ARRAY_TASK_ID" -eq 0 ]]; then
     echo "[aggregator] waiting for ${PART_COUNT} CSV files..."
     while true; do
@@ -91,4 +84,3 @@ fi
 
 rm -rf "$SCRATCH_JOB_PATH"
 echo "Job $SLURM_JOB_ID (array id ${SLURM_ARRAY_TASK_ID}) finished."
-
