@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import griddata
 from matplotlib.patches import Rectangle
-from graphnics import *
+from graphnics
 from xii import *
 from .util import *
 
@@ -42,7 +42,7 @@ def plot_with_boundaries(uh1d, uh3d, z_level=None, cube_lower=None, cube_upper=N
     z_level = z_level or np.median(coords3d[:, 2])
     fig = plt.figure(figsize=(14, 6))
     
-    
+    # 3D Scatter Plot
     ax1 = fig.add_subplot(1, 2, 1, projection='3d')
     sc = ax1.scatter(coords1d[:, 0], coords1d[:, 1], coords1d[:, 2], c=values1d, cmap='viridis', marker='o')
     fig.colorbar(sc, ax=ax1, label='1D Pressure (Pa)')
@@ -58,12 +58,12 @@ def plot_with_boundaries(uh1d, uh3d, z_level=None, cube_lower=None, cube_upper=N
         plot_3d_box(ax1, cube_upper, color='magenta', label='Upper Cube Subdomain')
     ax1.legend()
 
-    
+    # 2D Heatmap Plot at Specified Z-Level
     tol = 1e-3
     mask = np.abs(coords3d[:, 2] - z_level) < tol
     if not mask.any():
         print(f"No data found at Z={z_level}")
-        return fig  
+        return fig  # Return figure even if no heatmap is created
     x_slice, y_slice, z_vals = coords3d[mask, 0], coords3d[mask, 1], values3d[mask]
     xi = np.linspace(x_slice.min(), x_slice.max(), 100)
     yi = np.linspace(y_slice.min(), y_slice.max(), 100)
