@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import griddata
 from matplotlib.patches import Rectangle
-from graphnics import *
+from graphnics
 from xii import *
 from .util import *
 

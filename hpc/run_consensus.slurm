@@ -50,9 +50,9 @@ echo "Added $SRC_PATH to PYTHONPATH."
 # Run sweep
 $CONDA_PREFIX/bin/python -u $SCRATCH_JOB_PATH/3d-1d/hpc/consensus_sweep.py \
 	--sweep_name "gamma" \
-	--sweep_values "np.logspace(-10, -2, 50)" \
-	--maxiter_o 30 \
-	--maxiter_c 30 \
+	--sweep_values "np.logspace(-10, -2, 3)" \
+	--maxiter_o 10 \
+	--maxiter_c 10 \
 	--directory "$SCRATCH_EXPORT_PATH"
 
 cp -r $SCRATCH_EXPORT_PATH/* $HOME_EXPORT_PATH
