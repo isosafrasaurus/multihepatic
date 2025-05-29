@@ -21,7 +21,6 @@ python -u "$DRIVER" \
   --directory "$OUTDIR" \
   --num_parts "$NUM_PARTS" \
   --part_idx "$SLURM_ARRAY_TASK_ID" \
-  --maxiter_o "$MAXITER_O" \
   --maxiter_c "$MAXITER_C" \
   --voxel_res "$VOXEL_RES" \
   --x_default "$X_DEFAULT"

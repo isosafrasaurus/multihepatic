@@ -17,4 +17,3 @@ df = pd.concat((pd.read_csv(p) for p in parts), ignore_index=True)
 out = os.path.join(folder, "combined_results.csv")
 df.to_csv(out, index=False)
 print(f"[combine_csv] wrote {out} with {len(df)} rows from {len(parts)} parts")
-
