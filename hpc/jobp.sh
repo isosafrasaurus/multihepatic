@@ -10,21 +10,21 @@ export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH:-}"
 export LD_PRELOAD="$CONDA_PREFIX/lib/libssl.so.3:$CONDA_PREFIX/lib/libcrypto.so.3"
 export CONDA_BACKUP_CXX="${CONDA_BACKUP_CXX:-}"
 export CXX="${CXX:-}"
-
-export PYTHONPATH="$(dirname "$DRIVER")/../src:${PYTHONPATH:-}"
+export PYTHONPATH="${SRC}:${PYTHONPATH:-}"
 
 OUTDIR="$RESULT_ROOT/${SWEEP_NAME}_$SLURM_ARRAY_JOB_ID"
 mkdir -p "$OUTDIR"
 
 python -u "$DRIVER" \
-  --sweep_name   "$SWEEP_NAME" \
+  --sweep_name "$SWEEP_NAME" \
   --sweep_values "$SWEEP_VALUES" \
-  --directory    "$OUTDIR" \
-  --num_parts    "$NUM_PARTS" \
-  --part_idx     "$SLURM_ARRAY_TASK_ID" \
-  --maxiter_o    "$MAXITER_O" \
-  --maxiter_c    "$MAXITER_C" \
-  --voxel_res    "$VOXEL_RES"
+  --directory "$OUTDIR" \
+  --num_parts "$NUM_PARTS" \
+  --part_idx "$SLURM_ARRAY_TASK_ID" \
+  --maxiter_o "$MAXITER_O" \
+  --maxiter_c "$MAXITER_C" \
+  --voxel_res "$VOXEL_RES" \
+  --x_default "$X_DEFAULT"
 
 if [[ "$SLURM_ARRAY_TASK_ID" -eq 0 ]]; then
   echo "[task 0] waiting for the other $((NUM_PARTS-1)) part CSVs…"
@@ -33,5 +33,5 @@ if [[ "$SLURM_ARRAY_TASK_ID" -eq 0 ]]; then
     sleep 60
   done
   echo "[task 0] all parts present – merging"
-  python "$HOME/3d-1d/hpc/combinep.py" "$OUTDIR"
+  python "$COMBINER" "$OUTDIR"
 fi
