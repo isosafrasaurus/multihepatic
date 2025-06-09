@@ -6,9 +6,3 @@ __pycache__/
 
 # C
 *.so
-
-# Testing
-export/
-
-# NOTS
-logs/
