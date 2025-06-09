@@ -56,11 +56,11 @@ def get_Omega_rect(G, bounds = None, voxel_dim = (16, 16, 16), padding = 0.008):
     Omega_coords[:] = Omega_coords * scales + shifts
     return Omega, bounds
 
-def get_Omega_rect_from_res(G, bounds=None, voxel_res=0.001, padding=0.008):
-    positions    = [data['pos'] for node, data in G.nodes(data=True)]
-    pos_array    = np.array(positions)
-    Lambda_min   = np.min(pos_array, axis=0)
-    Lambda_max   = np.max(pos_array, axis=0)
+def get_Omega_rect_from_res(G, bounds = None, voxel_res = 0.001, padding = 0.008):
+    positions = [data['pos'] for node, data in G.nodes(data=True)]
+    pos_array = np.array(positions)
+    Lambda_min = np.min(pos_array, axis=0)
+    Lambda_max = np.max(pos_array, axis=0)
 
     if bounds is None:
         scales = Lambda_max - Lambda_min + 2 * padding
