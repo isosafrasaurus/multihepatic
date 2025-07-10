@@ -1,5 +1,8 @@
 #!/bin/bash
 
+module purge
+module load gcc
+
 set -e
 set -x
 
