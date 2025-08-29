@@ -1,8 +1,9 @@
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 from matplotlib.patches import Rectangle
-from graphnics
+
+from graphnics import *
 from xii import *
 from .util import *
 
@@ -41,8 +42,8 @@ def plot_with_boundaries(uh1d, uh3d, z_level=None, cube_lower=None, cube_upper=N
 
     z_level = z_level or np.median(coords3d[:, 2])
     fig = plt.figure(figsize=(14, 6))
-    
-    # 3D Scatter Plot
+
+    # 3D scatter of 1D values
     ax1 = fig.add_subplot(1, 2, 1, projection='3d')
     sc = ax1.scatter(coords1d[:, 0], coords1d[:, 1], coords1d[:, 2], c=values1d, cmap='viridis', marker='o')
     fig.colorbar(sc, ax=ax1, label='1D Pressure (Pa)')
@@ -58,12 +59,13 @@ def plot_with_boundaries(uh1d, uh3d, z_level=None, cube_lower=None, cube_upper=N
         plot_3d_box(ax1, cube_upper, color='magenta', label='Upper Cube Subdomain')
     ax1.legend()
 
-    # 2D Heatmap Plot at Specified Z-Level
+    # 2D heatmap slice at Z = z_level
     tol = 1e-3
     mask = np.abs(coords3d[:, 2] - z_level) < tol
     if not mask.any():
         print(f"No data found at Z={z_level}")
-        return fig  # Return figure even if no heatmap is created
+        return fig
+
     x_slice, y_slice, z_vals = coords3d[mask, 0], coords3d[mask, 1], values3d[mask]
     xi = np.linspace(x_slice.min(), x_slice.max(), 100)
     yi = np.linspace(y_slice.min(), y_slice.max(), 100)
@@ -77,7 +79,7 @@ def plot_with_boundaries(uh1d, uh3d, z_level=None, cube_lower=None, cube_upper=N
     fig.colorbar(hm, ax=ax2, label='3D Pressure (Pa)')
     ax2.set(title=f'3D Pressure Heatmap at Z = {z_level:.3f}', xlabel='X', ylabel='Y')
     ax2.set_aspect('equal', adjustable='box')
-    
+
     for box, color, label in zip([omega_box, sub_box], ['red', 'blue'], ['Omega Boundary', 'Sub-mesh Boundary']):
         rect = Rectangle((box[0], box[2]), box[1] - box[0], box[3] - box[2],
                          edgecolor=color, facecolor='none', lw=2, label=label)
@@ -86,3 +88,4 @@ def plot_with_boundaries(uh1d, uh3d, z_level=None, cube_lower=None, cube_upper=N
 
     plt.tight_layout()
     return fig
+
