@@ -9,7 +9,7 @@ def get_fg_from_json(directory):
     ])
     num_files = len(json_files)
     if num_files == 0:
-        raise ValueError(f"No .json files found in {directory})
+        raise ValueError(f"No .json files found in {directory}")
     else:
         print(f"Found {num_files} JSON files in '{directory}'.")
 
@@ -29,7 +29,7 @@ def get_fg_from_json(directory):
             if points[0]['position'] == val:
                 v1 = key
                 break
-        
+
         v2 = ind - idx + 1
         pos_v1 = points[0]['position']
         pos_v2 = points[1]['position']
@@ -53,3 +53,4 @@ def get_fg_from_json(directory):
         ind += len(points)
         branch_points.update({ind - idx - 1: pos_v2})
     return G
+

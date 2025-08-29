@@ -17,3 +17,4 @@ def compute_boundaries(coords):
     return (coords[:, 0].min(), coords[:, 0].max(),
             coords[:, 1].min(), coords[:, 1].max(),
             coords[:, 2].min(), coords[:, 2].max())
+
