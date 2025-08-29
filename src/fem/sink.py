@@ -1,12 +1,17 @@
 import os
 import numpy as np
-from tissue import AveragingRadius, SegmentLength, BoundaryPoint
-from dolfin import FunctionSpace, TrialFunction, TestFunction, Constant, inner, grad, DirichletBC, LUSolver, UserExpression, Point, File, SubDomain, MeshFunction, Measure, UnitCubeMesh, facets, near, DOLFIN_EPS
+
+from ..tissue import AveragingRadius, SegmentLength, BoundaryPoint
+from dolfin import (FunctionSpace, TrialFunction, TestFunction, Constant, inner, grad,
+                    DirichletBC, LUSolver, UserExpression, Point, File, SubDomain,
+                    MeshFunction, Measure, UnitCubeMesh, facets, near, DOLFIN_EPS,
+                    as_backend_type)
 from xii import ii_assemble, apply_bc, ii_convert, ii_Function, Circle, Average
 from graphnics import TubeFile
 
 class Sink:
-    def __init__(self, G, Omega, Lambda_num_nodes_exp = 5, Lambda_inlet_nodes = None, Omega_sink_subdomain = None, order = 2):
+    def __init__(self, G, Omega, Lambda_num_nodes_exp=5, Lambda_inlet_nodes=None,
+                 Omega_sink_subdomain=None, order=2):
         # Set constants and placeholders
         self.G = G
         self.Omega = Omega
@@ -23,8 +28,8 @@ class Sink:
         boundary_Omega = MeshFunction("size_t", Omega, Omega.topology().dim() - 1, 0)
         boundary_Lambda = MeshFunction("size_t", Lambda, Lambda.topology().dim() - 1, 0)
 
-        # Initialize domains and subdomains        
-        self.dsOmega = Measure("ds", domain = Omega, subdomain_data = boundary_Omega)
+        # Initialize domains and subdomains
+        self.dsOmega = Measure("ds", domain=Omega, subdomain_data=boundary_Omega)
         if Omega_sink_subdomain is not None:
             Omega_sink_subdomain.mark(boundary_Omega, 1)
         if Lambda_inlet_nodes is not None:
@@ -33,9 +38,9 @@ class Sink:
                 coordinate = Lambda_coords[node_id]
                 inlet_subdomain = BoundaryPoint(coordinate)
                 inlet_subdomain.mark(boundary_Lambda, 1)
-        self.dsLambda = Measure("ds", domain = Lambda, subdomain_data = boundary_Lambda)
-        self.dxOmega = Measure("dx", domain = Omega)
-        self.dxLambda = Measure("dx", domain = Lambda)
+        self.dsLambda = Measure("ds", domain=Lambda, subdomain_data=boundary_Lambda)
+        self.dxOmega = Measure("dx", domain=Omega)
+        self.dxLambda = Measure("dx", domain=Lambda)
         self.dsOmegaNeumann = self.dsOmega(0)
         self.dsOmegaSink = self.dsOmega(1)
         self.dsLambdaRobin = self.dsLambda(0)
@@ -44,14 +49,14 @@ class Sink:
         # Build bboxtree and network-related averaging measures
         tree = Lambda.bounding_box_tree()
         tree.build(Lambda)
-        radius = AveragingRadius(tree, G, degree = order)
-        segment_length = SegmentLength(tree, G, degree = order)
-        circle = Circle(radius = radius, degree = order)
+        radius = AveragingRadius(tree, G, degree=order)
+        segment_length = SegmentLength(tree, G, degree=order)
+        circle = Circle(radius=radius, degree=order)
 
         # Initialize spaces and system forms
         V3 = FunctionSpace(Omega, "CG", 1)
         V1 = FunctionSpace(Lambda, "CG", 1)
-        self.W  = [V3, V1]
+        self.W = [V3, V1]
         u3, u1 = map(TrialFunction, (V3, V1))
         v3, v1 = map(TestFunction, (V3, V1))
         u3_avg = Average(u3, Lambda, circle)
@@ -93,7 +98,7 @@ class Sink:
         self.uh3d = None
         self.uh1d = None
 
-    def solve(self, gamma, gamma_a, gamma_R, mu, k_t, P_in, P_cvp, directory = None):
+    def solve(self, gamma, gamma_a, gamma_R, mu, k_t, P_in, P_cvp, directory=None):
         # Assign constants
         self.c_gamma.assign(gamma)
         self.c_gamma_a.assign(gamma_a)
@@ -115,14 +120,26 @@ class Sink:
         wh = ii_Function(self.W)
         solver = LUSolver(A, "mumps")
         solver.solve(wh.vector(), b)
+        del solver  # free solver promptly
+
         self.uh3d, self.uh1d = wh
         self.uh3d.rename("3D Pressure (Pa)", "3D Pressure Distribution")
         self.uh1d.rename("1D Pressure (Pa)", "1D Pressure Distribution")
 
         # Save to file
         if directory is not None:
-            os.makedirs(directory, exist_ok = True)
+            os.makedirs(directory, exist_ok=True)
             TubeFile(self.G, os.path.join(directory, "pressure1d.pvd")) << self.uh1d
             File(os.path.join(directory, "pressure3d.pvd")) << self.uh3d
 
+        # Explicit PETSc cleanup (best-effort)
+        try:
+            as_backend_type(A).mat().destroy()
+            as_backend_type(b).vec().destroy()
+        except Exception:
+            pass
+        A = None
+        b = None
+
         return self.uh3d, self.uh1d
+
