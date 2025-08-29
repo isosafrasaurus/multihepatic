@@ -1,12 +1,15 @@
-from graphnics import *
-from xii import *
-import matplotlib.pyplot as plt
+import os
+import numpy as np
 import pandas as pd
 
-def get_cells_along_path(G, path, tolerance = DOLFIN_EPS):
+from graphnics import *
+from xii import *
+from dolfin import DOLFIN_EPS
+
+def get_cells_along_path(G, path, tolerance=DOLFIN_EPS):
     if not G.mesh:
         raise ValueError("FenicsGraph object meshes not initialized. Call .make_mesh()")
-    
+
     
     global_vertices = []
     global_coords = G.mesh.coordinates()
@@ -20,7 +23,7 @@ def get_cells_along_path(G, path, tolerance = DOLFIN_EPS):
             edge, forward = (v, u), False
         else:
             raise ValueError(f"No edge between {u} and {v} in the graph.")
-        if not "submesh" in G.edges[edge]:
+        if "submesh" not in G.edges[edge]:
             raise ValueError("FenicsGraph object submeshes not initialized. Call .make_submeshes()")
         submesh = G.edges[edge]["submesh"]
         coords = submesh.coordinates()
@@ -31,7 +34,7 @@ def get_cells_along_path(G, path, tolerance = DOLFIN_EPS):
         else:
             local_to_global = []
             for local_pt in coords:
-                matches = np.where(np.all(np.isclose(global_coords, local_pt, atol = tolerance), axis=1))[0]
+                matches = np.where(np.all(np.isclose(global_coords, local_pt, atol=tolerance), axis=1))[0]
                 if len(matches) == 0:
                     raise ValueError(f"No matching global vertex for local coordinate: {local_pt}")
                 local_to_global.append(matches[0])
@@ -51,7 +54,7 @@ def get_cells_along_path(G, path, tolerance = DOLFIN_EPS):
         global_vertices.extend(ordered_globals)
     return global_vertices
 
-def get_path_pressure(G, uh1d, path, directory = None):
+def get_path_pressure(G, uh1d, path, directory=None):
     node_ids = get_cells_along_path(G, path)
     mesh = uh1d.function_space().mesh()
     coords = mesh.coordinates()
@@ -59,9 +62,9 @@ def get_path_pressure(G, uh1d, path, directory = None):
     path_coords, path_pressure = coords[node_ids], pressure[node_ids]
     culum_dist = np.concatenate(([0], np.cumsum(np.linalg.norm(np.diff(path_coords, axis=0), axis=1))))
 
-    df_data = {"culum_dist": culum_dist, "path_pressure": path_pressure}
-    df = pd.DataFrame(df_data)
+    df = pd.DataFrame({"culum_dist": culum_dist, "path_pressure": path_pressure})
     if directory is not None:
-        os.makedirs(directory, exist_ok = True)
-        df.to_csv(directory, index = False)
+        os.makedirs(directory, exist_ok=True)
+        df.to_csv(directory, index=False)
     return df
+

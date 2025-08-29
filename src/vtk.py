@@ -2,7 +2,8 @@ import meshio
 import vtk
 import numpy as np
 
-def save_Lambda(save_path, Lambda, radius_map, uh1d = None):
+def save_Lambda(save_path, Lambda, radius_map, uh1d=None):
+    
     points = Lambda.coordinates()
     cells = {"line": Lambda.cells()}
 
@@ -10,10 +11,7 @@ def save_Lambda(save_path, Lambda, radius_map, uh1d = None):
 
     if uh1d is not None:
         uh1d_values = np.array([uh1d(point) for point in points])
-        mesh = meshio.Mesh(
-            points, cells, 
-            point_data={"radius": radius_values, "Pressure1D": uh1d_values}
-        )
+        mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values, "Pressure1D": uh1d_values})
     else:
         mesh = meshio.Mesh(points, cells, point_data={"radius": radius_values})
 
@@ -31,3 +29,4 @@ def save_Lambda(save_path, Lambda, radius_map, uh1d = None):
     writer.SetFileName(save_path)
     writer.SetInputData(polydata)
     writer.Write()
+

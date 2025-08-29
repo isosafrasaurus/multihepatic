@@ -1,9 +1,7 @@
 import numpy as np
 import plotly.graph_objects as go
-from mpl_toolkits.mplot3d import Axes3D
-from scipy.interpolate import griddata
-from matplotlib.patches import Rectangle
-from typing import Optional, Tuple, List, Any
+from typing import Optional, Tuple, Any
+
 from graphnics import *
 from xii import *
 from .util import *
@@ -29,7 +27,6 @@ def add_box_plotly(fig: go.Figure,
         line=dict(color=color, width=4),
         name=name
     ))
-
 
 def plot_with_boundaries_plotly(uh1d: Any, uh3d: Any,
                                 cube_lower: Optional[Tuple[np.ndarray, np.ndarray]] = None,
@@ -89,3 +86,4 @@ def plot_with_boundaries_plotly(uh1d: Any, uh3d: Any,
         height=700
     )
     fig.show()
+
