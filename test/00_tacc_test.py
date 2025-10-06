@@ -3,9 +3,9 @@ import numpy as np
 from graphnics import FenicsGraph
 from dolfin import FacetNormal, Measure, dot, assemble
 
-from ..tissue import AxisPlane 
-from ..src import Domain1D, Domain3D, Simulation, release_result
-from ..src.problem import PressureVelocityProblem
+from tissue import AxisPlane 
+from src import Domain1D, Domain3D, Simulation, release_result
+from src.problem import PressureVelocityProblem
 
 TEST_NUM_NODES_EXP = 5
 
