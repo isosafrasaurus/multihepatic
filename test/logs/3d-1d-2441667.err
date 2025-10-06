@@ -1,0 +1,12 @@
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+Traceback (most recent call last):
+  File "/workspace/test/00_tacc_test.py", line 6, in <module>
+    from ..tissue import AxisPlane 
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ImportError: attempted relative import with no known parent package
+srun: error: c454-103: task 0: Exited with exit code 1
