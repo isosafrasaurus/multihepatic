@@ -10,15 +10,46 @@ TASKS=1
 LOGDIR="$PWD/logs"
 
 IMAGE_URI="docker://ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest"
-REPO_URL="https://github.com/isosafrasaurus/3d-1d"
-RUN_SCRIPT="test/00_tacc_test.py"
 
-# Logging
+RUN_REL="${1:-00_tacc_test.py}"
+
+abspath() {
+  local target="$1"
+  if command -v realpath >/dev/null 2>&1; then
+    realpath -m "$target"
+  elif command -v readlink >/dev/null 2>&1; then
+    readlink -f "$target"
+  else
+    # Fallback: best-effort absolute path
+    ( cd "$(dirname "$target")" && printf '%s/%s\n' "$PWD" "$(basename "$target")" )
+  fi
+}
+
+if [[ ! -f "$RUN_REL" ]]; then
+  echo "[WRAPPER][FATAL] Local run script not found at path (relative to $(pwd)): '$RUN_REL'" >&2
+  exit 1
+fi
+RUN_ABS="$(abspath "$RUN_REL")"
+
+find_project_root() {
+  local d
+  d="$(dirname "$RUN_ABS")"
+  while [[ "$d" != "/" ]]; do
+    if [[ -d "$d/src" || -d "$d/fem" || -d "$d/tissue" ]]; then
+      printf '%s\n' "$d"
+      return 0
+    fi
+    d="$(dirname "$d")"
+  done
+  # Fallback to the script's directory
+  printf '%s\n' "$(dirname "$RUN_ABS")"
+}
+PROJECT_ROOT="$(find_project_root)"
+
 mkdir -p "${LOGDIR}"
 OUT_PATTERN="${LOGDIR}/${JOB_NAME}-%j.out"
 ERR_PATTERN="${LOGDIR}/${JOB_NAME}-%j.err"
 
-# Create a temporary job script (quiet but prints key lifecycle + errors)
 JOBFILE="$(mktemp -p "$PWD" tacc-job-XXXXXX.sh)"
 JOB_TEMPLATE="./tacc-job.template.sh"
 if [[ ! -f "${JOB_TEMPLATE}" ]]; then
@@ -29,8 +60,8 @@ cp "${JOB_TEMPLATE}" "${JOBFILE}"
 
 sed -i \
   -e "s|__IMAGE_URI__|${IMAGE_URI}|g" \
-  -e "s|__REPO_URL__|${REPO_URL}|g" \
-  -e "s|__RUN_SCRIPT__|${RUN_SCRIPT}|g" \
+  -e "s|__RUN_ABS__|${RUN_ABS}|g" \
+  -e "s|__PROJECT_ROOT__|${PROJECT_ROOT}|g" \
   -e "s|__TASKS__|${TASKS}|g" \
   "${JOBFILE}"
 
@@ -39,7 +70,6 @@ chmod +x "${JOBFILE}"
 cleanup() { rm -f "${JOBFILE}" 2>/dev/null || true; }
 trap cleanup EXIT
 
-# Submit (concise)
 jobid_raw="$(
   sbatch \
     --parsable \
@@ -65,9 +95,12 @@ fi
 out_file="${OUT_PATTERN//%j/${jobid}}"
 err_file="${ERR_PATTERN//%j/${jobid}}"
 
-echo "Submitted job ${jobid} (stdout: ${out_file}, stderr: ${err_file})"
+echo "Submitted job ${jobid}"
+echo "  Script    : ${RUN_ABS}"
+echo "  ProjRoot  : ${PROJECT_ROOT}"
+echo "  stdout    : ${out_file}"
+echo "  stderr    : ${err_file}"
 
-# Start tails
 tail -n +1 -F --retry "${out_file}" | sed -u 's/^/[STDOUT] /' &
 T1=$!
 tail -n +1 -F --retry "${err_file}" | sed -u 's/^/[STDERR] /' &
@@ -83,7 +116,6 @@ on_int() {
 }
 trap on_int INT
 
-# Poll the queue; when the job leaves, stop tailing
 while :; do
   qline="$(squeue -h -j "${jobid}" 2>/dev/null || true)"
   [[ -n "${qline}" ]] || break
@@ -104,4 +136,3 @@ echo "  ExitCode : ${exit_code:-unknown}"
 echo "  Reason   : ${reason:-unknown}"
 
 [[ "${state}" == "COMPLETED" ]] || exit 1
-
