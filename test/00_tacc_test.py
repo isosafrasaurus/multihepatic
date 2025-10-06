@@ -1,9 +1,13 @@
+import os, sys
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 import numpy as np
 from graphnics import FenicsGraph
 from dolfin import FacetNormal, Measure, dot, assemble
 
-from tissue import AxisPlane 
+from tissue import AxisPlane
 from src import Domain1D, Domain3D, Simulation, release_result
 from src.problem import PressureVelocityProblem
 
