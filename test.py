@@ -1,4 +1,4 @@
-# new_design_equiv_sim.py
+# test.py
 import numpy as np
 from graphnics import FenicsGraph
 from dolfin import FacetNormal, Measure, dot, assemble
