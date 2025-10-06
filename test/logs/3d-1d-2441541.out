@@ -1,0 +1,9 @@
+[JOB] START 2025-10-06T14:01:30-05:00
+[JOB] JobID: 2441541  Tasks: 1
+[JOB] Script: test/00_tacc_test.py
+[JOB] Fetching repository…
+[JOB] Runtime: /opt/apps/tacc-apptainer/1.4.1/bin/apptainer (apptainer version 1.4.1-1.el9)
+[JOB] Image  : docker://ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest
+[JOB] Running workload…
+[JOB] ExitCode: 2
+[JOB] END 2025-10-06T14:01:35-05:00
