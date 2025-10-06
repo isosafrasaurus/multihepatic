@@ -1,0 +1,16 @@
+[JOB] Cloning https://github.com/isosafrasaurus/3d-1d into /work2/10756/piercezhang9871/stampede3/3d-1d-2441301 ...
+[JOB] Repo dir: /work2/10756/piercezhang9871/stampede3/3d-1d-2441301
+total 31
+drwx------ 7 piercezhang9871 G-825393 4096 Oct  6 13:06 .
+drwx------ 4 piercezhang9871 G-825393 4096 Oct  6 13:06 ..
+-rw------- 1 piercezhang9871 G-825393 6665 Oct  6 13:06 3d_1d.ipynb
+drwx------ 2 piercezhang9871 G-825393 4096 Oct  6 13:06 fem
+drwx------ 8 piercezhang9871 G-825393 4096 Oct  6 13:06 .git
+-rw------- 1 piercezhang9871 G-825393  125 Oct  6 13:06 .gitattributes
+-rw------- 1 piercezhang9871 G-825393  103 Oct  6 13:06 .gitignore
+-rw------- 1 piercezhang9871 G-825393 8334 Oct  6 13:06 README.md
+drwx------ 2 piercezhang9871 G-825393 4096 Oct  6 13:06 src
+drwx------ 3 piercezhang9871 G-825393 4096 Oct  6 13:06 tacc
+-rw------- 1 piercezhang9871 G-825393 2308 Oct  6 13:06 test.py
+drwx------ 2 piercezhang9871 G-825393 4096 Oct  6 13:06 tissue
+apptainer version 1.4.1-1.el9
