@@ -18,7 +18,7 @@ mkdir -p "${LOGDIR}"
 OUT_PATTERN="${LOGDIR}/${JOB_NAME}-%j.out"
 ERR_PATTERN="${LOGDIR}/${JOB_NAME}-%j.err"
 
-# Create a temporary job script (quieter, but prints key lifecycle + errors)
+# Create a temporary job script (quiet but prints key lifecycle + errors)
 JOBFILE="$(mktemp -p "$PWD" tacc-job-XXXXXX.sh)"
 cat > "${JOBFILE}" <<'EOF'
 #!/bin/bash
@@ -80,6 +80,13 @@ else
   fi
 fi
 cd "$REPO_DIR"
+log "RepoDir: $PWD"
+
+# Verify the run script exists relative to the repo
+if [[ ! -f "$RUN_SCRIPT" ]]; then
+  fatal "Run script not found at '$RUN_SCRIPT' in repo '$PWD'"
+  exit 4
+fi
 
 # Apptainer cache (quiet)
 unset XDG_RUNTIME_DIR || true
@@ -92,13 +99,18 @@ RUNTIME_VER="$("$APPTAINER_BIN" --version 2>/dev/null || true)"
 log "Image  : $IMAGE_URI"
 
 log "Running workload…"
-# Preserve program output; capture exit code without -e short‑circuiting
+# Run inside /workspace (repo root) and call python on the repo-relative path
+# Temporarily disable ERR trap for the srun so non-zero exit doesn't print a duplicate FATAL
+trap - ERR
 set +e
 srun -n "${TASKS}" --export=ALL,LD_PRELOAD=,LD_AUDIT= \
-  "$APPTAINER_BIN" exec --cleanenv -B "$PWD:/workspace" "$IMAGE_URI" \
-  python3 "/workspace/$RUN_SCRIPT"
+  "$APPTAINER_BIN" exec --cleanenv \
+  -B "$PWD:/workspace" --pwd /workspace \
+  "$IMAGE_URI" \
+  python3 "$RUN_SCRIPT"
 rc=$?
 set -e
+trap on_err ERR
 
 log "ExitCode: $rc"
 log "END $(date -Is)"
@@ -117,7 +129,7 @@ chmod +x "${JOBFILE}"
 cleanup() { rm -f "${JOBFILE}" 2>/dev/null || true; }
 trap cleanup EXIT
 
-# Submit (quiet output; still show where logs go)
+# Submit (concise)
 jobid_raw="$(
   sbatch \
     --parsable \
@@ -145,13 +157,13 @@ err_file="${ERR_PATTERN//%j/${jobid}}"
 
 echo "Submitted job ${jobid} (stdout: ${out_file}, stderr: ${err_file})"
 
-# Start tails (keep prefixes so outputs are clearly visible and distinguishable)
+# Start tails
 tail -n +1 -F --retry "${out_file}" | sed -u 's/^/[STDOUT] /' &
 T1=$!
 tail -n +1 -F --retry "${err_file}" | sed -u 's/^/[STDERR] /' &
 T2=$!
 
-# CTRL+C should detach from tails only
+# CTRL+C detaches from tails only
 on_int() {
   echo
   echo "Detaching from logs. Job ${jobid} continues to run."
@@ -168,7 +180,7 @@ while :; do
   sleep 2
 done
 
-# Stop tails and report final state concisely
+# Stop tails and report final state
 kill "${T1}" "${T2}" 2>/dev/null || true
 wait "${T1}" "${T2}" 2>/dev/null || true
 
