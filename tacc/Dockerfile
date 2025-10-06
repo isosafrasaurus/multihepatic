@@ -1,10 +1,7 @@
 # Builds a Docker image for running FEniCS on TACC machines
-# The image is at:
-#
-#    https://hub.docker.com/r/uvilla/fenics-2019.1-tacc-mvapich2.3-ib
 #
 # This is a modified version of
-#    https://bitbucket.org/fenics-project/docker/src/master/dockerfiles/dev-env/Dockerfile
+#   https://bitbucket.org/fenics-project/docker/src/master/dockerfiles/dev-env/Dockerfile
 #
 # See License for further information
 #
@@ -13,6 +10,8 @@
 # Lizao Li <lzlarryli@gmail.com>
 # Garth N. Wells <gnw20@cam.ac.uk>
 # Jan Blechta <blechta@karlin.mff.cuni.cz>
+# Umberto Villa <uvilla@utexas.edu> (uvilla on GitHub)
+# Mathew Hu <mathewhu@utexas.edu> (mathewgaohu on GitHub)
 
 FROM tacc/tacc-ubuntu18-mvapich2.3-ib
 
@@ -22,7 +21,6 @@ RUN useradd -m -s /bin/bash -G sudo fenics && \
 USER root
 WORKDIR /tmp
 
-# Environment variables
 ENV FENICS_HOME=/home/fenics
 ENV PETSC_VERSION=3.20.2 \
     SLEPC_VERSION=3.20.1 \
@@ -35,7 +33,6 @@ ENV PETSC_VERSION=3.20.2 \
     OPENBLAS_VERBOSE=0 \
     FENICS_PREFIX=$FENICS_HOME/local
 
-# Non-Python utilities and libraries
 RUN apt-get -qq update && \
     apt-get -y --with-new-pkgs -o Dpkg::Options::="--force-confold" upgrade && \
     apt-get -y install curl && \
@@ -90,7 +87,7 @@ RUN apt-get -qq update && \
 # Update Python from 3.6 to 3.12
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.12 1
 
-# Install Python3 based environment (system packages; safe to keep for tools)
+# Install Python3 based environment
 RUN apt-get -qq update && \
     apt-get -y --with-new-pkgs -o Dpkg::Options::="--force-confold" upgrade && \
     apt-get -y install \
@@ -157,9 +154,8 @@ RUN apt-get -qq update && \
 ENV SLEPC_DIR=/usr/local/slepc-32 \
     PETSC_DIR=/usr/local/petsc-32
 
-# --- Python packages (with compatibility pins) ---
-# - Pin Cython to 3.0.x for petsc4py/slepc4py 3.20.x
-# - Pin SymPy to <1.14 to avoid FIAT/FFC crash during DOLFIN doc/demo generation
+# Pin Cython to 3.0.x for petsc4py/slepc4py 3.20.x
+# Pin SymPy to <1.14 to avoid FIAT/FFC crash during DOLFIN doc/demo generation
 RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel \
     && pip3 install --no-cache-dir "Cython>=3.0,<3.1" \
     && pip3 install --no-cache-dir jupyter jupyterlab matplotlib scipy "sympy>=1.12.1,<1.14" tqdm pkgconfig \
@@ -174,7 +170,6 @@ RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel \
     && make && make install \
     && rm -rf /tmp/*
 
-# Our helper scripts
 WORKDIR $FENICS_HOME
 COPY fenics.env.conf $FENICS_HOME/fenics.env.conf
 COPY bin $FENICS_HOME/bin
@@ -204,4 +199,3 @@ RUN /home/fenics/bin/fenics-pull && \
 RUN ln -s /usr/local/lib/python3.12/site-packages/ufl_legacy /usr/local/lib/python3.12/site-packages/ufl || true
 
 RUN ldconfig
-
