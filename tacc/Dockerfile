@@ -183,7 +183,6 @@ RUN echo 'source ~/.profile' >> $FENICS_HOME/.bash_profile && \
     echo '. ~/fenics.env.conf' >> $FENICS_HOME/.profile && \
     mkdir -p $FENICS_HOME/.config/matplotlib
 COPY matplotlibrc $FENICS_HOME/.config/matplotlib/matplotlibrc
-COPY WELCOME $FENICS_HOME/WELCOME
 
 USER root
 
@@ -199,3 +198,28 @@ RUN /home/fenics/bin/fenics-pull && \
 RUN ln -s /usr/local/lib/python3.12/site-packages/ufl_legacy /usr/local/lib/python3.12/site-packages/ufl || true
 
 RUN ldconfig
+
+RUN apt-get -qq update && \
+    apt-get -y install --no-install-recommends libgl1-mesa-glx && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install --no-cache-dir "pybind11==${PYBIND11_VERSION}"
+
+RUN pip3 install --no-cache-dir networkx vtk
+
+RUN pip3 install --no-cache-dir "git+https://bitbucket.org/fenics-apps/cbc.block.git@master"
+
+RUN set -eux; \
+    cd /tmp && \
+    git clone --single-branch -b "collapse-iter-dev" "https://github.com/MiroK/fenics_ii" && \
+    pip3 install --no-cache-dir fenics_ii/ && \
+    rm -rf fenics_ii
+
+RUN set -eux; \
+    cd /tmp && \
+    git clone "https://github.com/IngeborgGjerde/graphnics" && \
+    pip3 install --no-cache-dir graphnics/ && \
+    rm -rf graphnics
+
+RUN pip3 install --no-cache-dir --upgrade "git+https://github.com/dolfin-adjoint/pyadjoint.git"
