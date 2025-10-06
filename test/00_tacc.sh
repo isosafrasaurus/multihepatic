@@ -11,30 +11,34 @@ LOGDIR="$PWD/logs"
 
 IMAGE_URI="docker://ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest"
 REPO_URL="https://github.com/isosafrasaurus/3d-1d"
-RUN_SCRIPT="test.py"
+RUN_SCRIPT="test/00_tacc_test.py"
 
 # Logging
 mkdir -p "${LOGDIR}"
 OUT_PATTERN="${LOGDIR}/${JOB_NAME}-%j.out"
 ERR_PATTERN="${LOGDIR}/${JOB_NAME}-%j.err"
 
-# Create a temporary job script
+# Create a temporary job script (quieter, but prints key lifecycle + errors)
 JOBFILE="$(mktemp -p "$PWD" tacc-job-XXXXXX.sh)"
 cat > "${JOBFILE}" <<'EOF'
 #!/bin/bash
 set -Eeuo pipefail
-
 set +v +x || true
 
-echo "[JOB] ===== BEGIN $(date) ====="
-echo "[JOB] Host: $(hostname)"
-echo "[JOB] CWD : $PWD"
+log()   { printf '[JOB] %s\n' "$*"; }
+fatal() { printf '[JOB][FATAL] %s\n' "$*" >&2; }
+on_err(){ fatal "Command '$BASH_COMMAND' failed (rc=$?)"; }
+trap on_err ERR
 
-module reset || true
+log "START $(date -Is)"
+log "JobID: ${SLURM_JOB_ID:-unknown}  Tasks: __TASKS__"
+log "Script: __RUN_SCRIPT__"
+
+# Quiet module housekeeping
+module reset >/dev/null 2>&1 || true
 module unload xalt >/dev/null 2>&1 || true
 
-export BASH_COMPLETION_DEBUG=${BASH_COMPLETION_DEBUG:-0}
-
+# Container runtime (quiet load attempts)
 set +u
 module load tacc-apptainer >/dev/null 2>&1 || \
 module load apptainer      >/dev/null 2>&1 || \
@@ -44,10 +48,11 @@ set -u
 APPTAINER_BIN="$(command -v apptainer || true)"
 [[ -z "$APPTAINER_BIN" ]] && APPTAINER_BIN="$(command -v singularity || true)"
 if [[ -z "$APPTAINER_BIN" ]]; then
-  echo "[JOB][ERROR] apptainer/singularity not found on PATH after module load." >&2
+  fatal "apptainer/singularity not found on PATH after module load."
   exit 127
 fi
 
+# Clean container LD* env to avoid host interposition
 unset LD_PRELOAD LD_AUDIT || true
 export APPTAINERENV_LD_PRELOAD=""
 export APPTAINERENV_LD_AUDIT=""
@@ -57,39 +62,47 @@ REPO_URL="__REPO_URL__"
 RUN_SCRIPT="__RUN_SCRIPT__"
 TASKS=__TASKS__
 
+# Use local repo if present; otherwise fetch quietly
 if [[ -f "./${RUN_SCRIPT}" ]]; then
   REPO_DIR="$PWD"
 else
-  REPO_DIR="${WORK:-${SCRATCH:-$PWD}}/3d-1d-${SLURM_JOB_ID}"
+  REPO_DIR="${WORK:-${SCRATCH:-$PWD}}/3d-1d-${SLURM_JOB_ID:-$$}"
   mkdir -p "$REPO_DIR"
   module load git >/dev/null 2>&1 || true
   if ! command -v git >/dev/null 2>&1; then
-    echo "[JOB][ERROR] git is required to clone ${REPO_URL} but was not found." >&2
+    fatal "git is required to clone ${REPO_URL} but was not found."
     exit 2
   fi
-  echo "[JOB] Cloning ${REPO_URL} into ${REPO_DIR} ..."
-  git clone --depth 1 "$REPO_URL" "$REPO_DIR"
+  log "Fetching repository…"
+  if ! git clone --depth 1 "$REPO_URL" "$REPO_DIR" >/dev/null 2>&1; then
+    fatal "git clone failed for ${REPO_URL}"
+    exit 3
+  fi
 fi
 cd "$REPO_DIR"
-echo "[JOB] Repo dir: $PWD"
 
+# Apptainer cache (quiet)
 unset XDG_RUNTIME_DIR || true
 export APPTAINER_CACHEDIR="${SCRATCH:-$HOME}/.apptainer/cache"
-mkdir -p "$APPTAINER_CACHEDIR"
+mkdir -p "$APPTAINER_CACHEDIR" >/dev/null 2>&1 || true
 
-set -x
-"$APPTAINER_BIN" --version
+# One concise runtime line
+RUNTIME_VER="$("$APPTAINER_BIN" --version 2>/dev/null || true)"
+[[ -n "$RUNTIME_VER" ]] && log "Runtime: $APPTAINER_BIN ($RUNTIME_VER)"
+log "Image  : $IMAGE_URI"
 
+log "Running workload…"
+# Preserve program output; capture exit code without -e short‑circuiting
+set +e
 srun -n "${TASKS}" --export=ALL,LD_PRELOAD=,LD_AUDIT= \
   "$APPTAINER_BIN" exec --cleanenv -B "$PWD:/workspace" "$IMAGE_URI" \
   python3 "/workspace/$RUN_SCRIPT"
 rc=$?
-set +x
+set -e
 
-echo "[JOB] Container exit code: $rc"
-echo "[JOB] =====  END  $(date) ====="
+log "ExitCode: $rc"
+log "END $(date -Is)"
 exit "$rc"
-
 EOF
 
 sed -i \
@@ -104,7 +117,7 @@ chmod +x "${JOBFILE}"
 cleanup() { rm -f "${JOBFILE}" 2>/dev/null || true; }
 trap cleanup EXIT
 
-# Submit
+# Submit (quiet output; still show where logs go)
 jobid_raw="$(
   sbatch \
     --parsable \
@@ -122,7 +135,7 @@ jobid_raw="$(
 jobid="$(printf '%s\n' "$jobid_raw" | awk 'NF{last=$0}END{print last}' | cut -d';' -f1 | tr -d '[:space:]')"
 
 if [[ ! "$jobid" =~ ^[0-9]+$ ]]; then
-  echo "Failed to parse job id from sbatch output:" >&2
+  echo "[WRAPPER][FATAL] Failed to parse job id from sbatch output:" >&2
   printf '%s\n' "$jobid_raw" >&2
   exit 1
 fi
@@ -130,18 +143,15 @@ fi
 out_file="${OUT_PATTERN//%j/${jobid}}"
 err_file="${ERR_PATTERN//%j/${jobid}}"
 
-echo "Submitted job ${jobid}"
-echo "  stdout: ${out_file}"
-echo "  stderr: ${err_file}"
-echo
+echo "Submitted job ${jobid} (stdout: ${out_file}, stderr: ${err_file})"
 
-# Start tails
+# Start tails (keep prefixes so outputs are clearly visible and distinguishable)
 tail -n +1 -F --retry "${out_file}" | sed -u 's/^/[STDOUT] /' &
 T1=$!
 tail -n +1 -F --retry "${err_file}" | sed -u 's/^/[STDERR] /' &
 T2=$!
 
-# CTRL+C should detach from tails
+# CTRL+C should detach from tails only
 on_int() {
   echo
   echo "Detaching from logs. Job ${jobid} continues to run."
@@ -158,11 +168,10 @@ while :; do
   sleep 2
 done
 
-# Stop tails and report final state (+ reason)
+# Stop tails and report final state concisely
 kill "${T1}" "${T2}" 2>/dev/null || true
 wait "${T1}" "${T2}" 2>/dev/null || true
 
-sleep 1
 IFS='|' read -r state exit_code reason <<<"$(sacct -j "${jobid}" --format=State,ExitCode,Reason --noheader -P 2>/dev/null | head -n1)"
 state="$(echo "${state:-unknown}" | tr -d ' ')"
 
@@ -173,3 +182,4 @@ echo "  ExitCode : ${exit_code:-unknown}"
 echo "  Reason   : ${reason:-unknown}"
 
 [[ "${state}" == "COMPLETED" ]] || exit 1
+
