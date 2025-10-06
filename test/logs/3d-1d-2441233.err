@@ -1,0 +1,2 @@
+Running "module reset". Resetting modules to system default. The following $MODULEPATH directories have been removed: None
+/opt/apps/tacc-apptainer/1.4.1/share/bash-completion/completions/apptainer: line 3660: BASH_COMPLETION_DEBUG: unbound variable
