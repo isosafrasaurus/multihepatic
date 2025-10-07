@@ -1,0 +1,14 @@
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+Traceback (most recent call last):
+  File "/work2/10756/piercezhang9871/stampede3/3d-1d/test/00_tacc_test.py", line 91, in <module>
+    main()
+  File "/work2/10756/piercezhang9871/stampede3/3d-1d/test/00_tacc_test.py", line 59, in main
+    with Domain1D(G, Lambda_num_nodes_exp=TEST_NUM_NODES_EXP, inlet_nodes=[0]) as Lambda, \
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Domain1D.__init__() takes 1 positional argument but 2 positional arguments (and 2 keyword-only arguments) were given
+srun: error: c454-003: task 0: Exited with exit code 1
