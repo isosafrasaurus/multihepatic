@@ -1,5 +1,5 @@
-[JOB] START 2025-10-06T18:21:10-05:00
-[JOB] JobID: 2442217  Tasks: 1
+[JOB] START 2025-10-06T23:31:58-05:00
+[JOB] JobID: 2443369  Tasks: 1
 [JOB] Script : /work2/10756/piercezhang9871/stampede3/3d-1d/test/00_tacc_test.py
 [JOB] RunDir : /work2/10756/piercezhang9871/stampede3/3d-1d/test
 [JOB] ProjRt : /work2/10756/piercezhang9871/stampede3/3d-1d
@@ -11,4 +11,4 @@ WARNING: user expression has not supplied value_shape method or an element. Assu
 WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
 net_flow_all = 4.721770307206342e-07
 [JOB] ExitCode: 0
-[JOB] END 2025-10-06T18:21:22-05:00
+[JOB] END 2025-10-06T23:32:10-05:00

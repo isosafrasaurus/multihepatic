@@ -1,18 +1,21 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-ACCOUNT="ASC22053"
+# Configurations
 JOB_NAME="3d-1d"
+ACCOUNT="ASC22053"
 PARTITION="skx-dev"
 TIME="00:30:00"
 NODES=1
 TASKS=1
 LOGDIR="$PWD/logs"
-
 IMAGE_URI="docker://ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest"
+PROJECT_ROOT="$WORK/3d-1d"
 
-RUN_REL="${1:-00_tacc_test.py}"
+# Parameters
+RUN_REL="${1}"
 
+# Resolve symbolic path into absolute, unnormalized path
 abspath() {
   local target="$1"
   if command -v realpath >/dev/null 2>&1; then
@@ -20,31 +23,15 @@ abspath() {
   elif command -v readlink >/dev/null 2>&1; then
     readlink -f "$target"
   else
-    # Fallback: best-effort absolute path
     ( cd "$(dirname "$target")" && printf '%s/%s\n' "$PWD" "$(basename "$target")" )
   fi
 }
 
 if [[ ! -f "$RUN_REL" ]]; then
-  echo "[WRAPPER][FATAL] Local run script not found at path (relative to $(pwd)): '$RUN_REL'" >&2
+  echo "[WRAPPER][FATAL] Local run script not found at path: '$RUN_REL'" >&2
   exit 1
 fi
 RUN_ABS="$(abspath "$RUN_REL")"
-
-find_project_root() {
-  local d
-  d="$(dirname "$RUN_ABS")"
-  while [[ "$d" != "/" ]]; do
-    if [[ -d "$d/src" || -d "$d/fem" || -d "$d/tissue" ]]; then
-      printf '%s\n' "$d"
-      return 0
-    fi
-    d="$(dirname "$d")"
-  done
-  # Fallback to the script's directory
-  printf '%s\n' "$(dirname "$RUN_ABS")"
-}
-PROJECT_ROOT="$(find_project_root)"
 
 mkdir -p "${LOGDIR}"
 OUT_PATTERN="${LOGDIR}/${JOB_NAME}-%j.out"
