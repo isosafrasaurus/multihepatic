@@ -1,0 +1,7 @@
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+Averaging over 224 cells:   0%|          | 0/224 [00:00<?, ?it/s]Averaging over 224 cells:  91%|█████████ | 204/224 [00:00<00:00, 2030.31it/s]Averaging over 224 cells: 100%|██████████| 224/224 [00:00<00:00, 1995.07it/s]
