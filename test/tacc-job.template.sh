@@ -14,15 +14,13 @@ module reset >/dev/null 2>&1 || true
 module unload xalt >/dev/null 2>&1 || true
 
 set +u
-module load tacc-apptainer >/dev/null 2>&1 || \
-module load apptainer      >/dev/null 2>&1 || \
-module load singularity    >/dev/null 2>&1 || true
+module load tacc-apptainer >/dev/null 2>&1 || true
 set -u
 
+# Only look for apptainer on PATH
 APPTAINER_BIN="$(command -v apptainer || true)"
-[[ -z "$APPTAINER_BIN" ]] && APPTAINER_BIN="$(command -v singularity || true)"
 if [[ -z "$APPTAINER_BIN" ]]; then
-  fatal "apptainer/singularity not found on PATH after module load."
+  fatal "Apptainer not found on PATH after module load."
   exit 127
 fi
 
@@ -77,3 +75,4 @@ trap on_err ERR
 log "ExitCode: $rc"
 log "END $(date -Is)"
 exit "$rc"
+
