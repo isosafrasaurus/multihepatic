@@ -8,8 +8,9 @@ from graphnics import FenicsGraph
 from dolfin import FacetNormal, Measure, dot, assemble
 
 from tissue import AxisPlane
-from src import Domain1D, Domain3D, Simulation, release_result
+from src import Domain1D, Domain3D, Simulation, release_solution
 from src.problem import PressureVelocityProblem
+from src.composition import Parameters
 
 TEST_NUM_NODES_EXP = 5
 
@@ -53,36 +54,39 @@ def main() -> float:
     G = build_test_graph()
 
     X_ZERO_PLANE = AxisPlane(axis=0, coordinate=0.0)
-
     bounds = [[0.0, 0.0, 0.0], [0.05, 0.04, 0.03]]
 
-    with Domain1D(G, Lambda_num_nodes_exp=TEST_NUM_NODES_EXP, inlet_nodes=[0]) as Lambda:
-        with Domain3D.from_graph(G, bounds=bounds) as Omega:
-            sim = Simulation(
-                Lambda, Omega,
-                problem_cls=PressureVelocityProblem,
-                Omega_sink_subdomain=X_ZERO_PLANE,
-            )
+    with Domain1D(G, Lambda_num_nodes_exp=TEST_NUM_NODES_EXP, inlet_nodes=[0]) as Lambda, \
+         Domain3D.from_graph(G, bounds=bounds) as Omega, \
+         Simulation(
+             Lambda,
+             Omega,
+             problem_cls=PressureVelocityProblem,
+             Omega_sink_subdomain=X_ZERO_PLANE,
+         ) as sim:
 
-            res = sim.solve(
-                gamma=3.6145827741262347e-05,
-                gamma_a=8.225197366649115e-08,
-                gamma_R=8.620057937882969e-08,
-                mu=1.0e-3,
-                k_t=1.0e-10,
-                P_in=100.0 * 133.322,
-                P_cvp=1.0 * 133.322,
-            )
+        params = Parameters(
+            gamma=3.6145827741262347e-05,
+            gamma_a=8.225197366649115e-08,
+            gamma_R=8.620057937882969e-08,
+            mu=1.0e-3,
+            k_t=1.0e-10,
+            P_in=100.0 * 133.322,
+            P_cvp=1.0 * 133.322,
+        )
 
-            n = FacetNormal(Omega.Omega)
-            ds = Measure("ds", domain=Omega.Omega)
-            net_flow_all = assemble(dot(res["velocity"], n) * ds)
+        sol = sim.solve(params)
 
-            release_result(res)
-            sim.dispose()
+        n = FacetNormal(Omega.Omega)
+        ds = Measure("ds", domain=Omega.Omega)
+        net_flow_all = assemble(dot(sol.v3d, n) * ds)
+
+        
+        release_solution(sol)
 
     print("net_flow_all =", float(net_flow_all))
     return float(net_flow_all)
 
 if __name__ == "__main__":
     main()
+

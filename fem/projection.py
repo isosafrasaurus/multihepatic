@@ -1,7 +1,14 @@
 
 from dolfin import VectorFunctionSpace, TrialFunction, TestFunction, Function, Constant, inner, grad, solve
 
-def project_velocity(Omega, uh3d, *, k_t: float, mu: float, dx):
+def project_velocity(
+    Omega,
+    uh3d,
+    *,
+    k_t: float,
+    mu: float,
+    dx
+):
     V = VectorFunctionSpace(Omega, "CG", 1)
     vT, vS = TrialFunction(V), TestFunction(V)
     a = inner(vT, vS) * dx
