@@ -1,5 +1,0 @@
-INFO:    Using cached SIF image
-INFO:    gocryptfs not found, will not be able to use gocryptfs
-/usr/bin/python3: can't open file '/workspace/test/00_tacc_test.py': [Errno 2] No such file or directory
-srun: error: c454-093: task 0: Exited with exit code 2
-[JOB][FATAL] Command 'srun -n "${TASKS}" --export=ALL,LD_PRELOAD=,LD_AUDIT= "$APPTAINER_BIN" exec --cleanenv -B "$PWD:/workspace" "$IMAGE_URI" python3 "/workspace/$RUN_SCRIPT"' failed (rc=2)
