@@ -4,12 +4,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# DOLFIN
-.mesh_cache/
-
 # C
 *.so
 
-# Other
-crawler.py
-crawl.txt
+# SLURM
+logs/

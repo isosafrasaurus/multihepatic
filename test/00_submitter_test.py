@@ -1,7 +1,10 @@
 import os, sys
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
+
+project_root = os.environ.get("PROJECT_ROOT")
+if not project_root:
+    raise EnvironmentError("Environment variable PROJECT_ROOT is not set.")
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 import numpy as np
 from graphnics import FenicsGraph
@@ -81,7 +84,6 @@ def main() -> float:
         ds = Measure("ds", domain=Omega.Omega)
         net_flow_all = assemble(dot(sol.v3d, n) * ds)
 
-        
         release_solution(sol)
 
     print("net_flow_all =", float(net_flow_all))
