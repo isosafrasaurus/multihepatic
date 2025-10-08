@@ -2,20 +2,66 @@
 set -Eeuo pipefail
 
 # Configurations
-PROJECT_ROOT="$WORK/3d-1d"
+PROJECT_ROOT="$WORK/multihepatic"
 TACC_ACCOUNT="ASC22053"
 TACC_PARTITION="skx-dev"
-JOB_NAME="3d-1d-calibrate"
+JOB_NAME="multihepatic"
 JOB_TIME="00:30:00"
 JOB_NODES=1
 JOB_TASKS_PER_NODE=8
 JOB_LOGS_DIR="$PROJECT_ROOT/logs"
 IMAGE_URI="docker://ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest"
 
-# Parameters
-RUN_REL="${1}"
+usage()
+{
+	cat <<EOF
+Usage: $(basename "$0") [OPTIONS] TARGET_PATH
 
-# Resolve symbolic path into absolute unnormalized path
+Submit a job to TACC using a containerized environment.
+
+Required argument:
+  TARGET_PATH            Path to the script to execute (must be a file)
+
+Options:
+  --name NAME            Job name (default: ${JOB_NAME})
+  --time HH:MM:SS        Wall time (default: ${JOB_TIME})
+  --nodes N              Number of nodes (default: ${JOB_NODES})
+  --tasks-per-node N     Tasks per node (default: ${JOB_TASKS_PER_NODE})
+  --logs-dir DIR         Log directory (default: ${JOB_LOGS_DIR})
+  -h, --help             Show this help message and exit
+
+Example:
+  $(basename "$0") --time 01:00:00 --nodes 2 run_simulation.py
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		--name)
+			JOB_NAME="${2:-}"; shift 2 ;;
+		--time)
+			JOB_TIME="${2:-}"; shift 2 ;;
+		--nodes)
+			JOB_NODES="${2:-}"; shift 2 ;;
+		--tasks-per-node)
+			JOB_TASKS_PER_NODE="${2:-}"; shift 2 ;;
+		--logs-dir)
+			JOB_LOGS_DIR="${2:-}"; shift 2 ;;
+		-h|--help)
+			usage; exit 0 ;;
+		--)
+			shift; break ;;
+		-*)
+			printf '[SUBMITTER][FATAL] Unknown option: %s\n' "$1" >&2
+			usage
+			exit 2 ;;
+		*)
+			break ;;
+	esac
+done
+
+TARGET_PATH="${1:-}"
+
 abspath()
 {
 	local target="$1"
@@ -30,11 +76,17 @@ abspath()
 	fi
 }
 
-if [[ ! -f "$RUN_REL" ]]; then
-	echo "[WRAPPER][FATAL] Local run script not found at path: '$RUN_REL'" >&2
+if [[ -z "${TARGET_PATH}" ]]; then
+	echo "[SUBMITTER][FATAL] Missing required TARGET_PATH argument." >&2
+	usage
+	exit 2
+fi
+
+if [[ ! -f "$TARGET_PATH" ]]; then
+	echo "[SUBMITTER][FATAL] Target script not found at path: '$TARGET_PATH'" >&2
 	exit 1
 fi
-RUN_ABS="$(abspath "$RUN_REL")"
+TARGET_ABS_PATH="$(abspath "$TARGET_PATH")"
 
 mkdir -p "${JOB_LOGS_DIR}"
 OUT_PATTERN="${JOB_LOGS_DIR}/${JOB_NAME}-%j.out"
@@ -43,7 +95,7 @@ ERR_PATTERN="${JOB_LOGS_DIR}/${JOB_NAME}-%j.err"
 JOBFILE="$(mktemp -p "$PWD" tacc-job-XXXXXX.sh)"
 JOB_TEMPLATE="./tacc-job.template.sh"
 if [[ ! -f "${JOB_TEMPLATE}" ]]; then
-	echo "[WRAPPER][FATAL] Job template not found at ${JOB_TEMPLATE}" >&2
+	echo "[SUBMITTER][FATAL] Job template not found at ${JOB_TEMPLATE}" >&2
 	exit 1
 fi
 cp "${JOB_TEMPLATE}" "${JOBFILE}"
@@ -52,7 +104,7 @@ JOB_TASKS=$((JOB_NODES * JOB_TASKS_PER_NODE))
 
 sed -i \
 	-e "s|__IMAGE_URI__|${IMAGE_URI}|g" \
-	-e "s|__RUN_ABS__|${RUN_ABS}|g" \
+	-e "s|__TARGET_ABS_PATH__|${TARGET_ABS_PATH}|g" \
 	-e "s|__PROJECT_ROOT__|${PROJECT_ROOT}|g" \
 	-e "s|__TASKS__|${JOB_TASKS}|g" \
 	"${JOBFILE}"
@@ -82,7 +134,7 @@ jobid_raw="$(
 jobid="$(printf '%s\n' "$jobid_raw" | awk 'NF{last=$0}END{print last}' | cut -d';' -f1 | tr -d '[:space:]')"
 
 if [[ ! "$jobid" =~ ^[0-9]+$ ]]; then
-	echo "[WRAPPER][FATAL] Failed to parse job id from sbatch output:" >&2
+	echo "[SUBMITTER][FATAL] Failed to parse job id from sbatch output:" >&2
 	printf '%s\n' "$jobid_raw" >&2
 	exit 1
 fi
@@ -91,7 +143,7 @@ out_file="${OUT_PATTERN//%j/${jobid}}"
 err_file="${ERR_PATTERN//%j/${jobid}}"
 
 echo "Submitted job ${jobid}"
-echo "  Script    : ${RUN_ABS}"
+echo "  Script    : ${TARGET_ABS_PATH}"
 echo "  ProjRoot  : ${PROJECT_ROOT}"
 echo "  stdout    : ${out_file}"
 echo "  stderr    : ${err_file}"
