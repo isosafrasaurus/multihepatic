@@ -1,0 +1,47 @@
+[JOB] START 2025-10-08T01:17:32-05:00
+[JOB] JobID: 2446427  Tasks: 8
+[JOB] Script : /work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py
+[JOB] RunDir : /work2/10756/piercezhang9871/stampede3/3d-1d
+[JOB] ProjRt : /work2/10756/piercezhang9871/stampede3/3d-1d
+[JOB] Runtime: /opt/apps/tacc-apptainer/1.4.1/bin/apptainer (apptainer version 1.4.1-1.el9)
+[JOB] Image  : docker://ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest
+[JOB] Running workload…
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+=== initialize.py (SciPy Nelder–Mead; no CLI) ===
+[MPI] size=8 rank=0
+Target net flow      : 5e-06
+3D voxel resolution  : 0.001 m
+1D mesh exponent     : 5
+log10 initial guess  : gamma=6.0, gamma_a=6.0, gamma_R=6.0
+log10 simplex steps  : d=[1.0, 1.0, 1.0]
+NM tolerances        : tol=1e-10, max_iters=50, max_feval=200
+[FATAL] 1D mesh build failed: 
+
+*** -------------------------------------------------------------------------
+*** DOLFIN encountered an error. If you are not able to resolve this issue
+*** using the information listed below, you can ask for help at
+***
+***     https://fenicsproject.discourse.group/
+***
+*** Remember to include the error message listed below and, if possible,
+*** include a *minimal* running example to reproduce the error.
+***
+*** -------------------------------------------------------------------------
+*** Error:   Unable to get shared mesh entities.
+*** Reason:  Shared mesh entities have not been computed for dim 1.
+*** Where:   This error was encountered inside MeshTopology.cpp.
+*** Process: 0
+*** 
+*** DOLFIN version: 2019.2.0.dev0
+*** Git changeset:  a8dcf753d3ab9ae19d7bedf8c634a4fe545032d2
+*** -------------------------------------------------------------------------
+
+[JOB] ExitCode: 4
+[JOB] END 2025-10-08T01:17:50-05:00

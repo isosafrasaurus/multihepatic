@@ -81,9 +81,8 @@ def build_assembled_forms(
         Omega_sink_subdomain.mark(boundary_Omega, 1)
 
     if inlet_nodes:
-        coords = Lambda.coordinates()
         for node_id in inlet_nodes:
-            BoundaryPoint(coords[node_id], tolerance=DOLFIN_EPS).mark(boundary_Lambda, 1)
+            BoundaryPoint(G.nodes[node_id]["pos"], tolerance=DOLFIN_EPS).mark(boundary_Lambda, 1)
 
     dsOmega = Measure("ds", domain=Omega, subdomain_data=boundary_Omega)
     dsLambda = Measure("ds", domain=Lambda, subdomain_data=boundary_Lambda)
