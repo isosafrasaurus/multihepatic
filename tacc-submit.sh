@@ -2,12 +2,13 @@
 set -Eeuo pipefail
 
 # Configurations
-JOB_NAME="3d-1d"
+JOB_NAME="3d-1d-calibrate"
 ACCOUNT="ASC22053"
 PARTITION="skx-dev"
 TIME="00:30:00"
 NODES=1
-TASKS=1
+TPN=8
+TASKS=$((NODES * TPN))
 LOGDIR="$PWD/logs"
 IMAGE_URI="docker://ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest"
 PROJECT_ROOT="$WORK/3d-1d"

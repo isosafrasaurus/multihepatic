@@ -2,6 +2,7 @@
 import gc
 from dataclasses import dataclass
 from typing import Optional
+from graphnics import FenicsGraph
 from dolfin import Function, Mesh
 from fem.solver import solve_block
 from fem.projection import project_velocity
