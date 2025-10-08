@@ -1,0 +1,44 @@
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+[c454-001.stampede3.tacc.utexas.edu:mpi_rank_0][MPIDI_CH3I_SMP_init] CMA is not available. Set MV2_SMP_USE_CMA=0 to disable CMA.
+[cli_0]: aborting job:
+Fatal error in PMPI_Init_thread:
+Other MPI error, error stack:
+MPIR_Init_thread(490)....: 
+MPID_Init(395)...........: channel initialization failed
+MPIDI_CH3_Init(494)......: 
+MPIDI_CH3I_SMP_init(2135): process_vm_readv: Operation not permitted
+
+slurmstepd: error: *** STEP 2446155.0 ON c454-001 CANCELLED AT 2025-10-07T22:30:13 ***
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: error: c454-001: tasks 0-7: Killed
