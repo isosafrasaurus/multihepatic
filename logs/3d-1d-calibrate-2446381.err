@@ -1,0 +1,102 @@
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/ufl_legacy/__init__.py:243: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/local/lib/python3.12/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/usr/local/lib/python3.12/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/usr/local/lib/python3.12/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/usr/local/lib/python3.12/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/usr/local/lib/python3.12/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/usr/local/lib/python3.12/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/usr/local/lib/python3.12/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+/usr/local/lib/python3.12/site-packages/block/__init__.py:15: UserWarning: The cbc.block repository has moved to https://github.com/blocknics/cbc.block
+  warnings.warn('The cbc.block repository has moved to https://github.com/blocknics/cbc.block', UserWarning)
+Traceback (most recent call last):
+  File "/work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py", line 390, in <module>
+    main()
+  File "/work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py", line 200, in main
+    G = build_test_graph()
+        ^^^^^^^^^^^^^^^^^^
+  File "/work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py", line 132, in build_test_graph
+    G.make_mesh(n=TEST_NUM_NODES_EXP)
+  File "/usr/local/lib/python3.12/site-packages/graphnics/fenics_graph.py", line 121, in make_mesh
+    mesh, mf = self.get_mesh(n)
+               ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/graphnics/fenics_graph.py", line 96, in get_mesh
+    mesh = refine(mesh)
+           ^^^^^^^^^^^^
+RuntimeError: 
+
+*** -------------------------------------------------------------------------
+*** DOLFIN encountered an error. If you are not able to resolve this issue
+*** using the information listed below, you can ask for help at
+***
+***     https://fenicsproject.discourse.group/
+***
+*** Remember to include the error message listed below and, if possible,
+*** include a *minimal* running example to reproduce the error.
+***
+*** -------------------------------------------------------------------------
+*** Error:   Unable to get shared mesh entities.
+*** Reason:  Shared mesh entities have not been computed for dim 1.
+*** Where:   This error was encountered inside MeshTopology.cpp.
+*** Process: 0
+*** 
+*** DOLFIN version: 2019.2.0.dev0
+*** Git changeset:  a8dcf753d3ab9ae19d7bedf8c634a4fe545032d2
+*** -------------------------------------------------------------------------
+
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** JOB 2446381 ON c454-101 CANCELLED AT 2025-10-08T00:36:48 ***
+slurmstepd: error: *** STEP 2446381.0 ON c454-101 CANCELLED AT 2025-10-08T00:36:48 ***
+[0]PETSC ERROR: ------------------------------------------------------------------------
+[0]PETSC ERROR: Caught signal number 15 Terminate: Some process (or the batch system) has told this process to end
+[0]PETSC ERROR: Try option -start_in_debugger or -on_error_attach_debugger
+[0]PETSC ERROR: or see https://petsc.org/release/faq/#valgrind and https://petsc.org/release/faq/
+[0]PETSC ERROR: configure using --with-debugging=yes, recompile, link, and run 
+[0]PETSC ERROR: to get more information on the crash.
+[4]PETSC ERROR: ------------------------------------------------------------------------
+[4]PETSC ERROR: Caught signal number 15 Terminate: Some process (or the batch system) has told this process to end
+[4]PETSC ERROR: Try option -start_in_debugger or -on_error_attach_debugger
+[4]PETSC ERROR: or see https://petsc.org/release/faq/#valgrind and https://petsc.org/release/faq/
+[4]PETSC ERROR: configure using --with-debugging=yes, recompile, link, and run 
+[4]PETSC ERROR: to get more information on the crash.
+[cli_4]: aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 59) - process 4
+[cli_0]: aborting job:
+application called MPI_Abort(MPI_COMM_WORLD, 59) - process 0

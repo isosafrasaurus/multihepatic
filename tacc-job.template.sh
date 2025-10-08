@@ -2,9 +2,18 @@
 set -Eeuo pipefail
 set +v +x || true
 
-log()   { printf '[JOB] %s\n' "$*"; }
-fatal() { printf '[JOB][FATAL] %s\n' "$*" >&2; }
-on_err(){ fatal "Command '$BASH_COMMAND' failed (rc=$?)"; }
+log() {
+    printf '[JOB] %s\n' "$*"
+}
+
+fatal() {
+    printf '[JOB][FATAL] %s\n' "$*" >&2
+}
+
+on_err() {
+    fatal "Command '$BASH_COMMAND' failed (rc=$?)"
+}
+
 trap on_err ERR
 
 log "START $(date -Is)"
@@ -37,6 +46,7 @@ if [[ ! -f "$RUN_ABS" ]]; then
   fatal "Run script not found at absolute path: $RUN_ABS"
   exit 2
 fi
+
 if [[ ! -d "$PROJECT_ROOT" ]]; then
   fatal "Project root directory not found: $PROJECT_ROOT"
   exit 3
@@ -58,16 +68,36 @@ log "Image  : $IMAGE_URI"
 
 export APPTAINERENV_PYTHONPATH="$PROJECT_ROOT"
 export APPTAINERENV_PYTHONUNBUFFERED=1
+
+export MV2_SMP_USE_CMA=0
+export MV2_ENABLE_AFFINITY=0
+
+export APPTAINERENV_MV2_SMP_USE_CMA=0
+export APPTAINERENV_MV2_ENABLE_AFFINITY=0
+
 export APPTAINERENV_OMP_NUM_THREADS=1
 export APPTAINERENV_OPENBLAS_NUM_THREADS=1
 export APPTAINERENV_MKL_NUM_THREADS=1
 export APPTAINERENV_NUMEXPR_NUM_THREADS=1
 
-log "Running workload…"
+export APPTAINERENV_XDG_CACHE_HOME="/tmp/${USER}/xdg-${SLURM_JOB_ID}-${SLURM_PROCID}"
+export APPTAINERENV_INSTANT_CACHE_DIR="/tmp/${USER}/instant-${SLURM_JOB_ID}-${SLURM_PROCID}"
+export APPTAINERENV_DIJITSO_CACHE_DIR="/tmp/${USER}/dijitso-${SLURM_JOB_ID}-${SLURM_PROCID}"
+export APPTAINERENV_DOLFIN_JIT_CACHE_DIR="/tmp/${USER}/dolfin-${SLURM_JOB_ID}-${SLURM_PROCID}"
+
+export APPTAINERENV_INSTANT_SYSTEM_CALL_METHOD="OS_SYSTEM"
+export APPTAINERENV_DIJITSO_SYSTEM_CALL_METHOD="OS_SYSTEM"
+
+mkdir -p "/tmp/${USER}/xdg-${SLURM_JOB_ID}-${SLURM_PROCID}" \
+         "/tmp/${USER}/instant-${SLURM_JOB_ID}-${SLURM_PROCID}" \
+         "/tmp/${USER}/dijitso-${SLURM_JOB_ID}-${SLURM_PROCID}" \
+         "/tmp/${USER}/dolfin-${SLURM_JOB_ID}-${SLURM_PROCID}" || true
+
+log "Running workload..."
 trap - ERR
 set +e
-srun -n "${TASKS}" --export=ALL,LD_PRELOAD=,LD_AUDIT= \
-  "$APPTAINER_BIN" exec --cleanenv \
+srun -n "${TASKS}" --mpi=pmi2 --cpu-bind=cores --export=ALL,LD_PRELOAD=,LD_AUDIT= \
+  "$APPTAINER_BIN" exec \
   -B "$PROJECT_ROOT:$PROJECT_ROOT" \
   --pwd "$RUN_DIR" \
   "$IMAGE_URI" \

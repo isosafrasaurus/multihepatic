@@ -30,7 +30,9 @@ class Domain1D:
         if not getattr(G, "mesh", None):
             G.make_mesh(num_nodes_exp=Lambda_num_nodes_exp)
         if not any(("submesh" in G.edges[e]) for e in G.edges) and hasattr(G, "make_submeshes"):
-            G.make_submeshes()
+            from dolfin import MPI
+            if MPI.size(MPI.comm_world) == 1 and hasattr(G, "make_submeshes"):
+                G.make_submeshes()
         if not all(("tangent" in G.edges[e]) for e in G.edges) and hasattr(G, "compute_tangents"):
             G.compute_tangents()
         return cls(G, Lambda_num_nodes_exp=Lambda_num_nodes_exp, inlet_nodes=inlet_nodes)
