@@ -5,22 +5,25 @@ set -Eeuo pipefail
 PROJECT_ROOT="$WORK/multihepatic"
 TACC_ACCOUNT="ASC22053"
 TACC_PARTITION="skx-dev"
+IMAGE_URI="docker://ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest"
+JOB_TEMPLATE_PATH="$PROJECT_ROOT/tacc-job.template.slurm"
+
 JOB_NAME="multihepatic"
 JOB_TIME="00:30:00"
 JOB_NODES=1
 JOB_TASKS_PER_NODE=8
 JOB_LOGS_DIR="$PROJECT_ROOT/logs"
-IMAGE_URI="docker://ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest"
 
+# Usage
 usage()
 {
 	cat <<EOF
 Usage: $(basename "$0") [OPTIONS] TARGET_PATH
 
-Submit a job to TACC using a containerized environment.
+Submit a job to TACC using a MVAPICH-aware containerized environment.
 
 Required argument:
-  TARGET_PATH            Path to the script to execute (must be a file)
+  TARGET_PATH            Path to the script to execute
 
 Options:
   --name NAME            Job name (default: ${JOB_NAME})
@@ -35,6 +38,7 @@ Example:
 EOF
 }
 
+# Parse optional CLI flags
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 		--name)
@@ -60,8 +64,36 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
+# Check job template is present at JOB_TEMPLATE_PATH
+if [[ ! -f "${JOB_TEMPLATE_PATH}" ]]; then
+	echo "[SUBMITTER][FATAL] Job template not found at ${JOB_TEMPLATE_PATH}" >&2
+	exit 1
+fi
+
+# Parse required CLI argument
 TARGET_PATH="${1:-}"
 
+# Check required CLI argument
+if [[ -z "${TARGET_PATH}" ]]; then
+	echo "[SUBMITTER][FATAL] Missing required TARGET_PATH argument." >&2
+	usage
+	exit 2
+fi
+
+# Check presence of target file from required CLI argument
+if [[ ! -f "$TARGET_PATH" ]]; then
+	echo "[SUBMITTER][FATAL] Target script not found at path: '$TARGET_PATH'" >&2
+	exit 1
+fi
+
+# abspath: Resolve a given path to an absolute path.
+# Usage: abspath <path>
+#
+# Arguments:
+#   $1 - Path to resolve.
+#
+# Outputs:
+#   Prints the absolute, normalized path to stdout.
 abspath()
 {
 	local target="$1"
@@ -76,39 +108,28 @@ abspath()
 	fi
 }
 
-if [[ -z "${TARGET_PATH}" ]]; then
-	echo "[SUBMITTER][FATAL] Missing required TARGET_PATH argument." >&2
-	usage
-	exit 2
-fi
-
-if [[ ! -f "$TARGET_PATH" ]]; then
-	echo "[SUBMITTER][FATAL] Target script not found at path: '$TARGET_PATH'" >&2
-	exit 1
-fi
+# Normalize target file path
 TARGET_ABS_PATH="$(abspath "$TARGET_PATH")"
 
+# Create log directory
 mkdir -p "${JOB_LOGS_DIR}"
 OUT_PATTERN="${JOB_LOGS_DIR}/${JOB_NAME}-%j.out"
 ERR_PATTERN="${JOB_LOGS_DIR}/${JOB_NAME}-%j.err"
 
-JOBFILE="$(mktemp -p "$PWD" tacc-job-XXXXXX.sh)"
-JOB_TEMPLATE="./tacc-job.template.sh"
-if [[ ! -f "${JOB_TEMPLATE}" ]]; then
-	echo "[SUBMITTER][FATAL] Job template not found at ${JOB_TEMPLATE}" >&2
-	exit 1
-fi
-cp "${JOB_TEMPLATE}" "${JOBFILE}"
-
+# Create job file from template
+JOBFILE="$(mktemp -p "$PWD" tacc-job-XXXXXX.slurm)"
+cp "${JOB_TEMPLATE_PATH}" "${JOBFILE}"
 JOB_TASKS=$((JOB_NODES * JOB_TASKS_PER_NODE))
 
+# Edit job file by replacing placeholders with real values
 sed -i \
 	-e "s|__IMAGE_URI__|${IMAGE_URI}|g" \
 	-e "s|__TARGET_ABS_PATH__|${TARGET_ABS_PATH}|g" \
 	-e "s|__PROJECT_ROOT__|${PROJECT_ROOT}|g" \
-	-e "s|__TASKS__|${JOB_TASKS}|g" \
+	-e "s|__JOB_TASKS__|${JOB_TASKS}|g" \
 	"${JOBFILE}"
 
+# Make job file executable
 chmod +x "${JOBFILE}"
 
 cleanup()
