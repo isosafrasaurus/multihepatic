@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os, sys
 
 project_root = os.environ.get("PROJECT_ROOT")
