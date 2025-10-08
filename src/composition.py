@@ -62,7 +62,7 @@ class AssembledForms:
     measures: Measures
     consts: ParamConstants
 
-def build_coupled_pressure_forms(
+def build_assembled_forms(
     G: FenicsGraph,
     Omega: Mesh,
     *,

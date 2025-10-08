@@ -1,0 +1,57 @@
+INFO:    Using cached SIF image
+INFO:    Using cached SIF image
+INFO:    Using cached SIF image
+INFO:    Using cached SIF image
+INFO:    Using cached SIF image
+INFO:    Using cached SIF image
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    Using cached SIF image
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+Traceback (most recent call last):
+  File "/work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py", line 5, in <module>
+    RESULTS_PATH = os.path.join(os.path.dirname(__file__), 'results')
+                   ^^
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+Traceback (most recent call last):
+  File "/work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py", line 5, in <module>
+Traceback (most recent call last):
+  File "/work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py", line 5, in <module>
+    RESULTS_PATH = os.path.join(os.path.dirname(__file__), 'results')
+                   ^^
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+Traceback (most recent call last):
+  File "/work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py", line 5, in <module>
+    RESULTS_PATH = os.path.join(os.path.dirname(__file__), 'results')
+                   ^^
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+    RESULTS_PATH = os.path.join(os.path.dirname(__file__), 'results')
+Traceback (most recent call last):
+  File "/work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py", line 5, in <module>
+                   ^^
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+Traceback (most recent call last):
+  File "/work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py", line 5, in <module>
+Traceback (most recent call last):
+  File "/work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py", line 5, in <module>
+    RESULTS_PATH = os.path.join(os.path.dirname(__file__), 'results')
+                   ^^
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+    RESULTS_PATH = os.path.join(os.path.dirname(__file__), 'results')
+Traceback (most recent call last):
+  File "/work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py", line 5, in <module>
+                   ^^
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+    RESULTS_PATH = os.path.join(os.path.dirname(__file__), 'results')
+                   ^^
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+    RESULTS_PATH = os.path.join(os.path.dirname(__file__), 'results')
+                   ^^
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+srun: error: c454-011: tasks 0-7: Exited with exit code 1

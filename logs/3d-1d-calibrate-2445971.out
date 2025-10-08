@@ -1,0 +1,264 @@
+[JOB] START 2025-10-07T21:03:16-05:00
+[JOB] JobID: 2445971  Tasks: 8
+[JOB] Script : /work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py
+[JOB] RunDir : /work2/10756/piercezhang9871/stampede3/3d-1d
+[JOB] ProjRt : /work2/10756/piercezhang9871/stampede3/3d-1d
+[JOB] Runtime: /opt/apps/tacc-apptainer/1.4.1/bin/apptainer (apptainer version 1.4.1-1.el9)
+[JOB] Image  : docker://ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest
+[JOB] Running workload…
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+Missing HsMG for fract norm computing
+=== initialize.py ===
+[MPI] size=1 rank=0
+Target net flow      : 5e-06
+3D voxel resolution  : 0.001 m
+1D mesh exponent     : 5
+log10 initial guess  : gamma=6.0, gamma_a=6.0, gamma_R=6.0
+log10 simplex steps  : d=[1.0, 1.0, 1.0]
+NM tolerances        : tol=1e-10, max_iters=50, max_feval=200
+=== initialize.py ===
+[MPI] size=1 rank=0
+Target net flow      : 5e-06
+3D voxel resolution  : 0.001 m
+1D mesh exponent     : 5
+log10 initial guess  : gamma=6.0, gamma_a=6.0, gamma_R=6.0
+log10 simplex steps  : d=[1.0, 1.0, 1.0]
+NM tolerances        : tol=1e-10, max_iters=50, max_feval=200
+=== initialize.py ===
+[MPI] size=1 rank=0
+Target net flow      : 5e-06
+3D voxel resolution  : 0.001 m
+1D mesh exponent     : 5
+log10 initial guess  : gamma=6.0, gamma_a=6.0, gamma_R=6.0
+log10 simplex steps  : d=[1.0, 1.0, 1.0]
+NM tolerances        : tol=1e-10, max_iters=50, max_feval=200
+=== initialize.py ===
+[MPI] size=1 rank=0
+Target net flow      : 5e-06
+3D voxel resolution  : 0.001 m
+1D mesh exponent     : 5
+log10 initial guess  : gamma=6.0, gamma_a=6.0, gamma_R=6.0
+log10 simplex steps  : d=[1.0, 1.0, 1.0]
+NM tolerances        : tol=1e-10, max_iters=50, max_feval=200
+=== initialize.py ===
+[MPI] size=1 rank=0
+Target net flow      : 5e-06
+3D voxel resolution  : 0.001 m
+1D mesh exponent     : 5
+log10 initial guess  : gamma=6.0, gamma_a=6.0, gamma_R=6.0
+log10 simplex steps  : d=[1.0, 1.0, 1.0]
+NM tolerances        : tol=1e-10, max_iters=50, max_feval=200
+=== initialize.py ===
+[MPI] size=1 rank=0
+Target net flow      : 5e-06
+3D voxel resolution  : 0.001 m
+1D mesh exponent     : 5
+log10 initial guess  : gamma=6.0, gamma_a=6.0, gamma_R=6.0
+log10 simplex steps  : d=[1.0, 1.0, 1.0]
+NM tolerances        : tol=1e-10, max_iters=50, max_feval=200
+=== initialize.py ===
+[MPI] size=1 rank=0
+Target net flow      : 5e-06
+3D voxel resolution  : 0.001 m
+1D mesh exponent     : 5
+log10 initial guess  : gamma=6.0, gamma_a=6.0, gamma_R=6.0
+log10 simplex steps  : d=[1.0, 1.0, 1.0]
+NM tolerances        : tol=1e-10, max_iters=50, max_feval=200
+=== initialize.py ===
+[MPI] size=1 rank=0
+Target net flow      : 5e-06
+3D voxel resolution  : 0.001 m
+1D mesh exponent     : 5
+log10 initial guess  : gamma=6.0, gamma_a=6.0, gamma_R=6.0
+log10 simplex steps  : d=[1.0, 1.0, 1.0]
+NM tolerances        : tol=1e-10, max_iters=50, max_feval=200
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+WARNING: user expression has not supplied value_shape method or an element. Assuming scalar element.
+
+Initial simplex (log10 space):
+  S[0] = [  6.0000,   6.0000,   6.0000]
+  S[1] = [  7.0000,   6.0000,   6.0000]
+  S[2] = [  6.0000,   7.0000,   6.0000]
+  S[3] = [  6.0000,   6.0000,   7.0000]
+Evaluating initial simplex...
+
+Initial simplex (log10 space):
+  S[0] = [  6.0000,   6.0000,   6.0000]
+  S[1] = [  7.0000,   6.0000,   6.0000]
+  S[2] = [  6.0000,   7.0000,   6.0000]
+  S[3] = [  6.0000,   6.0000,   7.0000]
+Evaluating initial simplex...
+
+Initial simplex (log10 space):
+  S[0] = [  6.0000,   6.0000,   6.0000]
+  S[1] = [  7.0000,   6.0000,   6.0000]
+  S[2] = [  6.0000,   7.0000,   6.0000]
+  S[3] = [  6.0000,   6.0000,   7.0000]
+Evaluating initial simplex...
+
+Initial simplex (log10 space):
+  S[0] = [  6.0000,   6.0000,   6.0000]
+  S[1] = [  7.0000,   6.0000,   6.0000]
+  S[2] = [  6.0000,   7.0000,   6.0000]
+  S[3] = [  6.0000,   6.0000,   7.0000]
+Evaluating initial simplex...
+
+Initial simplex (log10 space):
+  S[0] = [  6.0000,   6.0000,   6.0000]
+  S[1] = [  7.0000,   6.0000,   6.0000]
+  S[2] = [  6.0000,   7.0000,   6.0000]
+  S[3] = [  6.0000,   6.0000,   7.0000]
+Evaluating initial simplex...
+
+Initial simplex (log10 space):
+  S[0] = [  6.0000,   6.0000,   6.0000]
+  S[1] = [  7.0000,   6.0000,   6.0000]
+  S[2] = [  6.0000,   7.0000,   6.0000]
+  S[3] = [  6.0000,   6.0000,   7.0000]
+Evaluating initial simplex...
+
+Initial simplex (log10 space):
+  S[0] = [  6.0000,   6.0000,   6.0000]
+  S[1] = [  7.0000,   6.0000,   6.0000]
+  S[2] = [  6.0000,   7.0000,   6.0000]
+  S[3] = [  6.0000,   6.0000,   7.0000]
+Evaluating initial simplex...
+
+Initial simplex (log10 space):
+  S[0] = [  6.0000,   6.0000,   6.0000]
+  S[1] = [  7.0000,   6.0000,   6.0000]
+  S[2] = [  6.0000,   7.0000,   6.0000]
+  S[3] = [  6.0000,   6.0000,   7.0000]
+Evaluating initial simplex...
+[eval 0001] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=177.22s
+  f(S[0]) =  2.382842e+08
+[eval 0001] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=177.46s
+  f(S[0]) =  2.382842e+08
+[eval 0001] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=177.49s
+  f(S[0]) =  2.382842e+08
+[eval 0001] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=177.62s
+  f(S[0]) =  2.382842e+08
+[eval 0001] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=177.53s
+  f(S[0]) =  2.382842e+08
+[eval 0001] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=177.72s
+  f(S[0]) =  2.382842e+08
+[eval 0001] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=177.72s
+  f(S[0]) =  2.382842e+08
+[eval 0001] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=177.79s
+  f(S[0]) =  2.382842e+08
+[eval 0002] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=175.19s
+  f(S[1]) =  7.549491e+07
+[eval 0002] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=175.37s
+  f(S[1]) =  7.549491e+07
+[eval 0002] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=175.45s
+  f(S[1]) =  7.549491e+07
+[eval 0002] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=175.59s
+  f(S[1]) =  7.549491e+07
+[eval 0002] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=175.26s
+  f(S[1]) =  7.549491e+07
+[eval 0002] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=175.32s
+  f(S[1]) =  7.549491e+07
+[eval 0002] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=175.34s
+  f(S[1]) =  7.549491e+07
+[eval 0002] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=175.55s
+  f(S[1]) =  7.549491e+07
+[eval 0003] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=174.61s
+  f(S[2]) =  3.067230e+09
+[eval 0003] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=174.79s
+  f(S[2]) =  3.067230e+09
+[eval 0003] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=175.07s
+  f(S[2]) =  3.067230e+09
+[eval 0003] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=174.77s
+  f(S[2]) =  3.067230e+09
+[eval 0003] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=175.10s
+  f(S[2]) =  3.067230e+09
+[eval 0003] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=175.03s
+  f(S[2]) =  3.067230e+09
+[eval 0003] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=175.03s
+  f(S[2]) =  3.067230e+09
+[eval 0003] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=175.35s
+  f(S[2]) =  3.067230e+09
+[eval 0004] log10=[  6.0000,  6.0000,  7.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+07]  flux= 2.509787e+08  |delta|= 2.510e+08  dt=174.68s
+  f(S[3]) =  2.509787e+08
+End initial simplex evaluation.
+
+Starting SciPy Nelder–Mead optimization...
+[eval 0004] log10=[  6.0000,  6.0000,  7.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+07]  flux= 2.509787e+08  |delta|= 2.510e+08  dt=174.93s
+  f(S[3]) =  2.509787e+08
+End initial simplex evaluation.
+
+Starting SciPy Nelder–Mead optimization...
+[eval 0004] log10=[  6.0000,  6.0000,  7.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+07]  flux= 2.509787e+08  |delta|= 2.510e+08  dt=174.73s
+  f(S[3]) =  2.509787e+08
+End initial simplex evaluation.
+
+Starting SciPy Nelder–Mead optimization...
+[eval 0004] log10=[  6.0000,  6.0000,  7.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+07]  flux= 2.509787e+08  |delta|= 2.510e+08  dt=174.89s
+  f(S[3]) =  2.509787e+08
+End initial simplex evaluation.
+
+Starting SciPy Nelder–Mead optimization...
+[eval 0004] log10=[  6.0000,  6.0000,  7.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+07]  flux= 2.509787e+08  |delta|= 2.510e+08  dt=175.15s
+  f(S[3]) =  2.509787e+08
+End initial simplex evaluation.
+
+Starting SciPy Nelder–Mead optimization...
+[eval 0004] log10=[  6.0000,  6.0000,  7.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+07]  flux= 2.509787e+08  |delta|= 2.510e+08  dt=175.00s
+  f(S[3]) =  2.509787e+08
+End initial simplex evaluation.
+
+Starting SciPy Nelder–Mead optimization...
+[eval 0004] log10=[  6.0000,  6.0000,  7.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+07]  flux= 2.509787e+08  |delta|= 2.510e+08  dt=175.20s
+  f(S[3]) =  2.509787e+08
+End initial simplex evaluation.
+
+Starting SciPy Nelder–Mead optimization...
+[eval 0004] log10=[  6.0000,  6.0000,  7.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+07]  flux= 2.509787e+08  |delta|= 2.510e+08  dt=175.15s
+  f(S[3]) =  2.509787e+08
+End initial simplex evaluation.
+
+Starting SciPy Nelder–Mead optimization...
+[eval 0005] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=174.54s
+[eval 0005] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=174.80s
+[eval 0005] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=174.83s
+[eval 0005] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=174.96s
+[eval 0005] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=174.97s
+[eval 0005] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=175.13s
+[eval 0005] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=175.09s
+[eval 0005] log10=[  6.0000,  6.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+06, 1.000e+06]  flux= 2.382842e+08  |delta|= 2.383e+08  dt=174.94s
+[eval 0006] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=174.66s
+[eval 0006] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=174.94s
+[eval 0006] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=174.98s
+[eval 0006] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=174.88s
+[eval 0006] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=175.18s
+[eval 0006] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=175.23s
+[eval 0006] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=175.19s
+[eval 0006] log10=[  7.0000,  6.0000,  6.0000]  gamma=[ 1.000e+07, 1.000e+06, 1.000e+06]  flux= 7.549491e+07  |delta|= 7.549e+07  dt=175.01s
+[eval 0007] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=174.35s
+[eval 0007] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=174.73s
+[eval 0007] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=174.90s
+[eval 0007] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=174.72s
+[eval 0007] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=174.82s
+[eval 0007] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=175.03s
+[eval 0007] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=175.03s
+[eval 0007] log10=[  6.0000,  7.0000,  6.0000]  gamma=[ 1.000e+06, 1.000e+07, 1.000e+06]  flux= 3.067230e+09  |delta|= 3.067e+09  dt=174.92s

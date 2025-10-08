@@ -1,6 +1,6 @@
 
 import gc
-from typing import Optional, Sequence, Tuple
+from typing import Optional, List, Tuple
 import numpy as np
 from graphnics import FenicsGraph
 from dolfin import Mesh
@@ -10,8 +10,8 @@ from tissue.meshing import get_fg_from_json
 class Domain1D:
     def __init__(
         self,
-        *,
         G: FenicsGraph,
+        *,
         Lambda_num_nodes_exp: int = 5,
         inlet_nodes: Optional[List[int]] = None,
     ):
@@ -24,7 +24,7 @@ class Domain1D:
         cls,
         directory: str,
         Lambda_num_nodes_exp: int = 5,
-        inlet_nodes: Optional[Sequence[int]] = None,
+        inlet_nodes: Optional[List[int]] = None,
     ):
         G = get_fg_from_json(directory)
         if not getattr(G, "mesh", None):

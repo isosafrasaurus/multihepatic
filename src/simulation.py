@@ -1,6 +1,6 @@
 
 import gc
-from typing import Optional, Sequence, Type
+from typing import Optional, List, Type
 from .domain import Domain1D, Domain3D
 from .composition import build_assembled_forms, Parameters
 from .problem import PressureProblem, PressureVelocityProblem, PressureSolution
@@ -12,7 +12,7 @@ class Simulation:
         Omega: Domain3D,
         *,
         problem_cls: Type[PressureProblem] = PressureProblem,
-        inlet_nodes: Optional[Sequence[int]] = None,
+        inlet_nodes: Optional[List[int]] = None,
         Omega_sink_subdomain = None,
         order: int = 2
     ):

@@ -8,7 +8,7 @@ on_err(){ fatal "Command '$BASH_COMMAND' failed (rc=$?)"; }
 trap on_err ERR
 
 log "START $(date -Is)"
-log "JobID: ${SLURM_JOB_ID:-unknown}  Tasks: __TASKS__"
+log "JobID: ${SLURM_JOB_ID:-unknown}  Tasks: 8"
 
 module reset >/dev/null 2>&1 || true
 module unload xalt >/dev/null 2>&1 || true
@@ -28,10 +28,10 @@ unset LD_PRELOAD LD_AUDIT || true
 export APPTAINERENV_LD_PRELOAD=""
 export APPTAINERENV_LD_AUDIT=""
 
-IMAGE_URI="__IMAGE_URI__"
-RUN_ABS="__RUN_ABS__"
-TASKS=__TASKS__
-PROJECT_ROOT="__PROJECT_ROOT__"
+IMAGE_URI="docker://ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest"
+RUN_ABS="/work2/10756/piercezhang9871/stampede3/3d-1d/study_calibrate.py"
+TASKS=8
+PROJECT_ROOT="/work2/10756/piercezhang9871/stampede3/3d-1d"
 
 if [[ ! -f "$RUN_ABS" ]]; then
   fatal "Run script not found at absolute path: $RUN_ABS"
@@ -58,6 +58,10 @@ log "Image  : $IMAGE_URI"
 
 export APPTAINERENV_PYTHONPATH="$PROJECT_ROOT"
 export APPTAINERENV_PYTHONUNBUFFERED=1
+export APPTAINERENV_OMP_NUM_THREADS=1
+export APPTAINERENV_OPENBLAS_NUM_THREADS=1
+export APPTAINERENV_MKL_NUM_THREADS=1
+export APPTAINERENV_NUMEXPR_NUM_THREADS=1
 
 log "Running workload…"
 trap - ERR
