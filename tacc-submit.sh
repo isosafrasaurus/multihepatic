@@ -6,7 +6,7 @@ PROJECT_ROOT="$WORK/multihepatic"
 TACC_ACCOUNT="ASC22053"
 TACC_PARTITION="skx-dev"
 IMAGE_URI="docker://ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest"
-JOB_TEMPLATE_PATH="$PROJECT_ROOT/tacc-job.template.slurm"
+JOB_TEMPLATE_PATH="$PROJECT_ROOT/tacc-job-debug-xii.template.slurm"
 
 JOB_NAME="multihepatic"
 JOB_TIME="00:30:00"
