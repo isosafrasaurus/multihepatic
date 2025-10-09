@@ -1,27 +1,30 @@
+import math
 import numpy as np
-from dolfin import SubDomain, MeshFunction, Measure, UnitCubeMesh, facets, near, UserExpression, DOLFIN_EPS, Point
-from .geometry import BoundaryPoint
+from typing import Tuple, Optional
+from dolfin import UserExpression, UnitCubeMesh, Point
 
 class AveragingRadius(UserExpression):
     def __init__(self, tree, G, **kwargs):
         super().__init__(**kwargs)
         self.tree = tree
         self.G = G
+
     def eval(self, value, x):
         p = Point(x[0], x[1], x[2])
         cell = self.tree.compute_first_entity_collision(p)
         if cell == np.iinfo(np.uint32).max:
             value[0] = 0.0
-        else:
-            edge_ix = self.G.mf[cell]
-            edge = list(self.G.edges())[edge_ix]
-            value[0] = self.G.edges()[edge]['radius']
+            return
+        edge_ix = self.G.mf[cell]
+        edge = list(self.G.edges())[edge_ix]
+        value[0] = float(self.G.edges()[edge]['radius'])
 
 class SegmentLength(UserExpression):
     def __init__(self, tree, G, **kwargs):
         super().__init__(**kwargs)
         self.tree = tree
         self.G = G
+
     def eval(self, value, x):
         p = Point(*x)
         cell = self.tree.compute_first_entity_collision(p)
@@ -29,58 +32,88 @@ class SegmentLength(UserExpression):
             value[0] = 0.0
             return
         edge_ix = self.G.mf[cell]
-        edge = list(self.G.edges())[edge_ix]
-        u, v = edge
-        pos_u = np.array(self.G.nodes[u]['pos'])
-        pos_v = np.array(self.G.nodes[v]['pos'])
-        length = np.linalg.norm(pos_v - pos_u)
-        value[0] = float(length)
+        u, v = list(self.G.edges())[edge_ix]
+        pos_u = np.array(self.G.nodes[u]['pos'], dtype=float)
+        pos_v = np.array(self.G.nodes[v]['pos'], dtype=float)
+        value[0] = float(np.linalg.norm(pos_v - pos_u))
 
-def get_Omega_rect(G, bounds=None, voxel_dim=(16, 16, 16), padding=0.008):
-    positions = [data['pos'] for node, data in G.nodes(data=True)]
-    pos_array = np.array(positions)
-    Lambda_min = np.min(pos_array, axis=0)
-    Lambda_max = np.max(pos_array, axis=0)
-    if bounds is None:
-        scales = Lambda_max - Lambda_min + 2 * padding
-        shifts = Lambda_min - padding
-        bounds = [shifts, shifts + scales]
-    else:
-        lower, upper = np.min(bounds, axis=0), np.max(bounds, axis=0)
-        if not (np.all(Lambda_min >= lower) and np.all(Lambda_max <= upper)):
-            raise ValueError("Lambda is not contained within the provided bounds.")
-        scales = upper - lower
-        shifts = lower
-    Omega = UnitCubeMesh(*voxel_dim)
-    Omega_coords = Omega.coordinates()
-    Omega_coords[:] = Omega_coords * scales + shifts
-    return Omega, bounds
+def cells_from_mm_resolution(Lx_mm: float, Ly_mm: float, Lz_mm: float, h_mm: float) -> Tuple[int, int, int]:
+    nx = max(1, int(math.ceil(Lx_mm / h_mm)))
+    ny = max(1, int(math.ceil(Ly_mm / h_mm)))
+    nz = max(1, int(math.ceil(Lz_mm / h_mm)))
+    return nx, ny, nz
 
-def get_Omega_rect_from_res(G, bounds=None, voxel_res=0.001, padding=0.008):
-    positions = [data['pos'] for node, data in G.nodes(data=True)]
-    pos_array = np.array(positions)
-    Lambda_min = np.min(pos_array, axis=0)
-    Lambda_max = np.max(pos_array, axis=0)
+def _graph_bounds(G) -> Tuple[np.ndarray, np.ndarray]:
+    
+    positions = [data['pos'] for _, data in G.nodes(data=True)]
+    pos = np.asarray(positions, dtype=float)
+    return np.min(pos, axis=0), np.max(pos, axis=0)
+
+def _compute_bounds_and_scale(
+    G,
+    bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+    padding_m: float = 0.008,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    
+    lam_min, lam_max = _graph_bounds(G)
 
     if bounds is None:
-        scales = Lambda_max - Lambda_min + 2 * padding
-        shifts = Lambda_min - padding
-        bounds = [shifts, shifts + scales]
+        scales = (lam_max - lam_min) + 2.0 * padding_m
+        lower = lam_min - padding_m
+        upper = lower + scales
     else:
         lower, upper = np.min(bounds, axis=0), np.max(bounds, axis=0)
-        if not (np.all(Lambda_min >= lower) and np.all(Lambda_max <= upper)):
-            raise ValueError("Lambda is not contained within the provided bounds.")
+        if not (np.all(lam_min >= lower) and np.all(lam_max <= upper)):
+            raise ValueError("Graph coordinates are not fully contained within the provided bounds.")
         scales = upper - lower
-        shifts = lower
 
-    voxel_dim = tuple(
-        max(1, int(np.ceil(scales[i] / voxel_res)))
-        for i in range(3)
+    return lower, upper, scales
+
+def _scale_unitcube_to_box(mesh, lower: np.ndarray, upper: np.ndarray) -> None:
+    coords = mesh.coordinates()
+    scales = (upper - lower).astype(coords.dtype)
+    shifts = lower.astype(coords.dtype)
+    coords[:] = coords * scales + shifts
+
+def build_mesh_by_counts(
+    G,
+    counts: Tuple[int, int, int] = (16, 16, 16),
+    bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+    padding_m: float = 0.008,
+):
+    
+    lower, upper, _ = _compute_bounds_and_scale(G, bounds=bounds, padding_m=padding_m)
+    mesh = UnitCubeMesh(*tuple(int(max(1, c)) for c in counts))
+    _scale_unitcube_to_box(mesh, lower, upper)
+    return mesh, [lower, upper]
+
+def build_mesh_by_spacing(
+    G,
+    spacing_m: float = 1e-3,
+    bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+    padding_m: float = 0.008,
+):
+    
+    lower, upper, scales = _compute_bounds_and_scale(G, bounds=bounds, padding_m=padding_m)
+    nx, ny, nz = (
+        max(1, int(np.ceil(scales[0] / spacing_m))),
+        max(1, int(np.ceil(scales[1] / spacing_m))),
+        max(1, int(np.ceil(scales[2] / spacing_m))),
     )
+    mesh = UnitCubeMesh(nx, ny, nz)
+    _scale_unitcube_to_box(mesh, lower, upper)
+    return mesh, [lower, upper]
 
-    Omega = UnitCubeMesh(*voxel_dim)
-    Omega_coords = Omega.coordinates()
-    Omega_coords[:] = Omega_coords * scales + shifts
-
-    return Omega, bounds
-
+def build_mesh_by_mm_resolution(
+    G,
+    h_mm: float = 1.0,
+    bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+    padding_m: float = 0.008,
+):
+    
+    lower, upper, scales_m = _compute_bounds_and_scale(G, bounds=bounds, padding_m=padding_m)
+    Lx_mm, Ly_mm, Lz_mm = (scales_m * 1000.0).tolist()
+    nx, ny, nz = cells_from_mm_resolution(Lx_mm, Ly_mm, Lz_mm, h_mm)
+    mesh = UnitCubeMesh(nx, ny, nz)
+    _scale_unitcube_to_box(mesh, lower, upper)
+    return mesh, [lower, upper]
