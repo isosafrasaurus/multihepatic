@@ -1,61 +1,68 @@
 
+from __future__ import annotations
 import gc
 from dataclasses import dataclass
 from typing import Optional
-from graphnics import FenicsGraph
-from dolfin import Function, Mesh
-from fem.solver import solve_block
-from fem.projection import project_velocity
+from dolfin import Function
+from fem.solver import BlockLinearSolver
+from fem.operators import ProjectionOperator
 from .composition import AssembledForms, Parameters
+from .contracts import Solution
 
 @dataclass
-class PressureSolution:
-    p3d: Function
-    p1d: Function
-
-    def free(self) -> None:
-        self.p3d = None
-        self.p1d = None
-        gc.collect()
+class PressureSolution(Solution):
+    pass
 
 @dataclass
-class PressureVelocitySolution(PressureSolution):
-    v3d: Optional[Function] = None
-
-    def free(self) -> None:
-        self.v3d = None
-        super().free()
+class PressureVelocitySolution(Solution):
+    pass
 
 class PressureProblem:
-    def __init__(self, *, G: FenicsGraph, Omega: Mesh, forms: AssembledForms):
-        self.G = G
-        self.Omega = Omega
+    
+    def __init__(self, *, forms: AssembledForms, Omega=None, linear_solver: str = "mumps") -> None:
         self.forms = forms
+        self.solver = BlockLinearSolver(linear_solver=linear_solver)
+        self._closed = False
 
     def solve(self, params: Parameters) -> PressureSolution:
+        if self._closed:
+            raise RuntimeError("PressureProblem is closed")
         self.forms.consts.assign_from(params)
-        uh3d, uh1d = solve_block(
+        uh3d, uh1d = self.solver.solve_block(
             self.forms.spaces.W,
             self.forms.a_blocks,
             self.forms.L_blocks,
             inlet_bc=self.forms.inlet_bc,
-            linear_solver="mumps",
         )
         return PressureSolution(p3d=uh3d, p1d=uh1d)
 
-    def dispose(self) -> None:
+    def close(self) -> None:
+        if self._closed:
+            return
+        if self.solver:
+            self.solver.close()
         self.forms = None  
+        self._closed = True
         gc.collect()
 
-
 class PressureVelocityProblem(PressureProblem):
+    
+    def __init__(self, *, forms: AssembledForms, Omega, linear_solver: str = "mumps") -> None:
+        super().__init__(forms=forms, Omega=Omega, linear_solver=linear_solver)
+        self._proj = ProjectionOperator(Omega)
+
     def solve(self, params: Parameters) -> PressureVelocitySolution:
         base = super().solve(params)
-        v = project_velocity(
-            self.Omega,
+        v = self._proj.project_velocity(
             base.p3d,
             k_t=params.k_t,
             mu=params.mu,
-            dx=self.forms.measures.dxOmega,
+            dx=self.forms.measures.dxOmega,  
         )
         return PressureVelocitySolution(p3d=base.p3d, p1d=base.p1d, v3d=v)
+
+    def close(self) -> None:
+        if hasattr(self, "_proj") and self._proj:
+            self._proj.close()
+        super().close()
+

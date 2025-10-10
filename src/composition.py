@@ -1,4 +1,5 @@
 
+from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional, Any, List
 import numpy as np
@@ -37,14 +38,14 @@ class ParamConstants:
         self.P_in.assign(float(p.P_in))
         self.P_cvp.assign(float(p.P_cvp))
 
-@dataclass
+@dataclass(frozen=True)
 class Measures:
     dxOmega: Measure
     dxLambda: Measure
     dsOmega: Measure
     dsOmegaSink: Any
 
-@dataclass
+@dataclass(frozen=True)
 class Spaces:
     V3: FunctionSpace
     V1: FunctionSpace
@@ -53,7 +54,7 @@ class Spaces:
     def W(self) -> List[FunctionSpace]:
         return [self.V3, self.V1]
 
-@dataclass
+@dataclass(frozen=True)
 class AssembledForms:
     spaces: Spaces
     a_blocks: Any

@@ -1,11 +1,12 @@
 
+from __future__ import annotations
 import gc
 from typing import Optional, List, Tuple
 import numpy as np
 from graphnics import FenicsGraph
 from dolfin import Mesh
-from tissue.domain import get_Omega_rect, get_Omega_rect_from_res
 from tissue.meshing import get_fg_from_json
+from tissue.domain import build_mesh_by_spacing, build_mesh_by_counts
 
 class Domain1D:
     def __init__(
@@ -41,13 +42,7 @@ class Domain1D:
     def Lambda(self) -> Mesh:
         return self.G.mesh
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc, tb):
-        self.dispose()
-
-    def dispose(self):
+    def close(self) -> None:
         try:
             for e in list(self.G.edges):
                 self.G.edges[e].pop("submesh", None)
@@ -57,6 +52,13 @@ class Domain1D:
         if hasattr(self.G, "mesh"):
             self.G.mesh = None
         gc.collect()
+
+    
+    def __enter__(self) -> "Domain1D":
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        self.close()
 
 class Domain3D:
     def __init__(
@@ -76,28 +78,29 @@ class Domain3D:
         padding: float = 8e-3,
     ):
         if voxel_res is not None:
-            Omega, bounds = get_Omega_rect_from_res(
+            Omega, bounds = build_mesh_by_spacing(
                 G,
+                spacing_m=float(voxel_res),
                 bounds=bounds,
-                voxel_res=voxel_res,
-                padding=padding,
+                padding_m=padding,
             )
         else:
-            Omega, bounds = get_Omega_rect(
+            Omega, bounds = build_mesh_by_counts(
                 G,
+                counts=tuple(int(v) for v in voxel_dim),
                 bounds=bounds,
-                voxel_dim=voxel_dim,
-                padding=padding,
+                padding_m=padding,
             )
         return cls(Omega, bounds)
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc, tb):
-        self.dispose()
-
-    def dispose(self):
+    def close(self) -> None:
         self.Omega = None
         gc.collect()
+
+    
+    def __enter__(self) -> "Domain3D":
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        self.close()
 
