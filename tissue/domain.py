@@ -1,4 +1,5 @@
 import math
+import warnings
 import numpy as np
 from typing import Tuple, Optional
 from dolfin import UserExpression, UnitCubeMesh, Point
@@ -53,10 +54,13 @@ def _compute_bounds_and_scale(
     G,
     bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
     padding_m: float = 0.008,
+    *,
+    strict_bounds: bool = True,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Produce [lower, upper] bounds that contain the graph and return (lower, upper, scales),
-    where scales = upper - lower.
+    Produce [lower, upper] bounds that contain the graph (if strict_bounds=True) or use
+    provided bounds even if the graph extends outside (strict_bounds=False). Return
+    (lower, upper, scales), where scales = upper - lower.
     """
     lam_min, lam_max = _graph_bounds(G)
 
@@ -66,8 +70,16 @@ def _compute_bounds_and_scale(
         upper = lower + scales
     else:
         lower, upper = np.min(bounds, axis=0), np.max(bounds, axis=0)
-        if not (np.all(lam_min >= lower) and np.all(lam_max <= upper)):
-            raise ValueError("Graph coordinates are not fully contained within the provided bounds.")
+        if strict_bounds:
+            if not (np.all(lam_min >= lower) and np.all(lam_max <= upper)):
+                raise ValueError("Graph coordinates are not fully contained within the provided bounds.")
+        else:
+            # Allow partial coupling: graph may extend beyond the box.
+            if not (np.all(lam_min >= lower) and np.all(lam_max <= upper)):
+                warnings.warn(
+                    "Graph coordinates extend beyond provided bounds; proceeding with partial coupling.",
+                    RuntimeWarning,
+                )
         scales = upper - lower
 
     return lower, upper, scales
@@ -83,12 +95,18 @@ def build_mesh_by_counts(
     counts: Tuple[int, int, int] = (16, 16, 16),
     bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
     padding_m: float = 0.008,
+    *,
+    strict_bounds: bool = True,
 ):
     """
-    Build a rectangular-prism mesh covering the graph's bounding box (with optional padding),
-    using explicit voxel counts (nx, ny, nz). Returns (mesh, [lower, upper]).
+    Build a rectangular-prism mesh covering `bounds` (if provided) or the graph's
+    padded bounding box. If `strict_bounds=False`, the graph may extend outside
+    the box (partial coupling).
+    Returns (mesh, [lower, upper]).
     """
-    lower, upper, _ = _compute_bounds_and_scale(G, bounds=bounds, padding_m=padding_m)
+    lower, upper, _ = _compute_bounds_and_scale(
+        G, bounds=bounds, padding_m=padding_m, strict_bounds=strict_bounds
+    )
     mesh = UnitCubeMesh(*tuple(int(max(1, c)) for c in counts))
     _scale_unitcube_to_box(mesh, lower, upper)
     return mesh, [lower, upper]
@@ -98,17 +116,20 @@ def build_mesh_by_spacing(
     spacing_m: float = 1e-3,
     bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
     padding_m: float = 0.008,
+    *,
+    strict_bounds: bool = True,
 ):
     """
     Axis-spacing rule in native units (typically meters): spacing along each axis <= spacing_m.
-    This mirrors the old get_Omega_rect_from_res but is explicit and modular.
+    Mirrors the old resolution-based constructor but is explicit and modular.
+    If `strict_bounds=False`, the graph may extend beyond the box.
     """
-    lower, upper, scales = _compute_bounds_and_scale(G, bounds=bounds, padding_m=padding_m)
-    nx, ny, nz = (
-        max(1, int(np.ceil(scales[0] / spacing_m))),
-        max(1, int(np.ceil(scales[1] / spacing_m))),
-        max(1, int(np.ceil(scales[2] / spacing_m))),
+    lower, upper, scales = _compute_bounds_and_scale(
+        G, bounds=bounds, padding_m=padding_m, strict_bounds=strict_bounds
     )
+    nx = max(1, int(np.ceil(scales[0] / spacing_m)))
+    ny = max(1, int(np.ceil(scales[1] / spacing_m)))
+    nz = max(1, int(np.ceil(scales[2] / spacing_m)))
     mesh = UnitCubeMesh(nx, ny, nz)
     _scale_unitcube_to_box(mesh, lower, upper)
     return mesh, [lower, upper]
@@ -118,15 +139,20 @@ def build_mesh_by_mm_resolution(
     h_mm: float = 1.0,
     bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
     padding_m: float = 0.008,
+    *,
+    strict_bounds: bool = True,
 ):
     """
     Millimeter-facing API: specify desired resolution in millimeters (axis-spacing rule),
-    irrespective of the native unit of the graph (assumed meters). We convert the box size
-    to millimeters, compute (nx, ny, nz) via cells_from_mm_resolution, then scale the mesh.
+    irrespective of the native unit of the graph (assumed meters). If `strict_bounds=False`,
+    the graph may extend beyond the box (partial coupling).
     """
-    lower, upper, scales_m = _compute_bounds_and_scale(G, bounds=bounds, padding_m=padding_m)
+    lower, upper, scales_m = _compute_bounds_and_scale(
+        G, bounds=bounds, padding_m=padding_m, strict_bounds=strict_bounds
+    )
     Lx_mm, Ly_mm, Lz_mm = (scales_m * 1000.0).tolist()
     nx, ny, nz = cells_from_mm_resolution(Lx_mm, Ly_mm, Lz_mm, h_mm)
     mesh = UnitCubeMesh(nx, ny, nz)
     _scale_unitcube_to_box(mesh, lower, upper)
     return mesh, [lower, upper]
+
