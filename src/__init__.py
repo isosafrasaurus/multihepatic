@@ -17,3 +17,12 @@ from .problem import (
 from .simulation import Simulation
 from .utils import release_solution
 
+__all__ = [
+    "Domain1D", "Domain3D",
+    "Parameters", "ParamConstants", "Measures", "Spaces",
+    "AssembledForms", "build_assembled_forms",
+    "PressureProblem", "PressureVelocityProblem",
+    "PressureSolution", "PressureVelocitySolution",
+    "Simulation", "release_solution",
+]
+
