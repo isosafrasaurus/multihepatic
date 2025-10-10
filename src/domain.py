@@ -76,13 +76,23 @@ class Domain3D:
         voxel_res: Optional[float] = None,
         voxel_dim: Tuple[int, int, int] = (16, 16, 16),
         padding: float = 8e-3,
+        *,
+        enforce_graph_in_bounds: bool = False,
     ):
+        """
+        Create a 3D mesh from a graph and optional bounds.
+        - If `bounds` is None: a padded bounding box around the graph is used.
+        - If `bounds` is provided:
+            * `enforce_graph_in_bounds=True`  -> raise if graph lies outside (strict).
+            * `enforce_graph_in_bounds=False` -> allow graph outside (partial coupling).
+        """
         if voxel_res is not None:
             Omega, bounds = build_mesh_by_spacing(
                 G,
                 spacing_m=float(voxel_res),
                 bounds=bounds,
                 padding_m=padding,
+                strict_bounds=enforce_graph_in_bounds,
             )
         else:
             Omega, bounds = build_mesh_by_counts(
@@ -90,6 +100,7 @@ class Domain3D:
                 counts=tuple(int(v) for v in voxel_dim),
                 bounds=bounds,
                 padding_m=padding,
+                strict_bounds=enforce_graph_in_bounds,
             )
         return cls(Omega, bounds)
 
