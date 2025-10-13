@@ -1,97 +1,20 @@
 # Instructions
-### Via Docker
-1. `docker pull` the most recent 3d-1d package
-2. `docker run` the image with `-p 127.0.0.1:8888:8888` to expose the Jupyter port, and optionally mount a local directory on your host machine to `/root/3d-1d/export` to receive ParaView files
+### Via Consolidated Image
+A modified version of the `tacc-mvapich2.3-ib-python3.12` image from [hippylib/tacc-containers](https://github.com/hippylib/tacc-containers) can be compiled using the Dockerfile located in the `tacc/` directory. This image is preinstalled with `FeniCS_ii`,`graphnics`, and `Gmsh`, as well as other images relevant to legacy DOLFIN/FEniCS.
 
-### Via Linux and Python venv
-This will allow you to run the repo natively on your Linux machine. First, install legacy DOLFIN/FEniCS on your system via
+To run locally:
 ```
-sudo apt-get install software-properties-common
-sudo add-apt-repository ppa:fenics-packages/fenics
-sudo apt-get update
-sudo apt-get install fenics
-```
-Then, create a `venv` with the `--system-site-packages` option and run the following shell script within the venv
-```
-#!/bin/bash
-set -e
-    
-bin/pip install numpy pandas matplotlib scipy networkx plotly jupyter ipykernel tqdm ipywidgets vtk meshio pyvista Rtree
-
-git clone "https://bitbucket.org/fenics-apps/cbc.block/src/master/"
-bin/pip install master/
-
-git clone --single-branch -b "collapse-iter-dev" "https://github.com/MiroK/fenics_ii"
-find fenics_ii/ -type f -name "*.py" -exec perl -pi -e 's/\bufl\b/ufl_legacy/g' {} +
-bin/pip install fenics_ii/
-
-git clone "https://github.com/IngeborgGjerde/graphnics"
-bin/pip install graphnics/
-
-bin/pip install git+https://github.com/dolfin-adjoint/pyadjoint.git --upgrade
-```
-Then, you must register the kernel. Run `python -m ipykernel install --user --name=<your_venv_kernel_name> --display-name="Python (<your_venv_name>)"`
-
-### Via Google Colab
-KSPSolve can sometimes run out of memory. If your computer has RAM limitations, follow these instructions to run the demo notebook on Google Colab instead.
-1. Download and copy repo contents to Google Drive at address `d`
-2. Run a cell consisting of
-```
-import sys, os
-WORK_PATH = "/content/drive/MyDrive/<d>"
-SOURCE_PATH = os.path.join(WORK_PATH, "src")
-sys.path.append(SOURCE_PATH)
-
-!pip install ipywidgets vtk meshio pyvista Rtree
-
-def replace_in_file(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        content = file.read()
-
-    # Replace 'ufl' with 'ufl_legacy'
-    content = re.sub(r'\bufl\b', 'ufl_legacy', content)
-
-    with open(file_path, 'w', encoding='utf-8') as file:
-        file.write(content)
-
-def process_directory(directory):
-    for root, _, files in os.walk(directory):
-        for file in files:
-            if file.endswith('.py'):
-                file_path = os.path.join(root, file)
-                replace_in_file(file_path)
-
-# dolfin
-try:
-    import dolfin
-except ImportError:
-    !wget "https://fem-on-colab.github.io/releases/fenics-install-release-real.sh" -O "/tmp/fenics-install.sh" && bash "/tmp/fenics-install.sh"
-
-# block
-try:
-    import block
-except ImportError:
-    !git clone "https://bitbucket.org/fenics-apps/cbc.block/src/master/"
-    !pip install master/
-
-# fenics_ii
-try:
-    import xii
-except ImportError:
-    !git clone --single-branch -b "collapse-iter-dev" "https://github.com/MiroK/fenics_ii"
-    process_directory("fenics_ii/")
-    !pip install fenics_ii/
-
-# graphnics
-try:
-    import graphnics
-except ImportError:
-    !git clone "https://github.com/IngeborgGjerde/graphnics"
-    !pip install graphnics/
+docker run \
+    -it \
+    --env MV2_SMP_USE_CMA=0 \
+    --env MV2_ENABLE_AFFINITY=0 \
+    --volume "$(pwd):/home" \
+    ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest \
+    /bin/bash
 ```
 
-References:
-
+### References
+```
 @article{AlnaesEtal2015,
 title     = {The {FEniCS} Project Version 1.5},
 author    = {Alnaes, Martin S. and Blechta, Jan and Hake, Johan and Johansson, August and Kehlet, Benjamin and Logg, Anders and Richardson, Chris N. and Ring, Johannes and Rognes, Marie E. and Wells, Garth N.},
@@ -223,3 +146,4 @@ title        = {{FEM} on {C}olab},
 howpublished = {\url{https://fem-on-colab.github.io}},
 institution  = {Università Cattolica del Sacro Cuore}
 }
+```
