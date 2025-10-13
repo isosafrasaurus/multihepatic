@@ -1,3 +1,18 @@
+# Builds a Docker image for running FEniCS on TACC machines
+#
+# This is a modified version of
+#   https://bitbucket.org/fenics-project/docker/src/master/dockerfiles/dev-env/Dockerfile
+#
+# See License for further information
+#
+# Authors of the original version:
+# Jack S. Hale <jack.hale@uni.lu>
+# Lizao Li <lzlarryli@gmail.com>
+# Garth N. Wells <gnw20@cam.ac.uk>
+# Jan Blechta <blechta@karlin.mff.cuni.cz>
+# Umberto Villa <uvilla@utexas.edu> (uvilla on GitHub)
+# Mathew Hu <mathewhu@utexas.edu> (mathewgaohu on GitHub)
+
 FROM tacc/tacc-ubuntu18-mvapich2.3-ib
 
 RUN useradd -m -s /bin/bash -G sudo fenics && \
