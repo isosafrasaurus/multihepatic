@@ -8,7 +8,7 @@ docker run \
     -it \
     --env MV2_SMP_USE_CMA=0 \
     --env MV2_ENABLE_AFFINITY=0 \
-    --volume "$(pwd):/home" \
+    --volume "$(pwd):/home/fenics" \
     ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest \
     /bin/bash
 ```
