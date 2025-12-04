@@ -78,13 +78,13 @@ def build_assembled_forms(
     boundary_Omega = MeshFunction("size_t", Omega, Omega.topology().dim() - 1, 0)
     boundary_Lambda = MeshFunction("size_t", Lambda, Lambda.topology().dim() - 1, 0)
 
-    # NEW: Omega_sink_subdomain can be either SubDomain or MeshFunction
     if Omega_sink_subdomain is not None:
-        if isinstance(Omega_sink_subdomain, MeshFunction):
-            # Assume it already lives on boundary facets of Omega
+        # If we were given a MeshFunction (e.g. from sink_markers_from_surface_vtk),
+        # just copy its values onto boundary_Omega.
+        if isinstance(Omega_sink_subdomain, MeshFunction) or hasattr(Omega_sink_subdomain, "array"):
             boundary_Omega.array()[:] = Omega_sink_subdomain.array()
         else:
-            # SubDomain-like: supports .mark(boundary_Omega, value)
+            # SubDomain-like object: use .mark(...)
             Omega_sink_subdomain.mark(boundary_Omega, 1)
 
     if inlet_nodes:
