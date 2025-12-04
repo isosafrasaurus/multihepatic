@@ -2,7 +2,8 @@
 import os, json
 from graphnics import FenicsGraph
 import numpy as np
-from dolfin import Mesh, MeshEditor, MeshFunction
+from dolfin import Mesh, MeshEditor, MeshFunction, facets as dolfin_facets
+from collections import defaultdict
 
 # existing:
 try:
@@ -166,55 +167,103 @@ def get_fg_from_vtk(
 def mesh_from_vtk(
     filename: str,
     *,
-    cell_type_hint: str = "tetra",
+    use_delaunay_if_polydata: bool = True,
 ) -> Mesh:
     """
-    Convert a 3D .vtk unstructured grid to a FEniCS Mesh.
+    Build a 3D tetrahedral FEniCS Mesh from a VTK file.
 
-    Expects tetrahedral elements; by default looks for a cell type containing
-    'tetra'. If cell_type_hint is more specific (e.g. 'tetra10') it is used first.
+    - If the file contains a vtkUnstructuredGrid with tetra cells, we just
+      convert that.
+    - If the file contains vtkPolyData (e.g. from `nii2mesh`), and
+      use_delaunay_if_polydata=True, we run vtkDelaunay3D to generate
+      a tetrahedral volume mesh from the surface / point cloud.
+
+    NOTE: Delaunay3D gives a tetrahedralization of the point set (typically
+    the convex hull). This is an approximation of your liver volume; if you
+    need a high‑quality conforming mesh, you’d want an external tet mesher
+    (TetGen, gmsh, etc.).
     """
-    _require_meshio()
-    m = meshio.read(filename)
+    _require_vtk()
 
-    cells = None
-    # Try exact hint first
-    for cell_block in m.cells:
-        if cell_type_hint in cell_block.type:
-            cells = cell_block.data
-            break
-    # Fallback: any tetra-like cell
-    if cells is None:
-        for cell_block in m.cells:
-            if "tetra" in cell_block.type:
-                cells = cell_block.data
-                break
+    fname = filename.lower()
+    # Use generic reader that can handle multiple dataset types
+    if fname.endswith(".vtu"):
+        reader = vtk.vtkXMLUnstructuredGridReader()
+    elif fname.endswith(".vtk"):
+        reader = vtk.vtkDataSetReader()
+    else:
+        # Fall back to generic data object reader
+        reader = vtk.vtkGenericDataObjectReader()
 
-    if cells is None:
+    reader.SetFileName(filename)
+    reader.Update()
+    data = reader.GetOutput()
+
+    # Case 1: already an unstructured grid
+    if isinstance(data, vtk.vtkUnstructuredGrid):
+        ugrid = data
+
+    # Case 2: POLYDATA surface -> tetrahedralize via Delaunay3D
+    elif isinstance(data, vtk.vtkPolyData):
+        if not use_delaunay_if_polydata:
+            raise ValueError(
+                f"VTK file {filename!r} is POLYDATA (surface). "
+                "You need a volume (unstructured grid) mesh or enable "
+                "use_delaunay_if_polydata."
+            )
+
+        delaunay = vtk.vtkDelaunay3D()
+        delaunay.SetInputData(data)
+        # Default alpha=0 -> full tetrahedralization of convex hull
+        delaunay.Update()
+        ugrid = delaunay.GetOutput()
+
+    else:
         raise ValueError(
-            f"Could not find tetrahedral cells in {filename!r}; "
-            f"available cell types: {[c.type for c in m.cells]}"
+            f"Unsupported VTK dataset type {type(data).__name__} in {filename!r}"
         )
 
-    points = m.points[:, :3]
+    if ugrid is None or ugrid.GetNumberOfPoints() == 0:
+        raise RuntimeError(f"No points found in VTK dataset {filename!r}")
 
+    # Extract tetrahedral cells
+    tetrahedra = []
+    id_list = vtk.vtkIdList()
+    n_cells = ugrid.GetNumberOfCells()
+    for ci in range(n_cells):
+        ctype = ugrid.GetCellType(ci)
+        if ctype == vtk.VTK_TETRA:
+            ugrid.GetCellPoints(ci, id_list)
+            if id_list.GetNumberOfIds() != 4:
+                continue
+            tetrahedra.append([id_list.GetId(j) for j in range(4)])
+
+    if not tetrahedra:
+        raise RuntimeError(
+            f"No tetrahedral cells (VTK_TETRA) found in {filename!r} "
+            f"(dataset type {type(ugrid).__name__})."
+        )
+
+    # Build FEniCS mesh via MeshEditor
     mesh = Mesh()
     editor = MeshEditor()
     editor.open(mesh, "tetrahedron", 3, 3)
-    editor.init_vertices(len(points))
-    editor.init_cells(len(cells))
 
-    for i, xyz in enumerate(points):
-        editor.add_vertex(i, xyz)
+    n_points = ugrid.GetNumberOfPoints()
+    editor.init_vertices(n_points)
+    editor.init_cells(len(tetrahedra))
 
-    for i, cell in enumerate(cells):
-        editor.add_cell(i, cell)
+    for i in range(n_points):
+        x, y, z = ugrid.GetPoint(i)
+        editor.add_vertex(i, (float(x), float(y), float(z)))
+
+    for i, tet in enumerate(tetrahedra):
+        editor.add_cell(i, [int(tet[0]), int(tet[1]), int(tet[2]), int(tet[3])])
 
     editor.close()
     return mesh
 
 
-# NEW: build sink boundary marker MeshFunction from a surface .vtk
 def sink_markers_from_surface_vtk(
     Omega: Mesh,
     surface_filename: str,
@@ -227,58 +276,81 @@ def sink_markers_from_surface_vtk(
     surface mesh from `surface_filename` are marked with `marker_value`.
 
     Assumptions:
-      - `surface_filename` stores a surface mesh (triangles) whose points
-        coincide (up to rounding) with vertices of `Omega`.
-      - The file is typically produced from the same volume mesh.
-
-    This is a geometric matching based on vertex coordinates.
+      - `surface_filename` is a surface mesh (triangles) in VTK POLYDATA
+        or XML-PolyData (.vtp) format.
+      - Its points lie on the boundary of the volume mesh `Omega`.
+      - The VTK surface points coincide (up to rounding) with vertices
+        of `Omega`. We match by coordinates up to `decimals` digits.
     """
-    _require_meshio()
-    m = meshio.read(surface_filename)
+    _require_vtk()
 
-    tri_cells = None
-    for cell_block in m.cells:
-        if "triangle" in cell_block.type:
-            tri_cells = cell_block.data
-            break
-    if tri_cells is None:
-        raise ValueError(
-            f"No triangle cells found in {surface_filename!r}; "
-            f"found cell types {[c.type for c in m.cells]}"
+    fname = surface_filename.lower()
+    if fname.endswith(".vtp"):
+        reader = vtk.vtkXMLPolyDataReader()
+    else:
+        reader = vtk.vtkPolyDataReader()
+
+    reader.SetFileName(surface_filename)
+    reader.Update()
+    poly = reader.GetOutput()
+
+    if poly is None or poly.GetNumberOfPoints() == 0:
+        raise RuntimeError(f"Failed to read polydata from {surface_filename!r}")
+
+    # Surface points
+    pts = poly.GetPoints()
+    n_pts = pts.GetNumberOfPoints()
+    surf_points = np.array([pts.GetPoint(i) for i in range(n_pts)], dtype=float)
+
+    # Triangles connectivity
+    polys = poly.GetPolys()
+    id_list = vtk.vtkIdList()
+    polys.InitTraversal()
+    surf_tris = []
+    while polys.GetNextCell(id_list):
+        if id_list.GetNumberOfIds() == 3:
+            surf_tris.append(
+                [int(id_list.GetId(0)),
+                 int(id_list.GetId(1)),
+                 int(id_list.GetId(2))]
+            )
+
+    if not surf_tris:
+        raise RuntimeError(
+            f"No triangular cells found in sink surface {surface_filename!r}"
         )
 
-    surf_points = m.points[:, :3]
-
-    # Build lookup from rounded coordinates to Omega vertex indices
+    # Map surface vertices -> Omega vertex indices via coordinate rounding
     coords = Omega.coordinates()
-    from collections import defaultdict
     vert_lookup = defaultdict(list)
     for vid, xyz in enumerate(coords):
         key = tuple(np.round(xyz, decimals=decimals))
         vert_lookup[key].append(vid)
 
-    # Map each surface-vertex to (one) Omega vertex index if possible
-    surf_vertex_to_omega = []
-    for xyz in surf_points:
+    surf_vertex_to_omega = [None] * n_pts
+    for i, xyz in enumerate(surf_points):
         key = tuple(np.round(xyz, decimals=decimals))
-        candidates = vert_lookup.get(key, [])
-        surf_vertex_to_omega.append(candidates[0] if candidates else None)
+        cands = vert_lookup.get(key, [])
+        if cands:
+            surf_vertex_to_omega[i] = cands[0]
 
     desired_facets_vertices = set()
-    for tri in tri_cells:
-        omega_vids = []
+    for tri in surf_tris:
+        mapped = []
         for local in tri:
-            omega_v = surf_vertex_to_omega[int(local)]
-            if omega_v is None:
-                omega_vids = []
+            omega_vid = surf_vertex_to_omega[local]
+            if omega_vid is None:
+                mapped = []
                 break
-            omega_vids.append(int(omega_v))
-        if omega_vids:
-            desired_facets_vertices.add(tuple(sorted(omega_vids)))
+            mapped.append(int(omega_vid))
+        if mapped:
+            desired_facets_vertices.add(tuple(sorted(mapped)))
 
-    facet_markers = MeshFunction("size_t", Omega, Omega.topology().dim() - 1, 0)
+    facet_markers = MeshFunction(
+        "size_t", Omega, Omega.topology().dim() - 1, 0
+    )
 
-    from dolfin import facets as dolfin_facets
+    # Mark facets whose vertex set matches any surface triangle's vertex set
     for f in dolfin_facets(Omega):
         vids = tuple(sorted(f.entities(0)))
         if vids in desired_facets_vertices:
