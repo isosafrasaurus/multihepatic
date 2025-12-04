@@ -81,16 +81,32 @@ class Domain3D:
 
     @classmethod
     def from_graph(
-        cls,
-        G: FenicsGraph,
-        bounds = None,
-        voxel_res: Optional[float] = None,
-        voxel_dim: Tuple[int, int, int] = (16, 16, 16),
-        padding: float = 8e-3,
-        *,
-        enforce_graph_in_bounds: bool = False,
+            cls,
+            G: FenicsGraph,
+            bounds=None,
+            voxel_res: Optional[float] = None,
+            voxel_dim: Tuple[int, int, int] = (16, 16, 16),
+            padding: float = 8e-3,
+            *,
+            enforce_graph_in_bounds: bool = False,
     ):
-        ...
+        
+        if voxel_res is not None:
+            Omega, bounds = build_mesh_by_spacing(
+                G,
+                spacing_m=float(voxel_res),
+                bounds=bounds,
+                padding_m=padding,
+                strict_bounds=enforce_graph_in_bounds,
+            )
+        else:
+            Omega, bounds = build_mesh_by_counts(
+                G,
+                counts=tuple(int(v) for v in voxel_dim),
+                bounds=bounds,
+                padding_m=padding,
+                strict_bounds=enforce_graph_in_bounds,
+            )
         return cls(Omega, bounds)
 
     

@@ -78,10 +78,10 @@ def build_assembled_forms(
     boundary_Omega = MeshFunction("size_t", Omega, Omega.topology().dim() - 1, 0)
     boundary_Lambda = MeshFunction("size_t", Lambda, Lambda.topology().dim() - 1, 0)
 
-    
     if Omega_sink_subdomain is not None:
-        if isinstance(Omega_sink_subdomain, MeshFunction):
-            
+        
+        
+        if isinstance(Omega_sink_subdomain, MeshFunction) or hasattr(Omega_sink_subdomain, "array"):
             boundary_Omega.array()[:] = Omega_sink_subdomain.array()
         else:
             
