@@ -1,16 +1,34 @@
 # tissue/meshing.py
 import os, json
 from graphnics import FenicsGraph
-
-# NEW:
-from typing import Optional
 import numpy as np
 from dolfin import Mesh, MeshEditor, MeshFunction
 
+# existing:
 try:
     import meshio  # type: ignore
 except ImportError:  # pragma: no cover
     meshio = None
+
+def _require_meshio() -> None:
+    if meshio is None:
+        raise RuntimeError(
+            "meshio is required to read .vtk/.vtp files. "
+            "Install it via `pip install meshio`."
+        )
+
+try:
+    import vtk  # type: ignore
+except ImportError:  # pragma: no cover
+    vtk = None
+
+
+def _require_vtk() -> None:
+    if vtk is None:
+        raise RuntimeError(
+            "The 'vtk' Python package is required to read POLYDATA .vtk "
+            "centerline files (e.g. VMTK output). Install it via `pip install vtk`."
+        )
 
 
 def _require_meshio() -> None:
@@ -60,62 +78,88 @@ def get_fg_from_vtk(
     radius_field: str = "Radius",
 ) -> FenicsGraph:
     """
-    Build a FenicsGraph from a 1D .vtk/.vtp file containing line cells.
+    Build a FenicsGraph from a 1D .vtk/.vtp centerline file.
 
-    Assumptions:
-      - `filename` stores a mesh with `line` cells describing centerlines.
-      - Vessel radii are in point_data[radius_field] (scalar), or if no such
-        field is present, a default radius 1.0 is used.
+    This version uses the VTK Python bindings and supports POLYDATA,
+    which is what your sortedVesselNetwork.vtk file is.
     """
-    _require_meshio()
-    m = meshio.read(filename)
+    _require_vtk()
 
-    # Find line cells
-    line_cells = None
-    for cell_block in m.cells:
-        if "line" in cell_block.type:
-            line_cells = cell_block.data
-            break
-    if line_cells is None:
-        raise ValueError(
-            f"No line cells found in {filename!r}; "
-            f"found cell types {[c.type for c in m.cells]}"
-        )
+    # Choose the appropriate reader
+    fname = filename.lower()
+    if fname.endswith(".vtp"):
+        reader = vtk.vtkXMLPolyDataReader()
+    else:
+        # legacy .vtk, which is what you have
+        reader = vtk.vtkPolyDataReader()
 
-    points = m.points[:, :3]
+    reader.SetFileName(filename)
+    reader.Update()
+    poly = reader.GetOutput()
+
+    if poly is None or poly.GetNumberOfPoints() == 0:
+        raise RuntimeError(f"Failed to read any points from {filename!r}")
+
+    points_vtk = poly.GetPoints()
+    n_points = points_vtk.GetNumberOfPoints()
+
     G = FenicsGraph()
 
-    # Add nodes with coordinates
-    for i, xyz in enumerate(points):
+    # --- Nodes: positions ---
+    for i in range(n_points):
+        x, y, z = points_vtk.GetPoint(i)
         G.add_node(i)
-        G.nodes[i]["pos"] = [float(x) for x in xyz]
+        G.nodes[i]["pos"] = [float(x), float(y), float(z)]
 
-    # Radii from point _data
+    # --- Node radii from point data (if available) ---
     radii = None
-    if radius_field in m.point_data:
-        radii = m.point_data[radius_field]
-    elif m.point_data:
-        # fall back to first scalar field if available
-        key, arr = next(iter(m.point_data.items()))
-        if arr.ndim == 1 or arr.shape[1] == 1:
-            radii = arr
+    pd = poly.GetPointData()
+    if pd is not None:
+        arr = pd.GetArray(radius_field)
 
-    if radii is not None:
-        for i, r in enumerate(radii):
-            G.nodes[i]["radius"] = float(r)
-    else:
-        for i in G.nodes:
-            G.nodes[i]["radius"] = 1.0
+        # Fallback: look for *any* array with "radius" in the name
+        if arr is None:
+            for j in range(pd.GetNumberOfArrays()):
+                name_j = pd.GetArrayName(j)
+                if name_j and "radius" in name_j.lower():
+                    arr = pd.GetArray(j)
+                    radius_field = name_j
+                    break
 
-    # Connect nodes according to lines
-    for u, v in line_cells:
-        u, v = int(u), int(v)
-        G.add_edge(u, v)
-        G.edges[u, v]["radius"] = 0.5 * (
-            G.nodes[u]["radius"] + G.nodes[v]["radius"]
-        )
+        if arr is not None:
+            radii = [float(arr.GetTuple1(i)) for i in range(n_points)]
+
+    # If no radius data, default to 1.0
+    if radii is None:
+        radii = [1.0] * n_points
+
+    for i, r in enumerate(radii):
+        G.nodes[i]["radius"] = float(r)
+
+    # --- Edges: from polyline connectivity ---
+    # Centerlines are typically stored in polydata "Lines"
+    lines = poly.GetLines()
+    id_list = vtk.vtkIdList()
+    lines.InitTraversal()
+
+    while lines.GetNextCell(id_list):
+        n_ids = id_list.GetNumberOfIds()
+        if n_ids < 2:
+            continue
+
+        prev = int(id_list.GetId(0))
+        for k in range(1, n_ids):
+            curr = int(id_list.GetId(k))
+            u, v = prev, curr
+            if not G.has_edge(u, v):
+                G.add_edge(u, v)
+                G.edges[u, v]["radius"] = 0.5 * (
+                    G.nodes[u]["radius"] + G.nodes[v]["radius"]
+                )
+            prev = curr
 
     return G
+
 
 
 # NEW: read 3D tetrahedral mesh from .vtk
