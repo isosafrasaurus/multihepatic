@@ -5,7 +5,9 @@ from typing import Optional, List, Tuple
 import numpy as np
 from graphnics import FenicsGraph
 from dolfin import Mesh
-from tissue.meshing import get_fg_from_json
+from tissue.meshing import get_fg_from_json  # existing import
+# NEW:
+from tissue.meshing import get_fg_from_vtk
 from tissue.domain import build_mesh_by_spacing, build_mesh_by_counts
 
 class Domain1D:
@@ -28,6 +30,30 @@ class Domain1D:
         inlet_nodes: Optional[List[int]] = None,
     ):
         G = get_fg_from_json(directory)
+        if not getattr(G, "mesh", None):
+            G.make_mesh(num_nodes_exp=Lambda_num_nodes_exp)
+        if not any(("submesh" in G.edges[e]) for e in G.edges) and hasattr(G, "make_submeshes"):
+            from dolfin import MPI
+            if MPI.size(MPI.comm_world) == 1 and hasattr(G, "make_submeshes"):
+                G.make_submeshes()
+        if not all(("tangent" in G.edges[e]) for e in G.edges) and hasattr(G, "compute_tangents"):
+            G.compute_tangents()
+        return cls(G, Lambda_num_nodes_exp=Lambda_num_nodes_exp, inlet_nodes=inlet_nodes)
+
+    # NEW: construct 1D domain from VTK/VTP centerlines
+    @classmethod
+    def from_vtk(
+        cls,
+        filename: str,
+        *,
+        Lambda_num_nodes_exp: int = 5,
+        inlet_nodes: Optional[List[int]] = None,
+        radius_field: str = "Radius",
+    ):
+        """
+        Build Domain1D from a 1D .vtk/.vtp file (centerline polydata).
+        """
+        G = get_fg_from_vtk(filename, radius_field=radius_field)
         if not getattr(G, "mesh", None):
             G.make_mesh(num_nodes_exp=Lambda_num_nodes_exp)
         if not any(("submesh" in G.edges[e]) for e in G.edges) and hasattr(G, "make_submeshes"):
@@ -79,30 +105,22 @@ class Domain3D:
         *,
         enforce_graph_in_bounds: bool = False,
     ):
-        """
-        Create a 3D mesh from a graph and optional bounds.
-        - If `bounds` is None: a padded bounding box around the graph is used.
-        - If `bounds` is provided:
-            * `enforce_graph_in_bounds=True`  -> raise if graph lies outside (strict).
-            * `enforce_graph_in_bounds=False` -> allow graph outside (partial coupling).
-        """
-        if voxel_res is not None:
-            Omega, bounds = build_mesh_by_spacing(
-                G,
-                spacing_m=float(voxel_res),
-                bounds=bounds,
-                padding_m=padding,
-                strict_bounds=enforce_graph_in_bounds,
-            )
-        else:
-            Omega, bounds = build_mesh_by_counts(
-                G,
-                counts=tuple(int(v) for v in voxel_dim),
-                bounds=bounds,
-                padding_m=padding,
-                strict_bounds=enforce_graph_in_bounds,
-            )
+        ...
         return cls(Omega, bounds)
+
+    # NEW: construct 3D domain from a volume .vtk mesh
+    @classmethod
+    def from_vtk(cls, filename: str):
+        """
+        Build Domain3D directly from a 3D tetrahedral .vtk mesh file.
+        Bounds are inferred from the mesh coordinates.
+        """
+        from tissue.meshing import mesh_from_vtk
+        Omega = mesh_from_vtk(filename)
+        coords = Omega.coordinates()
+        lower = np.min(coords, axis=0)
+        upper = np.max(coords, axis=0)
+        return cls(Omega, (lower, upper))
 
     def close(self) -> None:
         self.Omega = None

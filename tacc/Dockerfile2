@@ -1,0 +1,6 @@
+FROM ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest
+USER fenics
+WORKDIR /home/fenics
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .

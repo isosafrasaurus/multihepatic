@@ -12,4 +12,5 @@ logs/
 .extsite/
 
 # Data
-.data
+_data
+_results
