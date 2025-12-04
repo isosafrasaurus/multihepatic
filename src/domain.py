@@ -10,6 +10,8 @@ from tissue.meshing import get_fg_from_json
 from tissue.meshing import get_fg_from_vtk
 from tissue.domain import build_mesh_by_spacing, build_mesh_by_counts
 
+
+
 class Domain1D:
     def __init__(
         self,
@@ -23,25 +25,6 @@ class Domain1D:
         self.inlet_nodes = list(inlet_nodes) if inlet_nodes else None
 
     @classmethod
-    def from_json(
-        cls,
-        directory: str,
-        Lambda_num_nodes_exp: int = 5,
-        inlet_nodes: Optional[List[int]] = None,
-    ):
-        G = get_fg_from_json(directory)
-        if not getattr(G, "mesh", None):
-            G.make_mesh(num_nodes_exp=Lambda_num_nodes_exp)
-        if not any(("submesh" in G.edges[e]) for e in G.edges) and hasattr(G, "make_submeshes"):
-            from dolfin import MPI
-            if MPI.size(MPI.comm_world) == 1 and hasattr(G, "make_submeshes"):
-                G.make_submeshes()
-        if not all(("tangent" in G.edges[e]) for e in G.edges) and hasattr(G, "compute_tangents"):
-            G.compute_tangents()
-        return cls(G, Lambda_num_nodes_exp=Lambda_num_nodes_exp, inlet_nodes=inlet_nodes)
-
-    
-    @classmethod
     def from_vtk(
         cls,
         filename: str,
@@ -51,16 +34,20 @@ class Domain1D:
         radius_field: str = "Radius",
     ):
         
+        from tissue.meshing import get_fg_from_vtk
+
         G = get_fg_from_vtk(filename, radius_field=radius_field)
+
         if not getattr(G, "mesh", None):
             G.make_mesh(n=Lambda_num_nodes_exp)
-        if not any(("submesh" in G.edges[e]) for e in G.edges) and hasattr(G, "make_submeshes"):
-            from dolfin import MPI
-            if MPI.size(MPI.comm_world) == 1 and hasattr(G, "make_submeshes"):
-                G.make_submeshes()
+
+        
+
         if not all(("tangent" in G.edges[e]) for e in G.edges) and hasattr(G, "compute_tangents"):
             G.compute_tangents()
+
         return cls(G, Lambda_num_nodes_exp=Lambda_num_nodes_exp, inlet_nodes=inlet_nodes)
+
 
     @property
     def Lambda(self) -> Mesh:
