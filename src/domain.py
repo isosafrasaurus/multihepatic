@@ -53,7 +53,7 @@ class Domain1D:
         
         G = get_fg_from_vtk(filename, radius_field=radius_field)
         if not getattr(G, "mesh", None):
-            G.make_mesh(num_nodes_exp=Lambda_num_nodes_exp)
+            G.make_mesh(n=Lambda_num_nodes_exp)
         if not any(("submesh" in G.edges[e]) for e in G.edges) and hasattr(G, "make_submeshes"):
             from dolfin import MPI
             if MPI.size(MPI.comm_world) == 1 and hasattr(G, "make_submeshes"):
