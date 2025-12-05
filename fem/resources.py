@@ -1,8 +1,10 @@
 from contextlib import ExitStack
 from typing import Any, Callable, Optional
 
+
 class ResourcePool:
     
+
     def __init__(self) -> None:
         self._stack = ExitStack()
         self._closed = False
@@ -25,6 +27,7 @@ class ResourcePool:
     def __exit__(self, exc_type, exc, tb) -> None:
         self.close()
 
+
 class PetscDestroy:
     def __init__(self, A: Optional[Any] = None, b: Optional[Any] = None) -> None:
         self.A = A
@@ -46,11 +49,13 @@ class PetscDestroy:
         self.A = None
         self.b = None
 
+
 class FenicsHandle:
     def __init__(self, obj: Any) -> None:
         self.obj = obj
 
     def close(self) -> None:
         self.obj = None
+
 
 __all__ = ["ResourcePool", "PetscDestroy", "FenicsHandle"]

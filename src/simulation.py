@@ -1,10 +1,10 @@
 import gc
 from typing import List, Optional, Type
 
+from .contracts import Problem, Solution
 from .domain import Domain1D, Domain3D
 from .forms import build_assembled_forms
 from .parameters import Parameters
-from .contracts import Problem, Solution
 from .problem import PressureProblem
 
 

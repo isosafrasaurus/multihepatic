@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Any, List, Optional
 
 import numpy as np
-from graphnics import FenicsGraph
 from dolfin import (
     Mesh,
     FunctionSpace,
@@ -16,11 +15,11 @@ from dolfin import (
     Measure,
     DOLFIN_EPS,
 )
+from graphnics import FenicsGraph
 from xii import Circle, Average
 
 from tissue.domain import AveragingRadius, SegmentLength
 from tissue.geometry import BoundaryPoint
-
 from .measures import Measures
 from .parameters import ParamConstants
 from .spaces import Spaces

@@ -1,8 +1,7 @@
 from .domain import Domain1D, Domain3D
-from .parameters import Parameters, ParamConstants
-from .measures import Measures
-from .spaces import Spaces
 from .forms import AssembledForms, build_assembled_forms
+from .measures import Measures
+from .parameters import Parameters, ParamConstants
 from .problem import (
     PressureProblem,
     PressureVelocityProblem,
@@ -10,6 +9,7 @@ from .problem import (
     PressureVelocitySolution,
 )
 from .simulation import Simulation
+from .spaces import Spaces
 from .utils import release_solution
 
 __all__ = [

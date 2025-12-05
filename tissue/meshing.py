@@ -1,9 +1,11 @@
 
-import os, json
-from graphnics import FenicsGraph
+import json
+import os
+from collections import defaultdict
+
 import numpy as np
 from dolfin import Mesh, MeshEditor, MeshFunction, facets as dolfin_facets
-from collections import defaultdict
+from graphnics import FenicsGraph
 
 
 try:
@@ -11,12 +13,14 @@ try:
 except ImportError:  
     meshio = None
 
+
 def _require_meshio() -> None:
     if meshio is None:
         raise RuntimeError(
             "meshio is required to read .vtk/.vtp files. "
             "Install it via `pip install meshio`."
         )
+
 
 try:
     import vtk  
@@ -41,6 +45,8 @@ def _require_meshio() -> None:
 
 
 
+
+
 def get_fg_from_json(directory: str) -> FenicsGraph:
     json_files = sorted([f for f in os.listdir(directory)
                          if f.startswith("Centerline_") and f.endswith(".mrk.json")])
@@ -59,13 +65,15 @@ def get_fg_from_json(directory: str) -> FenicsGraph:
         v2 = ind - idx + 1
         G.nodes[v1]["pos"], G.nodes[v2]["pos"] = pts[0]['position'], pts[1]['position']
         G.nodes[v1]["radius"], G.nodes[v2]["radius"] = rad[0], rad[1]
-        G.add_edge(v1, v2); G.edges[v1, v2]["radius"] = (G.nodes[v1]["radius"] + G.nodes[v2]["radius"]) / 2
+        G.add_edge(v1, v2);
+        G.edges[v1, v2]["radius"] = (G.nodes[v1]["radius"] + G.nodes[v2]["radius"]) / 2
 
         for i in range(len(pts) - 2):
             a, b = ind - idx + 1 + i, ind - idx + 2 + i
-            G.nodes[a]["pos"], G.nodes[b]["pos"] = pts[i+1]['position'], pts[i+2]['position']
-            G.nodes[a]["radius"], G.nodes[b]["radius"] = rad[i+1], rad[i+2]
-            G.add_edge(a, b); G.edges[a, b]["radius"] = (G.nodes[a]["radius"] + G.nodes[b]["radius"]) / 2
+            G.nodes[a]["pos"], G.nodes[b]["pos"] = pts[i + 1]['position'], pts[i + 2]['position']
+            G.nodes[a]["radius"], G.nodes[b]["radius"] = rad[i + 1], rad[i + 2]
+            G.add_edge(a, b);
+            G.edges[a, b]["radius"] = (G.nodes[a]["radius"] + G.nodes[b]["radius"]) / 2
 
         ind += len(pts)
         branch_points[ind - idx - 1] = pts[-1]['position']
@@ -74,9 +82,9 @@ def get_fg_from_json(directory: str) -> FenicsGraph:
 
 
 def get_fg_from_vtk(
-    filename: str,
-    *,
-    radius_field: str = "Radius",
+        filename: str,
+        *,
+        radius_field: str = "Radius",
 ) -> FenicsGraph:
     
     _require_vtk()
@@ -150,7 +158,7 @@ def get_fg_from_vtk(
             if not G.has_edge(u, v):
                 G.add_edge(u, v)
                 G.edges[u, v]["radius"] = 0.5 * (
-                    G.nodes[u]["radius"] + G.nodes[v]["radius"]
+                        G.nodes[u]["radius"] + G.nodes[v]["radius"]
                 )
             prev = curr
 
@@ -158,11 +166,10 @@ def get_fg_from_vtk(
 
 
 
-
 def mesh_from_vtk(
-    filename: str,
-    *,
-    use_delaunay_if_polydata: bool = True,
+        filename: str,
+        *,
+        use_delaunay_if_polydata: bool = True,
 ) -> Mesh:
     
     _require_vtk()
@@ -247,11 +254,11 @@ def mesh_from_vtk(
 
 
 def sink_markers_from_surface_vtk(
-    Omega: Mesh,
-    surface_filename: str,
-    *,
-    marker_value: int = 1,
-    decimals: int = 12,
+        Omega: Mesh,
+        surface_filename: str,
+        *,
+        marker_value: int = 1,
+        decimals: int = 12,
 ) -> MeshFunction:
     
     _require_vtk()

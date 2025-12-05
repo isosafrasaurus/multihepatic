@@ -1,7 +1,10 @@
 from typing import Sequence, Tuple
+
 from dolfin import LUSolver
 from xii import ii_assemble, apply_bc, ii_convert, ii_Function
+
 from .resources import ResourcePool, PetscDestroy
+
 
 class BlockLinearSolver:
     def __init__(self, linear_solver: str = "mumps") -> None:
@@ -9,12 +12,12 @@ class BlockLinearSolver:
         self._closed = False
 
     def solve_block(
-        self,
-        W: Sequence,
-        a_blocks,
-        L_blocks,
-        *,
-        inlet_bc=None,
+            self,
+            W: Sequence,
+            a_blocks,
+            L_blocks,
+            *,
+            inlet_bc=None,
     ) -> Tuple[object, object]:
         
         if self._closed:

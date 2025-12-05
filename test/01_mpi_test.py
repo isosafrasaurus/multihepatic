@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-import os, sys
+import os
+import sys
+
 import numpy as np
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -45,6 +47,7 @@ MESH_CACHE_DIR = os.environ.get(
 )
 LAMBDA_H5 = os.path.join(MESH_CACHE_DIR, "lambda_1d.h5")
 
+
 def is_master() -> bool:
     comm = MPI.comm_world
     size = MPI.size(comm)
@@ -53,10 +56,12 @@ def is_master() -> bool:
         return rank == 0
     return os.getenv("SLURM_PROCID", "0") == "0"
 
+
 def rprint(*args, **kwargs):
     if is_master():
         print(*args, **kwargs)
         sys.stdout.flush()
+
 
 def sanity_check_parallel() -> None:
     size = MPI.size(MPI.comm_world)
@@ -70,6 +75,7 @@ def sanity_check_parallel() -> None:
         ]
         print("\n".join(msg), file=sys.stderr, flush=True)
         sys.exit(2)
+
 
 def _build_1d_mesh_serial_from_graph(G: FenicsGraph, nref: int):
     node_ids = list(G.nodes())
@@ -100,6 +106,7 @@ def _build_1d_mesh_serial_from_graph(G: FenicsGraph, nref: int):
         mf = adapt(mf, mesh)
 
     return mesh, mf
+
 
 def build_test_graph() -> FenicsGraph:
     import numpy as _np
@@ -155,6 +162,7 @@ def build_test_graph() -> FenicsGraph:
     MPI.barrier(MPI.comm_world)
     return G
 
+
 def main() -> float:
     set_log_level(LogLevel.ERROR)
     sanity_check_parallel()
@@ -166,14 +174,13 @@ def main() -> float:
     bounds = [[0.0, 0.0, 0.0], [0.05, 0.04, 0.03]]
 
     with Domain1D(G, Lambda_num_nodes_exp=TEST_NUM_NODES_EXP, inlet_nodes=[0]) as Lambda, \
-         Domain3D.from_graph(G, bounds=bounds) as Omega, \
-         Simulation(
-             Lambda,
-             Omega,
-             problem_cls=PressureVelocityProblem,
-             Omega_sink_subdomain=X_ZERO_PLANE,
-         ) as sim:
-
+            Domain3D.from_graph(G, bounds=bounds) as Omega, \
+            Simulation(
+                Lambda,
+                Omega,
+                problem_cls=PressureVelocityProblem,
+                Omega_sink_subdomain=X_ZERO_PLANE,
+            ) as sim:
         params = Parameters(
             gamma=3.6145827741262347e-05,
             gamma_a=8.225197366649115e-08,
@@ -198,6 +205,6 @@ def main() -> float:
     rprint("net_flow_all =", net_flow_all)
     return net_flow_all
 
+
 if __name__ == "__main__":
     main()
-

@@ -2,8 +2,8 @@ import gc
 from typing import List, Optional, Tuple
 
 import numpy as np
-from graphnics import FenicsGraph
 from dolfin import Mesh
+from graphnics import FenicsGraph
 
 from tissue.domain import build_mesh_by_counts, build_mesh_by_spacing
 from tissue.meshing import get_fg_from_vtk, mesh_from_vtk
