@@ -20,6 +20,7 @@ class Domain1D:
         self.G = G
         self.Lambda_num_nodes_exp = Lambda_num_nodes_exp
         self.inlet_nodes = list(inlet_nodes) if inlet_nodes else None
+        self.G.make_mesh(self.Lambda_num_nodes_exp)
 
     @classmethod
     def from_vtk(

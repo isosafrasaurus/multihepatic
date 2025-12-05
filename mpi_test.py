@@ -8,11 +8,11 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from graphnics import FenicsGraph
+from graphnics import FenicsGraph, TubeFile
 from dolfin import (
     MPI, HDF5File, Mesh, MeshFunction, MeshEditor, refine, adapt,
     set_log_level, LogLevel, FacetNormal, Measure, dot, assemble,
-    XDMFFile
+    File
 )
 
 from tissue import AxisPlane
@@ -205,18 +205,22 @@ def main() -> float:
         
         sol = sim.solve(params)
 
-        
-        p3d_path = os.path.join(outdir, "pressure_3d.xdmf")
-        p1d_path = os.path.join(outdir, "pressure_1d.xdmf")
-        v3d_path = os.path.join(outdir, "velocity_3d.xdmf")
+        p3d_path = os.path.join(outdir, "pressure_3d.pvd")
+        p1d_path = os.path.join(outdir, "pressure_1d.pvd")
+        v3d_path = os.path.join(outdir, "velocity_3d.pvd")
 
-        with XDMFFile(comm, p3d_path) as f:
-            f.write(sol.p3d)
-        with XDMFFile(comm, p1d_path) as f:
-            f.write(sol.p1d)
+        
+        p3d_file = File(p3d_path)
+        p3d_file << sol.p3d
+
+        
+        p1d_file = TubeFile(G, p1d_path)
+        p1d_file << sol.p1d
+
+        
         if getattr(sol, "v3d", None) is not None:
-            with XDMFFile(comm, v3d_path) as f:
-                f.write(sol.v3d)
+            v3d_file = File(v3d_path)
+            v3d_file << sol.v3d
 
         
         n = FacetNormal(Omega.Omega)
