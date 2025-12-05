@@ -5,14 +5,15 @@ set -Eeuo pipefail
 PROJECT_ROOT="$WORK/multihepatic"
 TACC_ACCOUNT="ASC22053"
 TACC_PARTITION="skx-dev"
-IMAGE_URI="docker://ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest"
-JOB_TEMPLATE_PATH="$PROJECT_ROOT/tacc-job-debug-xii.template.slurm"
+IMAGE_URI="docker://ghcr.io/isosafrasaurus/tacc-mpc-patch:latest"
+JOB_TEMPLATE_PATH="$PROJECT_ROOT/tacc-job.template.slurm"
 
 JOB_NAME="multihepatic"
 JOB_TIME="00:30:00"
 JOB_NODES=1
-JOB_TASKS_PER_NODE=8
-JOB_LOGS_DIR="$PROJECT_ROOT/logs"
+JOB_TASKS_PER_NODE=1
+JOB_CPUS_PER_TASK=1
+JOB_LOGS_DIR="$PROJECT_ROOT/_logs"
 
 # Usage
 usage()
@@ -30,6 +31,7 @@ Options:
   --time HH:MM:SS        Wall time (default: ${JOB_TIME})
   --nodes N              Number of nodes (default: ${JOB_NODES})
   --tasks-per-node N     Tasks per node (default: ${JOB_TASKS_PER_NODE})
+  --cpus-per-task N      CPUs (Threads) per task (default: ${JOB_CPUS_PER_TASK})
   --logs-dir DIR         Log directory (default: ${JOB_LOGS_DIR})
   -h, --help             Show this help message and exit
 
@@ -49,6 +51,8 @@ while [[ $# -gt 0 ]]; do
 			JOB_NODES="${2:-}"; shift 2 ;;
 		--tasks-per-node)
 			JOB_TASKS_PER_NODE="${2:-}"; shift 2 ;;
+        --cpus-per-task)
+        JOB_CPUS_PER_TASK="${2:-}"; shift 2 ;;
 		--logs-dir)
 			JOB_LOGS_DIR="${2:-}"; shift 2 ;;
 		-h|--help)
@@ -123,11 +127,12 @@ JOB_TASKS=$((JOB_NODES * JOB_TASKS_PER_NODE))
 
 # Edit job file by replacing placeholders with real values
 sed -i \
-	-e "s|__IMAGE_URI__|${IMAGE_URI}|g" \
-	-e "s|__TARGET_ABS_PATH__|${TARGET_ABS_PATH}|g" \
-	-e "s|__PROJECT_ROOT__|${PROJECT_ROOT}|g" \
-	-e "s|__JOB_TASKS__|${JOB_TASKS}|g" \
-	"${JOBFILE}"
+    -e "s|__IMAGE_URI__|${IMAGE_URI}|g" \
+    -e "s|__TARGET_ABS_PATH__|${TARGET_ABS_PATH}|g" \
+    -e "s|__PROJECT_ROOT__|${PROJECT_ROOT}|g" \
+    -e "s|__JOB_TASKS__|${JOB_TASKS}|g" \
+    -e "s|__JOB_CPUS_PER_TASK__|${JOB_CPUS_PER_TASK}|g" \
+    "${JOBFILE}"
 
 # Make job file executable
 chmod +x "${JOBFILE}"
@@ -148,6 +153,7 @@ jobid_raw="$(
 		-t "${JOB_TIME}" \
 		-N "${JOB_NODES}" \
 		-n "${JOB_TASKS}" \
+        -c "${JOB_CPUS_PER_TASK}" \
 		-o "${OUT_PATTERN}" \
 		-e "${ERR_PATTERN}" \
 		"${JOBFILE}" 2>&1
