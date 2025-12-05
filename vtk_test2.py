@@ -36,6 +36,7 @@ def main():
     with Domain1D.from_vtk(
             vtk_1d,
             radius_field="Radius",
+            inlet_nodes=[89]
     ) as Lambda:
 
         G = Lambda.G
