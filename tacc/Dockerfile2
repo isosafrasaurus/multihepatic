@@ -4,3 +4,8 @@ WORKDIR /home/fenics
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
+
+USER root
+RUN mkdir -p /home/fenics/.config/matplotlib
+RUN chown -R fenics:fenics /home/fenics/.config
+USER fenics

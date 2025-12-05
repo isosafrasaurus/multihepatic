@@ -2,7 +2,8 @@ import os
 from datetime import datetime
 
 import numpy as np
-from dolfin import MPI, XDMFFile
+from dolfin import MPI, File
+from graphnics import TubeFile
 
 from src import (
     Domain1D,
@@ -84,17 +85,23 @@ def main():
 
                 sol = sim.run(params)
 
-                p3d_path = os.path.join(outdir, "pressure_3d.xdmf")
-                p1d_path = os.path.join(outdir, "pressure_1d.xdmf")
-                v3d_path = os.path.join(outdir, "velocity_3d.xdmf")
+                
+                p3d_path = os.path.join(outdir, "pressure_3d.pvd")
+                p1d_path = os.path.join(outdir, "pressure_1d.pvd")
+                v3d_path = os.path.join(outdir, "velocity_3d.pvd")
 
-                with XDMFFile(comm, p3d_path) as f:
-                    f.write(sol.p3d)
-                with XDMFFile(comm, p1d_path) as f:
-                    f.write(sol.p1d)
+                
+                p3d_file = File(p3d_path)
+                p3d_file << sol.p3d
+
+                
+                p1d_file = TubeFile(G, p1d_path)
+                p1d_file << sol.p1d
+
+                
                 if getattr(sol, "v3d", None) is not None:
-                    with XDMFFile(comm, v3d_path) as f:
-                        f.write(sol.v3d)
+                    v3d_file = File(v3d_path)
+                    v3d_file << sol.v3d
 
                 
                 release_solution(sol)
