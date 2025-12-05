@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime
 
 import numpy as np
 
@@ -11,6 +12,7 @@ from graphnics import FenicsGraph
 from dolfin import (
     MPI, HDF5File, Mesh, MeshFunction, MeshEditor, refine, adapt,
     set_log_level, LogLevel, FacetNormal, Measure, dot, assemble,
+    XDMFFile
 )
 
 from tissue import AxisPlane
@@ -165,6 +167,17 @@ def main() -> float:
     set_log_level(LogLevel.ERROR)
     sanity_check_parallel()
 
+    out_root = "_results"
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    outdir = os.path.join(out_root, timestamp)
+
+    comm = MPI.comm_world
+
+    
+    if MPI.rank(comm) == 0:
+        os.makedirs(outdir, exist_ok=True)
+    comm.barrier()
+
     G = build_test_graph()
 
     
@@ -191,6 +204,19 @@ def main() -> float:
 
         
         sol = sim.solve(params)
+
+        
+        p3d_path = os.path.join(outdir, "pressure_3d.xdmf")
+        p1d_path = os.path.join(outdir, "pressure_1d.xdmf")
+        v3d_path = os.path.join(outdir, "velocity_3d.xdmf")
+
+        with XDMFFile(comm, p3d_path) as f:
+            f.write(sol.p3d)
+        with XDMFFile(comm, p1d_path) as f:
+            f.write(sol.p1d)
+        if getattr(sol, "v3d", None) is not None:
+            with XDMFFile(comm, v3d_path) as f:
+                f.write(sol.v3d)
 
         
         n = FacetNormal(Omega.Omega)
