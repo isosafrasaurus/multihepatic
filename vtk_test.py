@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from dolfin import MPI, XDMFFile
+from dolfin import MPI, File  # <-- changed: use File instead of XDMFFile
 
 from src import (
     Domain1D,
@@ -35,8 +35,8 @@ def main():
     # Build domains from VTK
     # Adjust radius_field if your 1D file uses a different name
     with Domain1D.from_vtk(
-            vtk_1d,
-            radius_field="Radius",
+        vtk_1d,
+        radius_field="Radius",
     ) as Lambda, Domain3D.from_vtk(vtk_3d) as Omega:
 
         # Sink boundary markers from surface VTK
@@ -44,11 +44,11 @@ def main():
 
         # Set up and run simulation (pressure + projected velocity)
         with Simulation(
-                Lambda=Lambda,
-                Omega=Omega,
-                problem_cls=PressureVelocityProblem,  # gives p3d, p1d, v3d
-                Omega_sink_subdomain=sink_markers,
-                linear_solver="mumps",
+            Lambda=Lambda,
+            Omega=Omega,
+            problem_cls=PressureVelocityProblem,  # gives p3d, p1d, v3d
+            Omega_sink_subdomain=sink_markers,
+            linear_solver="mumps",
         ) as sim:
             # Example parameter values – tune as needed
             params = Parameters(
@@ -63,18 +63,23 @@ def main():
 
             sol = sim.run(params)
 
-            # Write _results to XDMF in the timestamped folder
-            p3d_path = os.path.join(outdir, "pressure_3d.xdmf")
-            p1d_path = os.path.join(outdir, "pressure_1d.xdmf")
-            v3d_path = os.path.join(outdir, "velocity_3d.xdmf")
+            # Write _results to PVD in the timestamped folder
+            p3d_path = os.path.join(outdir, "pressure_3d.pvd")
+            p1d_path = os.path.join(outdir, "pressure_1d.pvd")
+            v3d_path = os.path.join(outdir, "velocity_3d.pvd")
 
-            with XDMFFile(comm, p3d_path) as f:
-                f.write(sol.p3d)
-            with XDMFFile(comm, p1d_path) as f:
-                f.write(sol.p1d)
+            # 3D pressure as PVD
+            p3d_file = File(p3d_path)
+            p3d_file << sol.p3d
+
+            # 1D pressure as PVD (analogous to test script behavior)
+            p1d_file = File(p1d_path)
+            p1d_file << sol.p1d
+
+            # 3D velocity as PVD
             if getattr(sol, "v3d", None) is not None:
-                with XDMFFile(comm, v3d_path) as f:
-                    f.write(sol.v3d)
+                v3d_file = File(v3d_path)
+                v3d_file << sol.v3d
 
             # Drop references for FEniCS/PETSc
             release_solution(sol)
