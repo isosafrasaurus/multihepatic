@@ -1,12 +1,8 @@
-#!/usr/bin/env python
-from __future__ import annotations
-
 import os
 from datetime import datetime
 
 from dolfin import MPI, XDMFFile
 
-# Assuming 'src' and 'tissue' are part of your project copied into the container
 from src import (
     Domain1D,
     Domain3D,
