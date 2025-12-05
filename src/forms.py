@@ -124,13 +124,22 @@ def build_assembled_forms(
 
     L1 = (consts.gamma_a * consts.P_cvp / consts.mu) * v1 * D_area * dsLambdaRobin
 
+    
     inlet_bc = DirichletBC(V1, consts.P_in, boundary_Lambda, 1)
 
+    
+    
+    try:
+        bvals = inlet_bc.get_boundary_values()
+        if not bvals:  
+            inlet_bc = None
+    except Exception:
+        
+        
+        inlet_bc = None
+
     measures = Measures(
-        dxOmega=dxOmega,
-        dxLambda=dxLambda,
-        dsOmega=dsOmega,
-        dsOmegaSink=dsOmegaSink,
+        dxOmega=dxOmega, dxLambda=dxLambda, dsOmega=dsOmega, dsOmegaSink=dsOmegaSink
     )
 
     return AssembledForms(
@@ -141,6 +150,7 @@ def build_assembled_forms(
         measures=measures,
         consts=consts,
     )
+
 
 
 __all__ = ["AssembledForms", "build_assembled_forms"]
