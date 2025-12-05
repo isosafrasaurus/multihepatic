@@ -1,25 +1,34 @@
-
-from __future__ import annotations
 import gc
 from dataclasses import dataclass
-from typing import Optional
-from dolfin import Function
+
 from fem.solver import BlockLinearSolver
 from fem.operators import ProjectionOperator
-from .composition import AssembledForms, Parameters
+
+from .forms import AssembledForms
+from .parameters import Parameters
 from .contracts import Solution
+
 
 @dataclass
 class PressureSolution(Solution):
     pass
 
+
 @dataclass
 class PressureVelocitySolution(Solution):
     pass
 
+
 class PressureProblem:
     
-    def __init__(self, *, forms: AssembledForms, Omega=None, linear_solver: str = "mumps") -> None:
+
+    def __init__(
+            self,
+            *,
+            forms: AssembledForms,
+            Omega=None,
+            linear_solver: str = "mumps",
+    ) -> None:
         self.forms = forms
         self.solver = BlockLinearSolver(linear_solver=linear_solver)
         self._closed = False
@@ -27,7 +36,10 @@ class PressureProblem:
     def solve(self, params: Parameters) -> PressureSolution:
         if self._closed:
             raise RuntimeError("PressureProblem is closed")
+
+        
         self.forms.consts.assign_from(params)
+
         uh3d, uh1d = self.solver.solve_block(
             self.forms.spaces.W,
             self.forms.a_blocks,
@@ -45,9 +57,17 @@ class PressureProblem:
         self._closed = True
         gc.collect()
 
+
 class PressureVelocityProblem(PressureProblem):
     
-    def __init__(self, *, forms: AssembledForms, Omega, linear_solver: str = "mumps") -> None:
+
+    def __init__(
+            self,
+            *,
+            forms: AssembledForms,
+            Omega,
+            linear_solver: str = "mumps",
+    ) -> None:
         super().__init__(forms=forms, Omega=Omega, linear_solver=linear_solver)
         self._proj = ProjectionOperator(Omega)
 
@@ -62,7 +82,6 @@ class PressureVelocityProblem(PressureProblem):
         return PressureVelocitySolution(p3d=base.p3d, p1d=base.p1d, v3d=v)
 
     def close(self) -> None:
-        if hasattr(self, "_proj") and self._proj:
+        if getattr(self, "_proj", None) is not None:
             self._proj.close()
         super().close()
-

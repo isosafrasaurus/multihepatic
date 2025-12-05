@@ -1,7 +1,5 @@
-
-from __future__ import annotations
-from typing import Optional, Callable, Any
 from contextlib import ExitStack
+from typing import Any, Callable, Optional
 
 class ResourcePool:
     
@@ -28,7 +26,6 @@ class ResourcePool:
         self.close()
 
 class PetscDestroy:
-    
     def __init__(self, A: Optional[Any] = None, b: Optional[Any] = None) -> None:
         self.A = A
         self.b = b
@@ -50,10 +47,10 @@ class PetscDestroy:
         self.b = None
 
 class FenicsHandle:
-    
     def __init__(self, obj: Any) -> None:
         self.obj = obj
 
     def close(self) -> None:
         self.obj = None
 
+__all__ = ["ResourcePool", "PetscDestroy", "FenicsHandle"]

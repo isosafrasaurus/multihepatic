@@ -1,13 +1,8 @@
-
 from .domain import Domain1D, Domain3D
-from .composition import (
-    Parameters,
-    ParamConstants,
-    Measures,
-    Spaces,
-    AssembledForms,
-    build_assembled_forms,
-)
+from .parameters import Parameters, ParamConstants
+from .measures import Measures
+from .spaces import Spaces
+from .forms import AssembledForms, build_assembled_forms
 from .problem import (
     PressureProblem,
     PressureVelocityProblem,
@@ -18,11 +13,18 @@ from .simulation import Simulation
 from .utils import release_solution
 
 __all__ = [
-    "Domain1D", "Domain3D",
-    "Parameters", "ParamConstants", "Measures", "Spaces",
-    "AssembledForms", "build_assembled_forms",
-    "PressureProblem", "PressureVelocityProblem",
-    "PressureSolution", "PressureVelocitySolution",
-    "Simulation", "release_solution",
+    "Domain1D",
+    "Domain3D",
+    "Parameters",
+    "ParamConstants",
+    "Measures",
+    "Spaces",
+    "AssembledForms",
+    "build_assembled_forms",
+    "PressureProblem",
+    "PressureVelocityProblem",
+    "PressureSolution",
+    "PressureVelocitySolution",
+    "Simulation",
+    "release_solution",
 ]
-

@@ -1,10 +1,7 @@
-
-from __future__ import annotations
 from typing import Any
 from dolfin import VectorFunctionSpace, TrialFunction, TestFunction, Function, Constant, inner, grad, solve
 
 class ProjectionOperator:
-    
     def __init__(self, Omega: Any) -> None:
         self._Omega = Omega
         self._closed = False
@@ -25,4 +22,3 @@ class ProjectionOperator:
     def close(self) -> None:
         self._Omega = None
         self._closed = True
-

@@ -1,25 +1,25 @@
-
-from __future__ import annotations
 import gc
-from typing import Optional, List, Type
+from typing import List, Optional, Type
+
 from .domain import Domain1D, Domain3D
-from .composition import build_assembled_forms, Parameters
+from .forms import build_assembled_forms
+from .parameters import Parameters
 from .contracts import Problem, Solution
 from .problem import PressureProblem
 
+
 class Simulation:
-    
     def __init__(
-        self,
-        Lambda: Domain1D,
-        Omega: Domain3D,
-        *,
-        problem_cls: Type[Problem] = PressureProblem,
-        inlet_nodes: Optional[List[int]] = None,
-        Omega_sink_subdomain = None,
-        order: int = 2,
-        linear_solver: str = "mumps",
-    ):
+            self,
+            Lambda: Domain1D,
+            Omega: Domain3D,
+            *,
+            problem_cls: Type[Problem] = PressureProblem,
+            inlet_nodes: Optional[List[int]] = None,
+            Omega_sink_subdomain=None,
+            order: int = 2,
+            linear_solver: str = "mumps",
+    ) -> None:
         forms = build_assembled_forms(
             Lambda.G,
             Omega.Omega,
@@ -28,7 +28,11 @@ class Simulation:
             order=order,
         )
         
-        self.problem: Problem = problem_cls(forms=forms, Omega=Omega.Omega, linear_solver=linear_solver)
+        self.problem: Problem = problem_cls(
+            forms=forms,
+            Omega=Omega.Omega,
+            linear_solver=linear_solver,
+        )
         self._closed = False
 
     def run(self, params: Parameters) -> Solution:
@@ -43,7 +47,7 @@ class Simulation:
     def close(self) -> None:
         if not self._closed and self.problem:
             self.problem.close()
-            self.problem = None  
+            self.problem = None
             self._closed = True
         gc.collect()
 
@@ -52,4 +56,3 @@ class Simulation:
 
     def __exit__(self, exc_type, exc, tb) -> None:
         self.close()
-

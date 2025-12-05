@@ -1,5 +1,3 @@
-
-from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol, Optional, Any
 
@@ -13,14 +11,11 @@ class PostProcessor(Protocol):
 
 @dataclass
 class Solution:
-    
     p3d: Any
     p1d: Any
     v3d: Optional[Any] = None
 
     def close(self) -> None:
-        
         self.p3d = None
         self.p1d = None
         self.v3d = None
-
