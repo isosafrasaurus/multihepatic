@@ -8,9 +8,9 @@ __pycache__/
 *.so
 
 # Workload
-logs/
 .extsite/
 
-# Data
+# Results and Data
 _data
 _results
+_logs
