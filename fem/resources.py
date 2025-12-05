@@ -1,7 +1,5 @@
-# src/resources.py
-from __future__ import annotations
-from typing import Optional, Callable, Any
 from contextlib import ExitStack
+from typing import Any, Callable, Optional
 
 class ResourcePool:
     """
@@ -14,8 +12,8 @@ class ResourcePool:
     def push(self, finalizer: Callable[[], None]) -> None:
         if self._closed:
             raise RuntimeError("ResourcePool is closed")
-        # ExitStack expects a callback with signature (exc_type, exc, tb),
-        # but we can use callback() to push a simple finalizer.
+        # ExitStack expects a callback with (exc_type, exc, tb), but
+        # callback() lets us register a simple finalizer().
         self._stack.callback(finalizer)
 
     def close(self) -> None:
@@ -30,9 +28,6 @@ class ResourcePool:
         self.close()
 
 class PetscDestroy:
-    """
-    Tiny adapter to centralize PETSc destruction (via FEniCS backend).
-    """
     def __init__(self, A: Optional[Any] = None, b: Optional[Any] = None) -> None:
         self.A = A
         self.b = b
@@ -54,12 +49,10 @@ class PetscDestroy:
         self.b = None
 
 class FenicsHandle:
-    """
-    Optional uniform wrapper for FEniCS objects if you want to register them in pools.
-    """
     def __init__(self, obj: Any) -> None:
         self.obj = obj
 
     def close(self) -> None:
         self.obj = None
 
+__all__ = ["ResourcePool", "PetscDestroy", "FenicsHandle"]
