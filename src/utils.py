@@ -1,12 +1,8 @@
-# src/utils.py
-from __future__ import annotations
 import gc
 from typing import Any
 
+
 def release_solution(sol: Any) -> None:
-    """
-    Central place to drop references. Idempotent.
-    """
     if sol is None:
         return
     if hasattr(sol, "close") and callable(sol.close):
@@ -16,4 +12,3 @@ def release_solution(sol: Any) -> None:
             if hasattr(sol, k):
                 setattr(sol, k, None)
     gc.collect()
-
