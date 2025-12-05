@@ -14,7 +14,7 @@ from src import (
 from tissue.meshing import sink_markers_from_surface_vtk
 
 
-def main() -> None:
+def main():
     CONTAINER_DATA_ROOT = "_data"
 
     vtk_1d = os.path.join(CONTAINER_DATA_ROOT, "sortedVesselNetwork.vtk")
