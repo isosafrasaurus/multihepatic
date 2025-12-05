@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import os
 import sys
 
@@ -15,9 +14,8 @@ from dolfin import (
 )
 
 from tissue import AxisPlane
-from src import Domain1D, Domain3D, Simulation, release_solution
+from src import Domain1D, Domain3D, Simulation, release_solution, Parameters
 from src.problem import PressureVelocityProblem
-from src.composition import Parameters
 
 TEST_NUM_NODES_EXP = 5
 

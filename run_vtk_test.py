@@ -1,11 +1,7 @@
-#!/usr/bin/env python
-from __future__ import annotations
-
 import os
 from datetime import datetime
 
 from dolfin import MPI, XDMFFile
-
 
 from src import (
     Domain1D,
