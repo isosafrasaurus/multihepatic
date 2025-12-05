@@ -1,12 +1,11 @@
 import gc
 from dataclasses import dataclass
 
-from fem.solver import BlockLinearSolver
 from fem.operators import ProjectionOperator
-
+from fem.solver import BlockLinearSolver
+from .contracts import Solution
 from .forms import AssembledForms
 from .parameters import Parameters
-from .contracts import Solution
 
 
 @dataclass

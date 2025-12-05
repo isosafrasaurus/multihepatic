@@ -1,13 +1,18 @@
 from dataclasses import dataclass
 from typing import Protocol, Optional, Any
 
+
 class Problem(Protocol):
     def solve(self, params: "Parameters") -> "Solution": ...
+
     def close(self) -> None: ...
+
 
 class PostProcessor(Protocol):
     def compute(self, **kwargs) -> Any: ...
+
     def close(self) -> None: ...
+
 
 @dataclass
 class Solution:

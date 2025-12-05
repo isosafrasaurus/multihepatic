@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import os, sys
+import os
+import sys
 
 project_root = os.environ.get("PROJECT_ROOT")
 if not project_root:
@@ -7,7 +8,6 @@ if not project_root:
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-import numpy as np
 from graphnics import FenicsGraph
 from dolfin import FacetNormal, Measure, dot, assemble
 
@@ -38,6 +38,7 @@ TEST_GRAPH_EDGES = [
     (3, 7, 0.003),
 ]
 
+
 def build_test_graph() -> FenicsGraph:
     G = FenicsGraph()
     for node_id, pos in TEST_GRAPH_NODES.items():
@@ -54,6 +55,7 @@ def build_test_graph() -> FenicsGraph:
         G.compute_tangents()
     return G
 
+
 def main() -> float:
     G = build_test_graph()
 
@@ -61,14 +63,13 @@ def main() -> float:
     bounds = [[0.0, 0.0, 0.0], [0.05, 0.04, 0.03]]
 
     with Domain1D(G, Lambda_num_nodes_exp=TEST_NUM_NODES_EXP, inlet_nodes=[0]) as Lambda, \
-         Domain3D.from_graph(G, bounds=bounds) as Omega, \
-         Simulation(
-             Lambda,
-             Omega,
-             problem_cls=PressureVelocityProblem,
-             Omega_sink_subdomain=X_ZERO_PLANE,
-         ) as sim:
-
+            Domain3D.from_graph(G, bounds=bounds) as Omega, \
+            Simulation(
+                Lambda,
+                Omega,
+                problem_cls=PressureVelocityProblem,
+                Omega_sink_subdomain=X_ZERO_PLANE,
+            ) as sim:
         params = Parameters(
             gamma=3.6145827741262347e-05,
             gamma_a=8.225197366649115e-08,
@@ -90,6 +91,6 @@ def main() -> float:
     print("net_flow_all =", float(net_flow_all))
     return float(net_flow_all)
 
+
 if __name__ == "__main__":
     main()
-
