@@ -152,5 +152,4 @@ def build_assembled_forms(
     )
 
 
-
 __all__ = ["AssembledForms", "build_assembled_forms"]

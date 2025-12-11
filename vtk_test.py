@@ -35,8 +35,8 @@ def main():
     
     
     with Domain1D.from_vtk(
-        vtk_1d,
-        radius_field="Radius",
+            vtk_1d,
+            radius_field="Radius",
     ) as Lambda, Domain3D.from_vtk(vtk_3d) as Omega:
 
         
@@ -44,11 +44,11 @@ def main():
 
         
         with Simulation(
-            Lambda=Lambda,
-            Omega=Omega,
-            problem_cls=PressureVelocityProblem,  
-            Omega_sink_subdomain=sink_markers,
-            linear_solver="mumps",
+                Lambda=Lambda,
+                Omega=Omega,
+                problem_cls=PressureVelocityProblem,  
+                Omega_sink_subdomain=sink_markers,
+                linear_solver="mumps",
         ) as sim:
             
             params = Parameters(
