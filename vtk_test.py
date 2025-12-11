@@ -35,8 +35,8 @@ def main():
     # Build domains from VTK
     # Adjust radius_field if your 1D file uses a different name
     with Domain1D.from_vtk(
-        vtk_1d,
-        radius_field="Radius",
+            vtk_1d,
+            radius_field="Radius",
     ) as Lambda, Domain3D.from_vtk(vtk_3d) as Omega:
 
         # Sink boundary markers from surface VTK
@@ -44,11 +44,11 @@ def main():
 
         # Set up and run simulation (pressure + projected velocity)
         with Simulation(
-            Lambda=Lambda,
-            Omega=Omega,
-            problem_cls=PressureVelocityProblem,  # gives p3d, p1d, v3d
-            Omega_sink_subdomain=sink_markers,
-            linear_solver="mumps",
+                Lambda=Lambda,
+                Omega=Omega,
+                problem_cls=PressureVelocityProblem,  # gives p3d, p1d, v3d
+                Omega_sink_subdomain=sink_markers,
+                linear_solver="mumps",
         ) as sim:
             # Example parameter values – tune as needed
             params = Parameters(
