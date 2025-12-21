@@ -1,0 +1,36 @@
+{
+    "name": "Multihepatic Sequential Environment",
+    "build": {
+        "context": "/home/ubuntu/multihepatic/images",
+        "dockerfile": "/home/ubuntu/multihepatic/images/sequential.Dockerfile"
+    },
+
+    // Map your remote project folder to the /workspace directory in the container
+    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+
+    // This matches the 'USER fenics' in your Dockerfile
+    "remoteUser": "fenics",
+
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {
+            "version": "latest",
+            "enableNonRootDocker": "true",
+            "moby": "true"
+        }
+    },
+
+    "customizations": {
+        "vscode": {
+            "settings": {
+                // Ensure matplotlib uses the temp dir you created
+                "python.envFile": "${workspaceFolder}/.env"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylint",
+                "ms-vscode.cpptools" // Useful if fenics/graphnics uses C++ headers
+            ]
+        }
+    }
+}

@@ -1,4 +1,4 @@
-FROM ghcr.io/isosafrasaurus/ubuntu22.04-fenics_ii-graphnics:latest
+FROM ghcr.io/isosafrasaurus/ubuntu22.04-python3.12-graphnics:latest
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
