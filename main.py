@@ -13,10 +13,53 @@ from src import (
 )
 from tissue.meshing import sink_markers_from_surface_vtk
 
+import nibabel as nib
+import numpy as np
+
+CONTAINER_DATA_ROOT = "_data"
+
+def utility():
+    
+
+    in_path = os.path.join(CONTAINER_DATA_ROOT, "newData.nii.gz")
+
+    
+    out_liver = os.path.join(CONTAINER_DATA_ROOT, "newData_liver_label1_mask.nii.gz")
+    out_vessel = os.path.join(CONTAINER_DATA_ROOT, "newData_vessel_label2_mask.nii.gz")
+    out_sink = os.path.join(CONTAINER_DATA_ROOT, "newData_sink_label3_mask.nii.gz")
+
+    
+    img = nib.load(in_path)
+    data = img.get_fdata(dtype=np.float32)
+
+    
+    labels = np.rint(data).astype(np.int32)
+
+    
+    liver_mask = (labels == 1).astype(np.uint8)
+    vessel_mask = (labels == 2).astype(np.uint8)
+    sink_mask = (labels == 3).astype(np.uint8)
+
+    
+    liver_img = nib.Nifti1Image(liver_mask, affine=img.affine, header=img.header)
+    vessel_img = nib.Nifti1Image(vessel_mask, affine=img.affine, header=img.header)
+    sink_img = nib.Nifti1Image(sink_mask, affine=img.affine, header=img.header)
+
+    
+    liver_img.set_data_dtype(np.uint8)
+    vessel_img.set_data_dtype(np.uint8)
+    sink_img.set_data_dtype(np.uint8)
+
+    nib.save(liver_img, out_liver)
+    nib.save(vessel_img, out_vessel)
+    nib.save(sink_img, out_sink)
+
+    print("Saved:")
+    print(f"  Label 1 (liver):  {out_liver}  voxels={int(liver_mask.sum())}")
+    print(f"  Label 2 (vessel): {out_vessel} voxels={int(vessel_mask.sum())}")
+    print(f"  Label 3 (sink):   {out_sink}   voxels={int(sink_mask.sum())}")
 
 def main():
-    CONTAINER_DATA_ROOT = "_data"
-
     vtk_1d = os.path.join(CONTAINER_DATA_ROOT, "sortedVesselNetwork.vtk")
     vtk_3d = os.path.join(CONTAINER_DATA_ROOT, "nii2mesh_liver_mask.vtk")
     vtk_sink = os.path.join(CONTAINER_DATA_ROOT, "nii2mesh_liver_sink.vtk")
