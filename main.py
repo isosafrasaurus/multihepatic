@@ -25,20 +25,11 @@ def main():
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     outdir = os.path.join(out_root, timestamp)
 
-    comm = MPI.comm_world
-
-    
-    if MPI.rank(comm) == 0:
-        os.makedirs(outdir, exist_ok=True)
-    comm.barrier()
-
-    
     
     with Domain1D.from_vtk(
             vtk_1d,
             radius_field="Radius",
     ) as Lambda, Domain3D.from_vtk(vtk_3d) as Omega:
-
         
         sink_markers = sink_markers_from_surface_vtk(Omega.Omega, vtk_sink)
 
