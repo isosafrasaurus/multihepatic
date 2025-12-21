@@ -2,20 +2,10 @@ Bootstrap: docker
 From: ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest
 
 %files
-    # Copies requirements.txt from the directory where you submit the job
-    # to /tmp inside the container image.
     requirements.txt /tmp/requirements.txt
 
 %post
-    # This section runs as root inside the container during build
-    
-    # 1. Install Python dependencies
-    # We install into the system python since this is a container
     pip install --no-cache-dir -r /tmp/requirements.txt
-
-    # 2. Handle Matplotlib Configuration
-    # Instead of chown-ing a specific home dir (which gets overlaid by TACC home),
-    # we create a global config dir that we can point to via environment variables.
     mkdir -p /opt/matplotlib-config
     chmod 777 /opt/matplotlib-config
 
@@ -23,10 +13,6 @@ From: ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest
     rm /tmp/requirements.txt
 
 %environment
-    # This section sets environment variables at runtime
-    
-    # Tell Matplotlib to use the writable directory we created
-    # This prevents permission errors when running as a non-root user
     export MPLCONFIGDIR=/opt/matplotlib-config
     
     # Ensure standard encoding
