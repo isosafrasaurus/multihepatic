@@ -19,7 +19,6 @@ class BlockLinearSolver:
             *,
             inlet_bc=None,
     ) -> Tuple[object, object]:
-        
         if self._closed:
             raise RuntimeError("BlockLinearSolver is closed")
 

@@ -19,8 +19,6 @@ class PressureVelocitySolution(Solution):
 
 
 class PressureProblem:
-    
-
     def __init__(
             self,
             *,

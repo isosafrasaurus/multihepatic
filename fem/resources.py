@@ -3,8 +3,6 @@ from typing import Any, Callable, Optional
 
 
 class ResourcePool:
-    
-
     def __init__(self) -> None:
         self._stack = ExitStack()
         self._closed = False
@@ -12,8 +10,6 @@ class ResourcePool:
     def push(self, finalizer: Callable[[], None]) -> None:
         if self._closed:
             raise RuntimeError("ResourcePool is closed")
-        
-        
         self._stack.callback(finalizer)
 
     def close(self) -> None:
