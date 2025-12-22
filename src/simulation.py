@@ -9,15 +9,15 @@ from .problem import PressureProblem
 
 class Simulation:
     def __init__(
-        self,
-        Lambda: Domain1D,
-        Omega: Domain3D,
-        *,
-        problem_cls: Type[Problem] = PressureProblem,
-        inlet_nodes: Optional[List[int]] = None,
-        Omega_sink_subdomain=None,
-        order: int = 2,
-        linear_solver: str = "mumps",
+            self,
+            Lambda: Domain1D,
+            Omega: Domain3D,
+            *,
+            problem_cls: Type[Problem] = PressureProblem,
+            inlet_nodes: Optional[List[int]] = None,
+            Omega_sink_subdomain=None,
+            order: int = 2,
+            linear_solver: str = "mumps",
     ) -> None:
         forms = build_assembled_forms(
             Lambda.G,

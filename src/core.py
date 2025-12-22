@@ -9,11 +9,13 @@ from dolfin import Constant
 
 class Problem(Protocol):
     def solve(self, params: "Parameters") -> "Solution": ...
+
     def close(self) -> None: ...
 
 
 class PostProcessor(Protocol):
     def compute(self, **kwargs) -> Any: ...
+
     def close(self) -> None: ...
 
 

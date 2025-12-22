@@ -13,11 +13,11 @@ from .mesh import build_mesh_by_counts, build_mesh_by_spacing
 
 class Domain1D:
     def __init__(
-        self,
-        G: FenicsGraph,
-        *,
-        Lambda_num_nodes_exp: int = 5,
-        inlet_nodes: Optional[List[int]] = None,
+            self,
+            G: FenicsGraph,
+            *,
+            Lambda_num_nodes_exp: int = 5,
+            inlet_nodes: Optional[List[int]] = None,
     ) -> None:
         self.G = G
         self.Lambda_num_nodes_exp = Lambda_num_nodes_exp
@@ -26,12 +26,12 @@ class Domain1D:
 
     @classmethod
     def from_vtk(
-        cls,
-        filename: str,
-        *,
-        Lambda_num_nodes_exp: int = 5,
-        inlet_nodes: Optional[List[int]] = None,
-        radius_field: str = "Radius",
+            cls,
+            filename: str,
+            *,
+            Lambda_num_nodes_exp: int = 5,
+            inlet_nodes: Optional[List[int]] = None,
+            radius_field: str = "Radius",
     ) -> "Domain1D":
         G = get_fg_from_vtk(filename, radius_field=radius_field)
         dom = cls(G, Lambda_num_nodes_exp=Lambda_num_nodes_exp, inlet_nodes=inlet_nodes)
@@ -71,14 +71,14 @@ class Domain3D:
 
     @classmethod
     def from_graph(
-        cls,
-        G: FenicsGraph,
-        bounds=None,
-        voxel_res: Optional[float] = None,
-        voxel_dim: Tuple[int, int, int] = (16, 16, 16),
-        padding: float = 8e-3,
-        *,
-        enforce_graph_in_bounds: bool = False,
+            cls,
+            G: FenicsGraph,
+            bounds=None,
+            voxel_res: Optional[float] = None,
+            voxel_dim: Tuple[int, int, int] = (16, 16, 16),
+            padding: float = 8e-3,
+            *,
+            enforce_graph_in_bounds: bool = False,
     ) -> "Domain3D":
         if voxel_res is not None:
             Omega, bounds_out = build_mesh_by_spacing(
@@ -118,4 +118,3 @@ class Domain3D:
 
 
 __all__ = ["Domain1D", "Domain3D"]
-

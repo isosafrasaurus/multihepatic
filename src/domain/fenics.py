@@ -17,10 +17,10 @@ class BoundaryPoint(SubDomain):
 
     def inside(self, x, on_boundary: bool):
         return (
-            on_boundary
-            and near(x[0], self.coordinate[0], self.tolerance)
-            and near(x[1], self.coordinate[1], self.tolerance)
-            and near(x[2], self.coordinate[2], self.tolerance)
+                on_boundary
+                and near(x[0], self.coordinate[0], self.tolerance)
+                and near(x[1], self.coordinate[1], self.tolerance)
+                and near(x[2], self.coordinate[2], self.tolerance)
         )
 
 
@@ -43,9 +43,9 @@ class CubeSubBoundary(SubDomain):
 
     def inside(self, x, on_boundary):
         return (
-            self.corner_1[0] <= x[0] <= self.corner_2[0]
-            and self.corner_1[1] <= x[1] <= self.corner_2[1]
-            and self.corner_1[2] <= x[2] <= self.corner_2[2]
+                self.corner_1[0] <= x[0] <= self.corner_2[0]
+                and self.corner_1[1] <= x[1] <= self.corner_2[1]
+                and self.corner_1[2] <= x[2] <= self.corner_2[2]
         )
 
 
@@ -95,4 +95,3 @@ __all__ = [
     "AveragingRadius",
     "SegmentLength",
 ]
-

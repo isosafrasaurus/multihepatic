@@ -20,11 +20,11 @@ class PressureVelocitySolution(Solution):
 
 class PressureProblem:
     def __init__(
-        self,
-        *,
-        forms: AssembledForms,
-        Omega=None,
-        linear_solver: str = "mumps",
+            self,
+            *,
+            forms: AssembledForms,
+            Omega=None,
+            linear_solver: str = "mumps",
     ) -> None:
         self.forms = forms
         self.solver = BlockLinearSolver(linear_solver=linear_solver)
@@ -58,11 +58,11 @@ class PressureVelocityProblem(PressureProblem):
     
 
     def __init__(
-        self,
-        *,
-        forms: AssembledForms,
-        Omega,
-        linear_solver: str = "mumps",
+            self,
+            *,
+            forms: AssembledForms,
+            Omega,
+            linear_solver: str = "mumps",
     ) -> None:
         super().__init__(forms=forms, Omega=Omega, linear_solver=linear_solver)
         self._proj = ProjectionOperator(Omega)

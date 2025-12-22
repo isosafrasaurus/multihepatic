@@ -207,11 +207,11 @@ def mesh_from_vtk(filename: str, *, use_delaunay_if_polydata: bool = True) -> Me
 
 
 def sink_markers_from_surface_vtk(
-    Omega: Mesh,
-    surface_filename: str,
-    *,
-    marker_value: int = 1,
-    decimals: int = 12,
+        Omega: Mesh,
+        surface_filename: str,
+        *,
+        marker_value: int = 1,
+        decimals: int = 12,
 ) -> MeshFunction:
     require_vtk()
 
@@ -286,4 +286,3 @@ __all__ = [
     "mesh_from_vtk",
     "sink_markers_from_surface_vtk",
 ]
-

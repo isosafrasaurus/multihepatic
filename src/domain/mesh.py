@@ -22,11 +22,11 @@ def _graph_bounds(G) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def _compute_bounds_and_scale(
-    G,
-    bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
-    padding_m: float = 0.008,
-    *,
-    strict_bounds: bool = True,
+        G,
+        bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+        padding_m: float = 0.008,
+        *,
+        strict_bounds: bool = True,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     lam_min, lam_max = _graph_bounds(G)
 
@@ -58,12 +58,12 @@ def _scale_unitcube_to_box(mesh, lower: np.ndarray, upper: np.ndarray) -> None:
 
 
 def build_mesh_by_counts(
-    G,
-    counts: Tuple[int, int, int] = (16, 16, 16),
-    bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
-    padding_m: float = 0.008,
-    *,
-    strict_bounds: bool = True,
+        G,
+        counts: Tuple[int, int, int] = (16, 16, 16),
+        bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+        padding_m: float = 0.008,
+        *,
+        strict_bounds: bool = True,
 ):
     lower, upper, _ = _compute_bounds_and_scale(G, bounds=bounds, padding_m=padding_m, strict_bounds=strict_bounds)
     mesh = UnitCubeMesh(*tuple(int(max(1, c)) for c in counts))
@@ -72,12 +72,12 @@ def build_mesh_by_counts(
 
 
 def build_mesh_by_spacing(
-    G,
-    spacing_m: float = 1e-3,
-    bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
-    padding_m: float = 0.008,
-    *,
-    strict_bounds: bool = True,
+        G,
+        spacing_m: float = 1e-3,
+        bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+        padding_m: float = 0.008,
+        *,
+        strict_bounds: bool = True,
 ):
     lower, upper, scales = _compute_bounds_and_scale(G, bounds=bounds, padding_m=padding_m, strict_bounds=strict_bounds)
     nx = max(1, int(np.ceil(scales[0] / spacing_m)))
@@ -89,14 +89,15 @@ def build_mesh_by_spacing(
 
 
 def build_mesh_by_mm_resolution(
-    G,
-    h_mm: float = 1.0,
-    bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
-    padding_m: float = 0.008,
-    *,
-    strict_bounds: bool = True,
+        G,
+        h_mm: float = 1.0,
+        bounds: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+        padding_m: float = 0.008,
+        *,
+        strict_bounds: bool = True,
 ):
-    lower, upper, scales_m = _compute_bounds_and_scale(G, bounds=bounds, padding_m=padding_m, strict_bounds=strict_bounds)
+    lower, upper, scales_m = _compute_bounds_and_scale(G, bounds=bounds, padding_m=padding_m,
+                                                       strict_bounds=strict_bounds)
     Lx_mm, Ly_mm, Lz_mm = (scales_m * 1000.0).tolist()
     nx, ny, nz = cells_from_mm_resolution(Lx_mm, Ly_mm, Lz_mm, h_mm)
     mesh = UnitCubeMesh(nx, ny, nz)
@@ -110,4 +111,3 @@ __all__ = [
     "build_mesh_by_spacing",
     "build_mesh_by_mm_resolution",
 ]
-

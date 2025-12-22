@@ -53,12 +53,12 @@ class AssembledForms:
 
 
 def build_assembled_forms(
-    G: FenicsGraph,
-    Omega: Mesh,
-    *,
-    inlet_nodes: Optional[List[int]] = None,
-    Omega_sink_subdomain=None,
-    order: int = 2,
+        G: FenicsGraph,
+        Omega: Mesh,
+        *,
+        inlet_nodes: Optional[List[int]] = None,
+        Omega_sink_subdomain=None,
+        order: int = 2,
 ) -> AssembledForms:
     Lambda = G.mesh
     consts = ParamConstants()
@@ -98,28 +98,29 @@ def build_assembled_forms(
     u3_avg = Average(u3, Lambda, circle)
     v3_avg = Average(v3, Lambda, circle)
 
-    D_area = Constant(np.pi) * radius**2
+    D_area = Constant(np.pi) * radius ** 2
     D_peri = Constant(2.0 * np.pi) * radius
-    k_v = (seglen * radius**2) / Constant(8.0)
+    k_v = (seglen * radius ** 2) / Constant(8.0)
 
     a00 = (
-        (consts.k_t / consts.mu) * inner(grad(u3), grad(v3)) * dxOmega
-        + consts.gamma_R * u3 * v3 * dsOmegaSink
-        + consts.gamma * u3_avg * v3_avg * D_peri * dxLambda
+            (consts.k_t / consts.mu) * inner(grad(u3), grad(v3)) * dxOmega
+            + consts.gamma_R * u3 * v3 * dsOmegaSink
+            + consts.gamma * u3_avg * v3_avg * D_peri * dxLambda
     )
 
-    a01 = -consts.gamma * u1 * v3_avg * D_peri * dxLambda - (consts.gamma_a / consts.mu) * u1 * v3_avg * D_area * dsLambdaRobin
+    a01 = -consts.gamma * u1 * v3_avg * D_peri * dxLambda - (
+                consts.gamma_a / consts.mu) * u1 * v3_avg * D_area * dsLambdaRobin
     a10 = -consts.gamma * u3_avg * v1 * D_peri * dxLambda
 
     a11 = (
-        (k_v / consts.mu) * D_area * inner(grad(u1), grad(v1)) * dxLambda
-        + consts.gamma * u1 * v1 * D_peri * dxLambda
-        + (consts.gamma_a / consts.mu) * u1 * v1 * D_area * dsLambdaRobin
+            (k_v / consts.mu) * D_area * inner(grad(u1), grad(v1)) * dxLambda
+            + consts.gamma * u1 * v1 * D_peri * dxLambda
+            + (consts.gamma_a / consts.mu) * u1 * v1 * D_area * dsLambdaRobin
     )
 
     L0 = (
-        consts.gamma_R * consts.P_cvp * v3 * dsOmegaSink
-        + (consts.gamma_a * consts.P_cvp / consts.mu) * v3_avg * D_area * dsLambdaRobin
+            consts.gamma_R * consts.P_cvp * v3 * dsOmegaSink
+            + (consts.gamma_a * consts.P_cvp / consts.mu) * v3_avg * D_area * dsLambdaRobin
     )
     L1 = (consts.gamma_a * consts.P_cvp / consts.mu) * v1 * D_area * dsLambdaRobin
 
