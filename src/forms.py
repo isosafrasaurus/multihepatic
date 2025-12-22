@@ -146,4 +146,3 @@ def build_assembled_forms(
 
 
 __all__ = ["Measures", "Spaces", "AssembledForms", "build_assembled_forms"]
-
