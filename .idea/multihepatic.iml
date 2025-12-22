@@ -4,7 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.data" />
     </content>
-    <orderEntry type="jdk" jdkName="Remote 3.12 Docker (sha256:05eb8c8f59acb015ec5c30092a83674ec405e7187cc39b3e5b150f9c2e391a8a)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.13 (fenicsenvironment)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">
