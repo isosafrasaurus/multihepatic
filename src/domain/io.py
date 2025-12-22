@@ -8,15 +8,14 @@ import numpy as np
 from dolfin import Mesh, MeshEditor, MeshFunction, facets as dolfin_facets
 from graphnics import FenicsGraph
 
-
 try:
-    import meshio  
-except ImportError:  
+    import meshio
+except ImportError:
     meshio = None
 
 try:
-    import vtk  
-except ImportError:  
+    import vtk
+except ImportError:
     vtk = None
 
 

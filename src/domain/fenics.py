@@ -6,9 +6,6 @@ import numpy as np
 from dolfin import DOLFIN_EPS, Point, SubDomain, UserExpression, near
 
 
-
-
-
 class BoundaryPoint(SubDomain):
     def __init__(self, coordinate, tolerance=DOLFIN_EPS, **kwargs):
         super().__init__(**kwargs)
@@ -47,10 +44,6 @@ class CubeSubBoundary(SubDomain):
                 and self.corner_1[1] <= x[1] <= self.corner_2[1]
                 and self.corner_1[2] <= x[2] <= self.corner_2[2]
         )
-
-
-
-
 
 class AveragingRadius(UserExpression):
     def __init__(self, tree: Any, G: Any, **kwargs: Any):

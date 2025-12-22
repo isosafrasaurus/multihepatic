@@ -63,7 +63,6 @@ class Solution:
 
 
 def release_solution(sol: Any) -> None:
-    
     if sol is None:
         return
     if hasattr(sol, "close") and callable(sol.close):

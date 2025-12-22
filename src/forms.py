@@ -126,7 +126,6 @@ def build_assembled_forms(
 
     inlet_bc: Optional[DirichletBC] = DirichletBC(V1, consts.P_in, boundary_Lambda, 1)
 
-    
     try:
         bvals = inlet_bc.get_boundary_values()
         if not bvals:
