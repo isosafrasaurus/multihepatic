@@ -34,14 +34,14 @@ class Domain1D:
         graph = vtk_to_graph(path, radius_field=radius_field)
         dom = cls(graph, edge_resolution_exp=edge_resolution_exp, inlet_node_idxs=inlet_node_idxs)
 
-        if not all(("tangent" in dom.graph.edges[e]) for e in dom.graph.edges) and hasattr(dom.graph,
-                                                                                           "compute_tangents"):
+        if (not all(("tangent" in dom.graph.edges[e]) for e in dom.graph.edges) and
+                hasattr(dom.graph, "compute_tangents")):
             dom.graph.compute_tangents()
 
         return dom
 
     @property
-    def Lambda(self) -> Mesh:
+    def mesh(self) -> Mesh:
         return self.graph.mesh
 
     def close(self) -> None:
@@ -92,7 +92,7 @@ class Domain3D:
         return cls(Omega)
 
     @classmethod
-    def from_vtk(cls, filename: str) -> "Domain3D":
+    def from_vtk(cls, filename: str) -> Domain3D:
         Omega = vtk_to_mesh(filename)
         coords = Omega.coordinates()
         lower = np.min(coords, axis=0)
@@ -103,7 +103,7 @@ class Domain3D:
         self.mesh = None
         gc.collect()
 
-    def __enter__(self) -> "Domain3D":
+    def __enter__(self) -> Domain3D:
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:

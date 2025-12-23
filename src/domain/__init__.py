@@ -9,9 +9,6 @@ from .fenics import (
 from .io import (
     vtk_to_graph,
     vtk_to_mesh,
-    require_meshio,
-    require_vtk,
-    sink_markers_from_surface_vtk,
 )
 from .mesh import (
     build_mesh_by_counts,
@@ -28,11 +25,8 @@ __all__ = [
     "CubeSubBoundary",
     "AveragingRadius",
     "SegmentLength",
-    "require_vtk",
-    "require_meshio",
     "vtk_to_graph",
     "vtk_to_mesh",
-    "sink_markers_from_surface_vtk",
     "cells_from_mm_resolution",
     "build_mesh_by_counts",
     "build_mesh_by_spacing",

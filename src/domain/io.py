@@ -1,43 +1,10 @@
 from __future__ import annotations
 
-import json
-import os
-from collections import defaultdict
-
-import numpy as np
-from dolfin import Mesh, MeshEditor, MeshFunction, facets as dolfin_facets
+from dolfin import Mesh, MeshEditor
 from graphnics import FenicsGraph
+import vtk
 
-try:
-    import meshio
-except ImportError:
-    meshio = None
-
-try:
-    import vtk
-except ImportError:
-    vtk = None
-
-
-def require_vtk() -> None:
-    if vtk is None:
-        raise RuntimeError(
-            "The 'vtk' Python package is required for VTK/VTP inputs. "
-            "Install it via `pip install vtk`."
-        )
-
-
-def require_meshio() -> None:
-    if meshio is None:
-        raise RuntimeError(
-            "meshio is required for certain VTK/VTU conversion paths. "
-            "Install it via `pip install meshio`."
-        )
-
-
-def vtk_to_graph(filename: str, *, radius_field: str = "Radius") -> FenicsGraph:
-    require_vtk()
-
+def vtk_to_graph(filename: str, radius_field: str = "Radius") -> FenicsGraph:
     fname = filename.lower()
     if fname.endswith(".vtp"):
         reader = vtk.vtkXMLPolyDataReader()
@@ -101,9 +68,7 @@ def vtk_to_graph(filename: str, *, radius_field: str = "Radius") -> FenicsGraph:
     return G
 
 
-def vtk_to_mesh(filename: str, *, use_delaunay_if_polydata: bool = True) -> Mesh:
-    require_vtk()
-
+def vtk_to_mesh(filename: str, use_delaunay_if_polydata: bool = True) -> Mesh:
     fname = filename.lower()
     if fname.endswith(".vtu"):
         reader = vtk.vtkXMLUnstructuredGridReader()
@@ -170,82 +135,7 @@ def vtk_to_mesh(filename: str, *, use_delaunay_if_polydata: bool = True) -> Mesh
     return mesh
 
 
-def sink_markers_from_surface_vtk(
-        Omega: Mesh,
-        surface_filename: str,
-        *,
-        marker_value: int = 1,
-        decimals: int = 12,
-) -> MeshFunction:
-    require_vtk()
-
-    fname = surface_filename.lower()
-    if fname.endswith(".vtp"):
-        reader = vtk.vtkXMLPolyDataReader()
-    else:
-        reader = vtk.vtkPolyDataReader()
-
-    reader.SetFileName(surface_filename)
-    reader.Update()
-    poly = reader.GetOutput()
-
-    if poly is None or poly.GetNumberOfPoints() == 0:
-        raise RuntimeError(f"Failed to read polydata from {surface_filename!r}")
-
-    pts = poly.GetPoints()
-    n_pts = pts.GetNumberOfPoints()
-    surf_points = np.array([pts.GetPoint(i) for i in range(n_pts)], dtype=float)
-
-    polys = poly.GetPolys()
-    id_list = vtk.vtkIdList()
-    polys.InitTraversal()
-    surf_tris = []
-    while polys.GetNextCell(id_list):
-        if id_list.GetNumberOfIds() == 3:
-            surf_tris.append([int(id_list.GetId(0)), int(id_list.GetId(1)), int(id_list.GetId(2))])
-
-    if not surf_tris:
-        raise RuntimeError(f"No triangular cells found in sink surface {surface_filename!r}")
-
-    coords = Omega.coordinates()
-    vert_lookup = defaultdict(list)
-    for vid, xyz in enumerate(coords):
-        key = tuple(np.round(xyz, decimals=decimals))
-        vert_lookup[key].append(vid)
-
-    surf_vertex_to_omega = [None] * n_pts
-    for i, xyz in enumerate(surf_points):
-        key = tuple(np.round(xyz, decimals=decimals))
-        cands = vert_lookup.get(key, [])
-        if cands:
-            surf_vertex_to_omega[i] = cands[0]
-
-    desired_facets_vertices = set()
-    for tri in surf_tris:
-        mapped = []
-        for local in tri:
-            omega_vid = surf_vertex_to_omega[local]
-            if omega_vid is None:
-                mapped = []
-                break
-            mapped.append(int(omega_vid))
-        if mapped:
-            desired_facets_vertices.add(tuple(sorted(mapped)))
-
-    facet_markers = MeshFunction("size_t", Omega, Omega.topology().dim() - 1, 0)
-
-    for f in dolfin_facets(Omega):
-        vids = tuple(sorted(f.entities(0)))
-        if vids in desired_facets_vertices:
-            facet_markers[f] = marker_value
-
-    return facet_markers
-
-
 __all__ = [
-    "require_vtk",
-    "require_meshio",
     "vtk_to_graph",
     "vtk_to_mesh",
-    "sink_markers_from_surface_vtk",
 ]
