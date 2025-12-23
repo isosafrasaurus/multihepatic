@@ -1,63 +1,61 @@
 from __future__ import annotations
 
 import gc
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import numpy as np
 from dolfin import Mesh
 from graphnics import FenicsGraph
 
-from .io import get_fg_from_vtk, mesh_from_vtk
+from .io import vtk_to_graph, vtk_to_mesh
 from .mesh import build_mesh_by_counts, build_mesh_by_spacing
 
 
 class Domain1D:
     def __init__(
             self,
-            G: FenicsGraph,
-            *,
-            Lambda_num_nodes_exp: int = 5,
-            inlet_nodes: Optional[List[int]] = None,
+            graph: FenicsGraph,
+            edge_resolution_exp: int = 1,
+            inlet_node_idxs: List[int] = None,
     ) -> None:
-        self.G = G
-        self.Lambda_num_nodes_exp = Lambda_num_nodes_exp
-        self.inlet_nodes = list(inlet_nodes) if inlet_nodes else None
-        self.G.make_mesh(self.Lambda_num_nodes_exp)
+        self.graph = graph
+        self.edge_resolution_exp = edge_resolution_exp
+        self.inlet_nodes = list(inlet_node_idxs) if inlet_node_idxs else None
+        self.graph.make_mesh(self.edge_resolution_exp)
 
     @classmethod
     def from_vtk(
             cls,
-            filename: str,
-            *,
-            Lambda_num_nodes_exp: int = 5,
-            inlet_nodes: Optional[List[int]] = None,
+            path: str,
+            edge_resolution_exp: int = 1,
+            inlet_node_idxs: List[int] = None,
             radius_field: str = "Radius",
-    ) -> "Domain1D":
-        G = get_fg_from_vtk(filename, radius_field=radius_field)
-        dom = cls(G, Lambda_num_nodes_exp=Lambda_num_nodes_exp, inlet_nodes=inlet_nodes)
+    ) -> Domain1D:
+        graph = vtk_to_graph(path, radius_field=radius_field)
+        dom = cls(graph, edge_resolution_exp=edge_resolution_exp, inlet_node_idxs=inlet_node_idxs)
 
-        
-        if not all(("tangent" in dom.G.edges[e]) for e in dom.G.edges) and hasattr(dom.G, "compute_tangents"):
-            dom.G.compute_tangents()
+        if not all(("tangent" in dom.graph.edges[e]) for e in dom.graph.edges) and hasattr(dom.graph,
+                                                                                           "compute_tangents"):
+            dom.graph.compute_tangents()
 
         return dom
 
     @property
     def Lambda(self) -> Mesh:
-        return self.G.mesh
+        return self.graph.mesh
 
     def close(self) -> None:
         try:
-            for e in list(self.G.edges):
-                self.G.edges[e].pop("submesh", None)
-                self.G.edges[e].pop("tangent", None)
+            for e in list(self.graph.edges):
+                self.graph.edges[e].pop("submesh", None)
+                self.graph.edges[e].pop("tangent", None)
         except Exception:
             pass
-        if hasattr(self.G, "mesh"):
-            self.G.mesh = None
+        if hasattr(self.graph, "mesh"):
+            self.graph.mesh = None
         gc.collect()
 
-    def __enter__(self) -> "Domain1D":
+    def __enter__(self) -> Domain1D:
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:
@@ -65,28 +63,24 @@ class Domain1D:
 
 
 class Domain3D:
-    def __init__(self, Omega: Mesh, bounds: Tuple[np.ndarray, np.ndarray]) -> None:
-        self.Omega = Omega
-        self.bounds = bounds
+    def __init__(self, mesh: Mesh) -> None:
+        self.mesh = mesh
 
     @classmethod
     def from_graph(
             cls,
             G: FenicsGraph,
             bounds=None,
-            voxel_res: Optional[float] = None,
+            voxel_res: float = None,
             voxel_dim: Tuple[int, int, int] = (16, 16, 16),
             padding: float = 8e-3,
-            *,
-            enforce_graph_in_bounds: bool = False,
-    ) -> "Domain3D":
+    ) -> Domain3D:
         if voxel_res is not None:
             Omega, bounds_out = build_mesh_by_spacing(
                 G,
                 spacing_m=float(voxel_res),
                 bounds=bounds,
                 padding_m=padding,
-                strict_bounds=enforce_graph_in_bounds,
             )
         else:
             Omega, bounds_out = build_mesh_by_counts(
@@ -94,20 +88,19 @@ class Domain3D:
                 counts=tuple(int(v) for v in voxel_dim),
                 bounds=bounds,
                 padding_m=padding,
-                strict_bounds=enforce_graph_in_bounds,
             )
-        return cls(Omega, bounds_out)
+        return cls(Omega)
 
     @classmethod
     def from_vtk(cls, filename: str) -> "Domain3D":
-        Omega = mesh_from_vtk(filename)
+        Omega = vtk_to_mesh(filename)
         coords = Omega.coordinates()
         lower = np.min(coords, axis=0)
         upper = np.max(coords, axis=0)
-        return cls(Omega, (lower, upper))
+        return cls(Omega)
 
     def close(self) -> None:
-        self.Omega = None
+        self.mesh = None
         gc.collect()
 
     def __enter__(self) -> "Domain3D":

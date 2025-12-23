@@ -7,8 +7,8 @@ from .fenics import (
     SegmentLength,
 )
 from .io import (
-    get_fg_from_vtk,
-    mesh_from_vtk,
+    vtk_to_graph,
+    vtk_to_mesh,
     require_meshio,
     require_vtk,
     sink_markers_from_surface_vtk,
@@ -30,8 +30,8 @@ __all__ = [
     "SegmentLength",
     "require_vtk",
     "require_meshio",
-    "get_fg_from_vtk",
-    "mesh_from_vtk",
+    "vtk_to_graph",
+    "vtk_to_mesh",
     "sink_markers_from_surface_vtk",
     "cells_from_mm_resolution",
     "build_mesh_by_counts",

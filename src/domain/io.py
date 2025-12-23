@@ -35,7 +35,7 @@ def require_meshio() -> None:
         )
 
 
-def get_fg_from_vtk(filename: str, *, radius_field: str = "Radius") -> FenicsGraph:
+def vtk_to_graph(filename: str, *, radius_field: str = "Radius") -> FenicsGraph:
     require_vtk()
 
     fname = filename.lower()
@@ -101,7 +101,7 @@ def get_fg_from_vtk(filename: str, *, radius_field: str = "Radius") -> FenicsGra
     return G
 
 
-def mesh_from_vtk(filename: str, *, use_delaunay_if_polydata: bool = True) -> Mesh:
+def vtk_to_mesh(filename: str, *, use_delaunay_if_polydata: bool = True) -> Mesh:
     require_vtk()
 
     fname = filename.lower()
@@ -245,7 +245,7 @@ def sink_markers_from_surface_vtk(
 __all__ = [
     "require_vtk",
     "require_meshio",
-    "get_fg_from_vtk",
-    "mesh_from_vtk",
+    "vtk_to_graph",
+    "vtk_to_mesh",
     "sink_markers_from_surface_vtk",
 ]

@@ -20,13 +20,13 @@ class Simulation:
             linear_solver: str = "mumps",
     ) -> None:
         forms = build_assembled_forms(
-            Lambda.G,
-            Omega.Omega,
+            Lambda.graph,
+            Omega.mesh,
             inlet_nodes=inlet_nodes or Lambda.inlet_nodes,
             Omega_sink_subdomain=Omega_sink_subdomain,
             order=order,
         )
-        self.problem: Problem = problem_cls(forms=forms, Omega=Omega.Omega, linear_solver=linear_solver)
+        self.problem: Problem = problem_cls(forms=forms, Omega=Omega.mesh, linear_solver=linear_solver)
         self._closed = False
 
     def run(self, params: Parameters) -> Solution:

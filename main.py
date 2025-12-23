@@ -103,8 +103,8 @@ def run_case(*, cfg: RunConfig, outdir: Path) -> float:
 
     with Domain1D(
             G,
-            Lambda_num_nodes_exp=cfg.num_nodes_exp,
-            inlet_nodes=list(cfg.inlet_nodes),
+            edge_resolution_exp=cfg.num_nodes_exp,
+            inlet_node_idxs=list(cfg.inlet_nodes),
     ) as Lambda, Domain3D.from_graph(G, bounds=bounds) as Omega, Simulation(
         Lambda,
         Omega,
@@ -129,8 +129,8 @@ def run_case(*, cfg: RunConfig, outdir: Path) -> float:
         if getattr(sol, "v3d", None) is not None:
             (File(str(outdir / "velocity_3d.pvd")) << sol.v3d)
 
-        n = FacetNormal(Omega.Omega)
-        ds = Measure("ds", domain=Omega.Omega)
+        n = FacetNormal(Omega.mesh)
+        ds = Measure("ds", domain=Omega.mesh)
         net_flow_all = float(assemble(dot(sol.v3d, n) * ds))
 
         release_solution(sol)
