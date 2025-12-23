@@ -9,7 +9,6 @@ from .core import (
 from .domain import (
     Domain1D,
     Domain3D,
-    get_fg_from_json,
     get_fg_from_vtk,
     mesh_from_vtk,
     sink_markers_from_surface_vtk,
@@ -40,7 +39,6 @@ __all__ = [
     "release_solution",
     "Domain1D",
     "Domain3D",
-    "get_fg_from_json",
     "get_fg_from_vtk",
     "mesh_from_vtk",
     "sink_markers_from_surface_vtk",

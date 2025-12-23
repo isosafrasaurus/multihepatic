@@ -7,7 +7,6 @@ from .fenics import (
     SegmentLength,
 )
 from .io import (
-    get_fg_from_json,
     get_fg_from_vtk,
     mesh_from_vtk,
     require_meshio,
@@ -31,7 +30,6 @@ __all__ = [
     "SegmentLength",
     "require_vtk",
     "require_meshio",
-    "get_fg_from_json",
     "get_fg_from_vtk",
     "mesh_from_vtk",
     "sink_markers_from_surface_vtk",
