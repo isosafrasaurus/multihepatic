@@ -5,14 +5,14 @@ set -Eeuo pipefail
 PROJECT_ROOT="$WORK/multihepatic"
 TACC_ACCOUNT="ASC22053"
 TACC_PARTITION="skx-dev"
-IMAGE_URI="docker://ghcr.io/isosafrasaurus/tacc-mpc-patch:latest"
+IMAGE_URI="docker://ghcr.io/isosafrasaurus/ubuntu24.04-dolfinx-networks:latest"
 JOB_TEMPLATE_PATH="$PROJECT_ROOT/tacc-job.template.slurm"
 
 JOB_NAME="multihepatic"
 JOB_TIME="00:30:00"
-JOB_NODES=1
-JOB_TASKS_PER_NODE=1
-JOB_CPUS_PER_TASK=1
+JOB_NODES=2
+JOB_TASKS_PER_NODE=2
+JOB_CPUS_PER_TASK=2
 JOB_LOGS_DIR="$PROJECT_ROOT/_logs"
 
 # Usage

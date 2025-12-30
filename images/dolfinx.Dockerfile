@@ -30,7 +30,7 @@ RUN cd /tmp/src && \
     /dolfinx-env/bin/python3 -m pip install . && \
     cd ..
 
-RUN /dolfinx-env/bin/python3 -m pip install networkx vtk
+RUN /dolfinx-env/bin/python3 -m pip install networkx vtk meshio
 
 # Cleanup
 RUN rm -rf /tmp/src

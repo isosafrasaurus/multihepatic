@@ -93,10 +93,6 @@ log "Image  : $IMAGE_URI"
 export APPTAINERENV_PYTHONPATH="$PROJECT_ROOT"
 export APPTAINERENV_PYTHONUNBUFFERED=1
 
-# MPI and threading environment variables
-export MV2_SMP_USE_CMA=0
-export MV2_ENABLE_AFFINITY=0
-
 export APPTAINERENV_MV2_SMP_USE_CMA=0
 export APPTAINERENV_MV2_ENABLE_AFFINITY=0
 
@@ -137,4 +133,3 @@ trap on_err ERR
 log "ExitCode: $rc"
 log "END $(date -Is)"
 exit "$rc"
-
