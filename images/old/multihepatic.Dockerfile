@@ -250,7 +250,7 @@ RUN echo 'source ~/.profile' >> $FENICS_HOME/.bash_profile && \
     echo '. ~/fenics.env.conf' >> $FENICS_HOME/.profile && \
     mkdir -p $FENICS_HOME/.config/matplotlib
 
-COPY matplotlibrc $FENICS_HOME/.config/matplotlib/matplotlibrc
+COPY ../matplotlibrc $FENICS_HOME/.config/matplotlib/matplotlibrc
 
 USER root
 ENV FENICS_BUILD_TYPE=Release
