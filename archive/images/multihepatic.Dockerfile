@@ -1,31 +1,24 @@
-# Builds a Docker image for running FEniCS on TACC machines
+# Builds a Docker image for running FEniCS on generic Ubuntu
 #
-# This is a modified version of
+# This is adapted from:
 #   https://bitbucket.org/fenics-project/docker/src/master/dockerfiles/dev-env/Dockerfile
-#
-# See License for further information
-#
-# Authors of the original version:
-# Jack S. Hale <jack.hale@uni.lu>
-# Lizao Li <lzlarryli@gmail.com>
-# Garth N. Wells <gnw20@cam.ac.uk>
-# Jan Blechta <blechta@karlin.mff.cuni.cz>
-# Umberto Villa <uvilla@utexas.edu> (uvilla on GitHub)
-# Mathew Hu <mathewhu@utexas.edu> (mathewgaohu on GitHub)
-#
-# Modified by: Pierce Zhang (isosafrasaurus on GitHub)
 
-FROM tacc/tacc-ubuntu18-mvapich2.3-ib
+FROM ubuntu:22.04
 
-RUN useradd -m -s /bin/bash -G sudo fenics && \
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Create fenics user
+RUN groupadd -f sudo && \
+    useradd -m -s /bin/bash -G sudo fenics && \
     echo "fenics:docker" | chpasswd
+
 USER root
 WORKDIR /tmp
 
 ENV FENICS_HOME=/home/fenics
-ENV FENICS_PREFIX=$FENICS_HOME/local \
-    OPENBLAS_NUM_THREADS=1 \
-    OPENBLAS_VERBOSE=0
+ENV FENICS_PREFIX=$FENICS_HOME/local
 
 ENV PETSC_VERSION=3.20.2 \
     SLEPC_VERSION=3.20.1 \
@@ -41,29 +34,41 @@ ARG OCCT_TAG=V7_7_2
 ARG GMSH_TAG=gmsh_4_11_1
 
 ARG BUILD_JOBS=4
+
 ENV MAKEFLAGS=-j${BUILD_JOBS} \
     CC=mpicc CXX=mpicxx MPICC=mpicc
 
+# Base system deps
 RUN apt-get -qq update && \
     apt-get -y --with-new-pkgs -o Dpkg::Options::="--force-confold" upgrade && \
-    apt-get -y install curl && \
+    apt-get -y install --no-install-recommends \
+        ca-certificates curl wget gnupg lsb-release sudo \
+        openmpi-bin libopenmpi-dev \
+    && \
     curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && \
-    apt-get -y install \
+    apt-get -y install --no-install-recommends \
         vim ccache cmake doxygen flex git git-lfs graphviz \
         libboost-filesystem-dev libboost-iostreams-dev libboost-math-dev \
         libboost-program-options-dev libboost-system-dev libboost-thread-dev \
         libboost-timer-dev libeigen3-dev libfreetype6-dev liblapack-dev \
         libopenblas-dev libpcre3-dev libpng-dev libgmp-dev libcln-dev \
-        libmpfr-dev man nano pkg-config wget bash-completion \
+        libmpfr-dev man nano pkg-config bash-completion \
         build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
         gfortran \
         libsqlite3-dev llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev \
         libffi-dev liblzma-dev python3-openssl \
         libfontconfig1-dev libfreetype6-dev libx11-dev libxi-dev libxmu-dev \
         libgl1-mesa-dev mesa-common-dev \
-        ca-certificates && \
+        libfontconfig1 libgl1 \
+        libgl1-mesa-glx \
+    && \
     git lfs install && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# OpenMPI refuses to run as root by default
+# PETSc/HDF5 configure steps may run MPI tests.
+ENV OMPI_ALLOW_RUN_AS_ROOT=1 \
+    OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 
 # Python 3.12
 RUN apt-get -qq update && \
@@ -77,24 +82,18 @@ RUN apt-get -qq update && \
     make altinstall && \
     cd /tmp && rm -rf Python-3.12.2.tgz Python-3.12.2
 
-# Update python3 alternative to 3.12
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.12 1
+RUN ln -sf /usr/local/bin/python3.12 /usr/local/bin/python3
 
-# Minimal Python runtime packages
-RUN apt-get -qq update && \
-    apt-get -y --with-new-pkgs -o Dpkg::Options::="--force-confold" upgrade && \
-    apt-get -y install \
-        python3-dev python3-flufl.lock python3-numpy python3-ply \
-        python3-pytest python3-scipy python3-tk python3-urllib3 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Pip / setuptools for Python 3.12
+# Pip and setuptools for Python 3.12
 RUN wget https://bootstrap.pypa.io/pip/get-pip.py && \
-    python3 get-pip.py && \
-    pip3 install --no-cache-dir setuptools wheel && \
+    /usr/local/bin/python3.12 get-pip.py && \
+    /usr/local/bin/python3.12 -m pip install --no-cache-dir setuptools wheel && \
     rm -f get-pip.py
 
-# mpi4py against MVAPICH2
+# Ensure pip3 points at the 3.12 install under /usr/local
+RUN ln -sf /usr/local/bin/pip3.12 /usr/local/bin/pip3 || true
+
+# mpi4py against OpenMPI
 RUN MPICC=mpicc pip3 install --no-cache-dir --no-binary=mpi4py "mpi4py==${MPI4PY_VERSION}"
 
 # Make sure MPI wrappers are visible to any build steps
@@ -109,26 +108,42 @@ RUN set -eux; \
                 --enable-shared --with-pic --prefix=/usr/local/hdf5 && \
     make -j"$(nproc)" && make install && ldconfig && \
     rm -rf /tmp/hdf5-src /tmp/hdf5-${HDF5_VERSION}.tar.gz
+
 ENV HDF5_ROOT=/usr/local/hdf5
 ENV HDF5_DIR=/usr/local/hdf5
 
 # preinstall cython+numpy in py3.12 so we can disable isolation for h5py
 RUN pip3 install --no-cache-dir "numpy==1.26.4" "Cython>=3.0,<3.1"
 
-# system is 3.10 on Ubuntu 18; PETSc TPLs need >=3.21
-RUN python3 -m pip install --no-cache-dir "cmake>=3.26,<3.28"
-RUN cmake --version
+# Install a recent CMake from PyPI, but make `cmake` a non-Python launcher that
+RUN set -eux; \
+    python3 -m pip install --no-cache-dir "cmake>=3.26,<3.28"; \
+    CMAKE_PKG_DIR="$(python3 -c 'import cmake, pathlib; print(pathlib.Path(cmake.__file__).resolve().parent)')"; \
+    CMAKE_BIN="${CMAKE_PKG_DIR}/data/bin/cmake"; \
+    CTEST_BIN="${CMAKE_PKG_DIR}/data/bin/ctest"; \
+    CPACK_BIN="${CMAKE_PKG_DIR}/data/bin/cpack"; \
+    test -x "$CMAKE_BIN"; test -x "$CTEST_BIN"; test -x "$CPACK_BIN"; \
+    rm -f /usr/local/bin/cmake /usr/local/bin/ctest /usr/local/bin/cpack; \
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$CMAKE_BIN"  > /usr/local/bin/cmake; \
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$CTEST_BIN"  > /usr/local/bin/ctest; \
+    printf '#!/bin/sh\nexec "%s" "$@"\n' "$CPACK_BIN"  > /usr/local/bin/cpack; \
+    chmod +x /usr/local/bin/cmake /usr/local/bin/ctest /usr/local/bin/cpack; \
+    cmake --version
 
 # h5py built against the external parallel HDF5
 RUN HDF5_MPI=ON HDF5_DIR=/usr/local/hdf5 \
     pip3 install --no-cache-dir --no-binary=h5py --no-build-isolation "h5py==${H5PY_VERSION}"
+
+RUN apt-get -qq update && \
+    apt-get -y install --no-install-recommends bison && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # PETSc
 RUN set -eux; \
     wget -q "https://gitlab.com/petsc/petsc/-/archive/v${PETSC_VERSION}/petsc-v${PETSC_VERSION}.tar.gz" -O petsc-${PETSC_VERSION}.tar.gz; \
     mkdir -p /tmp/petsc-src && tar -xf petsc-${PETSC_VERSION}.tar.gz -C /tmp/petsc-src --strip-components=1; \
     cd /tmp/petsc-src && \
-    ./configure CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" FFLAGS="-O2" \
+    ./configure CFLAGS="${CFLAGS:--O2}" CXXFLAGS="${CXXFLAGS:--O2}" FFLAGS="${FFLAGS:--O2}" \
         --with-fc=mpifort \
         --with-fortran-bindings=no \
         --with-debugging=0 \
@@ -152,18 +167,20 @@ RUN set -eux; \
     && make ${MAKEFLAGS} \
     && make install \
     && cd / && rm -rf /tmp/petsc-src /tmp/petsc-${PETSC_VERSION}.tar.gz
+
 ENV PETSC_DIR=/usr/local/petsc-32
 ENV SCOTCH_DIR=/usr/local/petsc-32
 
-# SLEPc 3.20.1
+# SLEPc
 RUN set -eux; \
     wget -q "https://gitlab.com/slepc/slepc/-/archive/v${SLEPC_VERSION}/slepc-v${SLEPC_VERSION}.tar.gz" -O slepc-${SLEPC_VERSION}.tar.gz; \
     mkdir -p /tmp/slepc-src && tar -xf slepc-${SLEPC_VERSION}.tar.gz -C /tmp/slepc-src --strip-components=1; \
     cd /tmp/slepc-src && \
-    ./configure --prefix=/usr/local/slepc-32 && \
+    PETSC_DIR=/usr/local/petsc-32 ./configure --prefix=/usr/local/slepc-32 && \
     make SLEPC_DIR="$(pwd)" PETSC_DIR=/usr/local/petsc-32 && \
-    make install && \
+    make SLEPC_DIR="$(pwd)" PETSC_DIR=/usr/local/petsc-32 install && \
     rm -rf /tmp/slepc-src /tmp/slepc-${SLEPC_VERSION}.tar.gz
+
 ENV SLEPC_DIR=/usr/local/slepc-32
 
 # Python bindings
@@ -172,7 +189,7 @@ RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel \
 RUN PETSC_DIR=/usr/local/petsc-32 pip3 install --no-cache-dir --no-build-isolation "petsc4py==${PETSC4PY_VERSION}"
 RUN SLEPC_DIR=/usr/local/slepc-32 pip3 install --no-cache-dir --no-build-isolation "slepc4py==${SLEPC4PY_VERSION}"
 
-# pybind11 2.11.1
+# pybind11
 RUN set -eux; \
     wget -q "https://github.com/pybind/pybind11/archive/refs/tags/v${PYBIND11_VERSION}.tar.gz" && \
     tar -xf v${PYBIND11_VERSION}.tar.gz && \
@@ -181,6 +198,7 @@ RUN set -eux; \
     cmake -DPYBIND11_TEST=False .. && \
     make -j"$(nproc)" && make install && \
     cd /tmp && rm -rf v${PYBIND11_VERSION}.tar.gz pybind11-${PYBIND11_VERSION}
+
 RUN python3 -m pip install --no-cache-dir "pybind11==${PYBIND11_VERSION}"
 
 # OCC
@@ -197,10 +215,6 @@ RUN set -eux; \
     make -j"$(nproc)" && make install && ldconfig && \
     cd /tmp && rm -rf /tmp/occt-src
 
-# Runtime bits used by OCC at runtime
-RUN apt-get -qq update && apt-get -y install --no-install-recommends libfontconfig1 libgl1 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Gmsh
 RUN set -eux; \
     git clone --depth=1 --branch ${GMSH_TAG} https://gitlab.onelab.info/gmsh/gmsh.git /tmp/gmsh-src && \
@@ -211,14 +225,14 @@ RUN set -eux; \
           -DENABLE_BUILD_DYNAMIC=1 \
           .. && \
     make -j"$(nproc)" && make install && \
-    PY_SITE=$(python3 -c "import site,sys; print(next(p for p in site.getsitepackages() if sys.version_info[:2]==tuple(map(int, p.split('python')[-1].split('/')[0].split('.')))))"); \
+    PY_SITE=$(python3 -c "import site; print(site.getsitepackages()[0])"); \
     if [ -f /usr/local/lib/gmsh.py ]; then mv /usr/local/lib/gmsh.py "$PY_SITE/"; fi; \
     shopt -s nullglob; \
     for d in /usr/local/lib/gmsh-*.dist-info; do mv "$d" "$PY_SITE/"; done; \
     ldconfig && \
     cd /tmp && rm -rf /tmp/gmsh-src
 
-# Keep your scientific Python pins helpful for FFC/FIAT and docs
+# Scientific Python pins helpful for FFC/FIAT and docs
 RUN pip3 install --no-cache-dir jupyter jupyterlab matplotlib scipy \
     "sympy>=1.12.1,<1.14" tqdm pkgconfig
 
@@ -235,7 +249,8 @@ RUN chmod +x bin/* && \
 RUN echo 'source ~/.profile' >> $FENICS_HOME/.bash_profile && \
     echo '. ~/fenics.env.conf' >> $FENICS_HOME/.profile && \
     mkdir -p $FENICS_HOME/.config/matplotlib
-COPY ../matplotlibrc $FENICS_HOME/.config/matplotlib/matplotlibrc
+
+COPY ../../images/matplotlibrc $FENICS_HOME/.config/matplotlib/matplotlibrc
 
 USER root
 ENV FENICS_BUILD_TYPE=Release
@@ -251,13 +266,9 @@ RUN ln -s /usr/local/lib/python3.12/site-packages/ufl_legacy \
 
 RUN ldconfig
 
-# Minimal GL for VTK runtime
-RUN apt-get -qq update && \
-    apt-get -y install --no-install-recommends libgl1-mesa-glx && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Re‑install pybind11 wheel to ensure Python package visibility
 RUN python3 -m pip install --no-cache-dir "pybind11==${PYBIND11_VERSION}"
+
 RUN pip3 install --no-cache-dir networkx vtk
 RUN pip3 install --no-cache-dir "git+https://bitbucket.org/fenics-apps/cbc.block.git@master"
 
@@ -267,6 +278,7 @@ RUN set -eux; \
     pip3 install --no-cache-dir fenics_ii/ && \
     rm -rf fenics_ii
 
+# graphnics at the end
 RUN set -eux; \
     cd /tmp && \
     git clone "https://github.com/IngeborgGjerde/graphnics" && \
@@ -274,4 +286,3 @@ RUN set -eux; \
     rm -rf graphnics
 
 RUN pip3 install --no-cache-dir --upgrade "git+https://github.com/dolfin-adjoint/pyadjoint.git"
-
