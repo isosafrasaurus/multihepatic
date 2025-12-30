@@ -189,9 +189,8 @@ def solve_coupled_test_graph(
     outlet_vertices = bnd.indices[bnd.values == outlet_marker].astype(np.int32)
 
     if comm.rank == 0:
-        print("=== Network boundary classification (from networks_fenicsx tags) ===")
-        print(f"Graph sources (intended inlets): {sources}")
-        print(f"Graph sinks   (intended outlets): {sinks}")
+        print(f"Graph sources: {sources}")
+        print(f"Graph sinks: {sinks}")
         print(f"Using inlet_marker={inlet_marker}, outlet_marker={outlet_marker}")
         print(f"Inlet vertices on mesh: {inlet_vertices.tolist()}")
         print(f"Outlet vertices on mesh: {outlet_vertices.tolist()}")
@@ -329,9 +328,9 @@ def solve_coupled_test_graph(
     Q_term = assemble_scalar(exchange_terminal_form, op=MPI.SUM)
 
     if comm.rank == 0:
-        print("=== Coupled LA test graph solved ===")
-        print(f"Total vessel-wall exchange   ∫Λ γ|∂Θ|(P-Π(p)) ds  = {Q_wall:.6e}")
-        print(f"Total terminal exchange      ∑A |Θ|γ_a/μ(P-Pcvp)  = {Q_term:.6e}")
+        print("LAM test solved!")
+        print(f"Total vessel-wall exchange $int_{{Lambda}} gamma,|partial Theta|,(P-Pi(p)),mathrm{{d}}s$ = {Q_wall:.6e}")
+        print(f"Total terminal exchange $sum_{{A}} |Theta| gamma_a/mu,(P-P_mathrm{{cvp}})$ = {Q_term:.6e}")
 
     fmt = output_format.lower()
     if fmt not in {"xdmf", "vtk", "vtx"}:
