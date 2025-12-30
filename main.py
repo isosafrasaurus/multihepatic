@@ -389,8 +389,12 @@ def solve_coupled_test_graph(
 def main():
     import os
 
-    outdir = Path(__file__).resolve().parent / "results_test_graph"
-    outdir.mkdir(parents=True, exist_ok=True)
+    results_root = Path(__file__).resolve().parent / "results"
+    results_root.mkdir(parents=True, exist_ok=True)
+
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    outdir = results_root / timestamp
     fmt = os.environ.get("DOLFINX_OUTPUT_FORMAT", "vtk")
     solve_coupled_test_graph(outdir=outdir, output_format=fmt)
 
