@@ -10,7 +10,6 @@ __pycache__/
 # Workload
 .extsite/
 
-# Results and Data
-_data
-_results
-_logs
+# Data and Results
+results/*
+data/*
