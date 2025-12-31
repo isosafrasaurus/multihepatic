@@ -13,3 +13,6 @@ __pycache__/
 # Data and Results
 results/*
 data/*
+
+# Temporary files
+examples/liver.py

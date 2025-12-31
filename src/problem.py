@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import dolfinx.fem as fem
+import dolfinx.fem.petsc as fem_petsc
 import ufl
 from fenicsx_ii import Average, LinearProblem, assemble_scalar
 from mpi4py import MPI
@@ -163,22 +164,32 @@ class PressureVelocityProblem(PressureProblem):
         mesh = self._tissue.mesh
         gdim = mesh.geometry.dim
 
-        if self._velocity_degree is None:
-            # Gradient of CG(k) is typically best represented as DG(k-1).
-            vel_degree = max(self._assembly.degree_3d - 1, 0)
-        else:
-            vel_degree = int(self._velocity_degree)
+        vis_degree = mesh.geometry.cmap.degree  # typically 1
 
-        velocity_space = fem.functionspace(mesh, (self._velocity_family, vel_degree, (gdim,)))
-        tissue_velocity = fem.Function(velocity_space)
-        tissue_velocity.name = "v_tissue"
+        V_vis = fem.functionspace(mesh, ("Lagrange", vis_degree, (gdim,)))
+        v_vis = fem.Function(V_vis)
+        v_vis.name = "v_tissue"
 
         factor = float(self._params.k_t / self._params.mu)
-        velocity_expr = -factor * ufl.grad(pressure_solution.tissue_pressure)
+        v_expr = -factor * ufl.grad(pressure_solution.tissue_pressure)
 
-        expr = fem.Expression(velocity_expr, velocity_space.element.interpolation_points())
-        tissue_velocity.interpolate(expr)
-        tissue_velocity.x.scatter_forward()
+        # L2 projection to point-based vector field
+        u = ufl.TrialFunction(V_vis)
+        w = ufl.TestFunction(V_vis)
+        a = ufl.inner(u, w) * ufl.dx
+        L = ufl.inner(v_expr, w) * ufl.dx
+
+        proj = fem_petsc.LinearProblem(
+            a, L, u=v_vis,
+            petsc_options={
+                "ksp_type": "preonly",
+                "pc_type": "lu",
+                "ksp_error_if_not_converged": True,
+            },
+            petsc_options_prefix="velocity_projection",
+        )
+        proj.solve()
+        v_vis.x.scatter_forward()
 
         return PressureVelocitySolution(
             tissue_pressure=pressure_solution.tissue_pressure,
@@ -188,5 +199,5 @@ class PressureVelocityProblem(PressureProblem):
             total_wall_exchange=pressure_solution.total_wall_exchange,
             total_terminal_exchange=pressure_solution.total_terminal_exchange,
             metadata=pressure_solution.metadata,
-            tissue_velocity=tissue_velocity,
+            tissue_velocity=v_vis,
         )
