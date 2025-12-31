@@ -35,5 +35,8 @@ RUN /dolfinx-env/bin/python3 -m pip install networkx vtk meshio
 # Cleanup
 RUN rm -rf /tmp/src
 
+# Create the cache directory explicitly and give it open permissions
+RUN mkdir -p /tmp/.cache/fenics && chmod -R 777 /tmp/.cache
+
 USER dolfinx
 WORKDIR /home/dolfinx

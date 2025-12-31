@@ -73,7 +73,6 @@ def solve_test_graph(
         points_per_edge=points_per_edge,
         comm=comm,
         graph_rank=0,
-        color_strategy=None,
     )
 
     # Build tissue box with fixed dimensions [0,0,0] -> [0.040,0.040,0.030]

@@ -119,7 +119,6 @@ class Domain1D:
             points_per_edge: int,
             comm: MPI.Comm,
             graph_rank: int = 0,
-            color_strategy: Any = None,
             inlet_marker: int | None = None,
             outlet_marker: int | None = None,
             name: str = "Lambda",
@@ -130,7 +129,6 @@ class Domain1D:
         network = NetworkMesh(
             graph,
             N=points_per_edge,
-            color_strategy=color_strategy,
             comm=comm,
             graph_rank=graph_rank,
         )
