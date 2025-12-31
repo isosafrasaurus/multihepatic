@@ -3,7 +3,7 @@
     <deployment type="docker-image">
       <settings>
         <option name="imageTag" value="429c3be45c8800c3b4adf9a154823a3855b3c218144d9241acffa5f0d226b038" />
-        <option name="command" value="mpirun -n 2 python $PROJECT_DIR$/../../dolfinx/examples/toy_problem.py" />
+        <option name="command" value="mpiexec -n 8 python $PROJECT_DIR$/../../dolfinx/examples/liver.py" />
         <option name="containerName" value="ubuntu24.04-multihepatic-container" />
         <option name="envVars">
           <list>
