@@ -1,22 +1,24 @@
 from __future__ import annotations
 
-from typing import Any, Mapping
+import time
+from typing import Any, Callable, Mapping
 
-import dolfinx.fem as fem
-import dolfinx.fem.petsc as fem_petsc
-import ufl
 from fenicsx_ii import Average, LinearProblem, assemble_scalar
 from mpi4py import MPI
 
-from .config import AssemblyOptions, Parameters, SolverOptions
-from .domain import Domain1D, Domain3D
-from .forms import PressureForms, build_pressure_forms
-from .memory import MemoryManager
-from .parallel import abort_on_exception, barrier, rank_print, setup_mpi_debug
-from .solutions import PressureSolution, PressureVelocitySolution
+from ..config import AssemblyOptions, Parameters, SolverOptions
+from ..domain import Domain1D, Domain3D
+from ..forms import PressureForms, build_pressure_forms
+from ..memory import MemoryManager
+from ..parallel import abort_on_exception, make_rank_logger, setup_mpi_debug
+from ..solutions import PressureSolution
 
 
 class PressureProblem:
+    """
+    Library solver: build forms + solve + postprocess exchange integrals.
+    """
+
     def __init__(
             self,
             tissue: Domain3D,
@@ -27,8 +29,10 @@ class PressureProblem:
             solver: SolverOptions = SolverOptions(),
             radius_by_tag: Mapping[int, float] | Any | None = None,
             default_radius: float | None = None,
-            cell_radius: fem.Function | None = None,
-            vertex_radius: fem.Function | None = None,
+            cell_radius: Any | None = None,
+            vertex_radius: Any | None = None,
+            log: Callable[[str], None] | None = None,  # ✅ ADDED
+            barrier: Callable[[str], None] | None = None,  # ✅ ADDED
     ) -> None:
         self._tissue = tissue
         self._network = network
@@ -41,6 +45,9 @@ class PressureProblem:
         self._cell_radius = cell_radius
         self._vertex_radius = vertex_radius
 
+        self._log_cb = log
+        self._barrier_cb = barrier
+
         self._forms: PressureForms | None = None
         self._linear_problem: Any | None = None
 
@@ -48,12 +55,20 @@ class PressureProblem:
     def comm(self) -> MPI.Comm:
         return self._tissue.comm
 
+    def _log(self, msg: str) -> None:
+        if self._log_cb is not None:
+            self._log_cb(msg)
+
+    def _bar(self, tag: str) -> None:
+        if self._barrier_cb is not None:
+            self._barrier_cb(tag)
+
     def solve(self) -> PressureSolution:
         comm = self.comm
         setup_mpi_debug(comm)
-        rprint = rank_print(comm)
 
-        barrier(comm, "PressureProblem.solve:start", rprint)
+        # Ensure we always have *some* logger for fatal exceptions.
+        rprint = self._log_cb or make_rank_logger(comm)
 
         try:
             if self._forms is None:
@@ -68,11 +83,14 @@ class PressureProblem:
                     default_radius=self._default_radius,
                     cell_radius=self._cell_radius,
                     vertex_radius=self._vertex_radius,
+                    log=self._log_cb,  # ✅ forwarded so prints stay
+                    barrier=self._barrier_cb,  # ✅ forwarded so barrier tags stay
                 )
 
             forms = self._forms
-            barrier(comm, "PressureProblem.solve:forms_built", rprint)
 
+            self._log("ABOUT TO CONSTRUCT LinearProblem(...) (this may trigger JIT/assembly)")
+            t0 = time.time()
             self._linear_problem = LinearProblem(
                 forms.a,
                 forms.L,
@@ -80,16 +98,19 @@ class PressureProblem:
                 petsc_options_prefix=self._solver.petsc_options_prefix,
                 petsc_options=dict(self._solver.petsc_options),
             )
+            self._log(f"LinearProblem constructed in {time.time() - t0:.3f}s")
+            self._bar("after LinearProblem ctor")
 
-            barrier(comm, "PressureProblem.solve:linear_problem_built", rprint)
-
+            self._log("ABOUT TO CALL problem.solve()")
+            t0 = time.time()
             p_tissue, p_network = self._linear_problem.solve()
-            p_tissue.name = "p_tissue"
-            p_network.name = "p_network"
+            self._log(f"problem.solve() returned in {time.time() - t0:.3f}s")
+            self._bar("after problem.solve")
 
-            barrier(comm, "PressureProblem.solve:solved", rprint)
+            # Postprocessing integrals (same as original)
+            self._log("Assembling exchange integrals...")
+            t0 = time.time()
 
-            # Postprocessing integrals
             wall_exchange_form = (
                     forms.gamma
                     * forms.D_perimeter_cell
@@ -106,7 +127,11 @@ class PressureProblem:
             total_wall_exchange = float(assemble_scalar(wall_exchange_form, op=MPI.SUM))
             total_terminal_exchange = float(assemble_scalar(terminal_exchange_form, op=MPI.SUM))
 
-            barrier(comm, "PressureProblem.solve:postprocess_done", rprint)
+            self._log(
+                f"exchange assembled in {time.time() - t0:.3f}s; "
+                f"Q_wall={total_wall_exchange} Q_term={total_terminal_exchange}"
+            )
+            self._bar("after assemble_scalar")
 
             return PressureSolution(
                 tissue_pressure=p_tissue,
@@ -124,7 +149,7 @@ class PressureProblem:
 
         except Exception as e:
             abort_on_exception(comm, rprint, e)
-            raise  # unreachable (Abort), but satisfies type checkers
+            raise
 
     def close(self) -> None:
         MemoryManager.close_if_possible(self._linear_problem)
@@ -137,92 +162,3 @@ class PressureProblem:
 
     def __exit__(self, exc_type, exc, tb) -> None:
         self.close()
-
-
-class PressureVelocityProblem(PressureProblem):
-    """
-    Extends PressureProblem by computing tissue velocity:
-        v = -(k_t/mu) * grad(p_tissue)
-    """
-
-    def __init__(
-            self,
-            tissue: Domain3D,
-            network: Domain1D,
-            *,
-            params: Parameters = Parameters(),
-            assembly: AssemblyOptions = AssemblyOptions(),
-            solver: SolverOptions = SolverOptions(),
-            radius_by_tag: Mapping[int, float] | Any | None = None,
-            default_radius: float | None = None,
-            cell_radius: fem.Function | None = None,
-            vertex_radius: fem.Function | None = None,
-    ) -> None:
-        super().__init__(
-            tissue,
-            network,
-            params=params,
-            assembly=assembly,
-            solver=solver,
-            radius_by_tag=radius_by_tag,
-            default_radius=default_radius,
-            cell_radius=cell_radius,
-            vertex_radius=vertex_radius,
-        )
-
-    def solve(self) -> PressureVelocitySolution:
-        comm = self.comm
-        setup_mpi_debug(comm)
-        rprint = rank_print(comm)
-
-        try:
-            pressure_sol = super().solve()
-            barrier(comm, "PressureVelocityProblem.solve:pressure_done", rprint)
-
-            mesh = self._tissue.mesh
-            gdim = mesh.geometry.dim
-            vis_degree = mesh.geometry.cmap.degree  # typical 1
-
-            V_vis = fem.functionspace(mesh, ("Lagrange", vis_degree, (gdim,)))
-            v_vis = fem.Function(V_vis)
-            v_vis.name = "v_tissue"
-
-            factor = float(self._params.k_t / self._params.mu)
-            v_expr = -factor * ufl.grad(pressure_sol.tissue_pressure)
-
-            # L2 projection
-            u = ufl.TrialFunction(V_vis)
-            w = ufl.TestFunction(V_vis)
-            a = ufl.inner(u, w) * ufl.dx
-            L = ufl.inner(v_expr, w) * ufl.dx
-
-            proj = fem_petsc.LinearProblem(
-                a,
-                L,
-                u=v_vis,
-                petsc_options={
-                    "ksp_type": "preonly",
-                    "pc_type": "lu",
-                    "ksp_error_if_not_converged": True,
-                },
-                petsc_options_prefix="velocity_projection",
-            )
-            proj.solve()
-            v_vis.x.scatter_forward()
-
-            barrier(comm, "PressureVelocityProblem.solve:velocity_done", rprint)
-
-            return PressureVelocitySolution(
-                tissue_pressure=pressure_sol.tissue_pressure,
-                network_pressure=pressure_sol.network_pressure,
-                cell_radius=pressure_sol.cell_radius,
-                vertex_radius=pressure_sol.vertex_radius,
-                total_wall_exchange=pressure_sol.total_wall_exchange,
-                total_terminal_exchange=pressure_sol.total_terminal_exchange,
-                metadata=pressure_sol.metadata,
-                tissue_velocity=v_vis,
-            )
-
-        except Exception as e:
-            abort_on_exception(comm, rprint, e)
-            raise

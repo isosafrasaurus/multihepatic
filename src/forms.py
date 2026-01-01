@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 
 import dolfinx.fem as fem
 import dolfinx.mesh as dmesh
@@ -28,7 +29,6 @@ class Spaces:
     tissue_pressure: fem.FunctionSpace
     network_pressure: fem.FunctionSpace
     mixed_pressure: Any  # ufl.MixedFunctionSpace
-    cell_radius: fem.FunctionSpace
 
 
 @dataclass(frozen=True, slots=True)
@@ -71,7 +71,7 @@ def _radius_lookup_array(
         max_tag: int,
         default_radius: float,
 ) -> np.ndarray:
-    lookup = np.full((max_tag + 2,), float(default_radius), dtype=np.float64)
+    lookup = np.full((max_tag + 1,), float(default_radius), dtype=np.float64)
     if isinstance(radius_by_tag, np.ndarray):
         n = min(radius_by_tag.size, max_tag + 1)
         lookup[:n] = radius_by_tag[:n].astype(np.float64, copy=False)
@@ -90,8 +90,15 @@ def build_cell_radius_field(
         radius_by_tag: Mapping[int, float] | np.ndarray,
         *,
         default_radius: float,
+        untagged_tag: int | None = None,  # ✅ ADDED
         name: str = "radius_cell",
 ) -> tuple[fem.Function, np.ndarray]:
+    """
+    Build DG0 cellwise radius r_cell and a cell-indexed radius_per_cell array.
+
+    If untagged_tag is not None, any cell not present in subdomains.indices
+    uses that tag (matching your original script which used tag 0 by default).
+    """
     DG0 = fem.functionspace(mesh_1d, ("DG", 0))
     r_cell = fem.Function(DG0)
     r_cell.name = name
@@ -106,18 +113,32 @@ def build_cell_radius_field(
         int(max(radius_by_tag.keys())) if radius_by_tag else 0
     )
     max_tag = max(max_tag_mesh, max_tag_map, 0)
-    default_tag = max_tag + 1
+    if untagged_tag is not None:
+        max_tag = max(max_tag, int(untagged_tag))
 
-    cell_tags = np.full((num_cells,), default_tag, dtype=np.int32)
+    # Start with either a special untagged_tag or "default radius" fallback.
+    if untagged_tag is None:
+        # Use an out-of-range tag index mapped to default_radius via lookup fill.
+        # (We implement by directly filling radius_per_cell with default_radius first.)
+        cell_tags = np.full((num_cells,), -1, dtype=np.int32)
+    else:
+        cell_tags = np.full((num_cells,), int(untagged_tag), dtype=np.int32)
+
     cell_tags[subdomains.indices] = subdomains.values
 
     lookup = _radius_lookup_array(radius_by_tag, max_tag=max_tag, default_radius=default_radius)
-    radius_per_cell = lookup[cell_tags]
 
+    if untagged_tag is None:
+        radius_per_cell = np.full((num_cells,), float(default_radius), dtype=np.float64)
+        mask = cell_tags >= 0
+        radius_per_cell[mask] = lookup[cell_tags[mask]]
+    else:
+        radius_per_cell = lookup[cell_tags]
+
+    # Owned dofs, then scatter.
     r_cell.x.array[:num_cells_local] = radius_per_cell[:num_cells_local].astype(r_cell.x.array.dtype, copy=False)
     r_cell.x.scatter_forward()
 
-    # For DG0, dof ordering usually matches cell index; keep it simple and return cell-indexed array.
     return r_cell, radius_per_cell
 
 
@@ -129,15 +150,22 @@ def build_boundary_vertex_radius_field(
         inlet_vertices: np.ndarray,
         outlet_vertices: np.ndarray,
         default_radius: float,
+        scatter: bool = True,  # ✅ ADDED
         name: str = "radius_vertex",
 ) -> fem.Function:
+    """
+    Vertex radius field on the network pressure space:
+      - default everywhere = default_radius
+      - inlet/outlet vertices set from adjacent cell DG0 radius
+
+    IMPORTANT (MPI): locate_dofs_topological is called exactly once per marker per rank.
+    """
     r_vertex = fem.Function(V1)
     r_vertex.name = name
     r_vertex.x.array[:] = float(default_radius)
 
     mesh_1d.topology.create_connectivity(0, 1)
     v2c = mesh_1d.topology.connectivity(0, 1)
-
     DG0 = cell_radius.function_space
 
     def radius_at_vertex(v: int) -> float:
@@ -148,7 +176,6 @@ def build_boundary_vertex_radius_field(
         dof = int(DG0.dofmap.cell_dofs(c0)[0])
         return float(cell_radius.x.array[dof])
 
-    # IMPORTANT: exactly one locate_dofs_topological call per marker (inlet/outlet) on each rank.
     inlet_vertices = inlet_vertices.astype(np.int32, copy=False)
     outlet_vertices = outlet_vertices.astype(np.int32, copy=False)
 
@@ -158,8 +185,8 @@ def build_boundary_vertex_radius_field(
     if inlet_vertices.size:
         if len(inlet_dofs) != len(inlet_vertices):
             raise RuntimeError(
-                "Expected 1 dof per vertex for scalar Lagrange space on the network. "
-                f"Got inlet_dofs={len(inlet_dofs)} but inlet_vertices={len(inlet_vertices)}."
+                f"Expected 1 dof per vertex (scalar CG on 1D). inlet_dofs={len(inlet_dofs)} "
+                f"inlet_vertices={len(inlet_vertices)}"
             )
         r_vertex.x.array[inlet_dofs] = np.array(
             [radius_at_vertex(int(v)) for v in inlet_vertices],
@@ -169,19 +196,23 @@ def build_boundary_vertex_radius_field(
     if outlet_vertices.size:
         if len(outlet_dofs) != len(outlet_vertices):
             raise RuntimeError(
-                "Expected 1 dof per vertex for scalar Lagrange space on the network. "
-                f"Got outlet_dofs={len(outlet_dofs)} but outlet_vertices={len(outlet_vertices)}."
+                f"Expected 1 dof per vertex (scalar CG on 1D). outlet_dofs={len(outlet_dofs)} "
+                f"outlet_vertices={len(outlet_vertices)}"
             )
         r_vertex.x.array[outlet_dofs] = np.array(
             [radius_at_vertex(int(v)) for v in outlet_vertices],
             dtype=r_vertex.x.array.dtype,
         )
 
-    r_vertex.x.scatter_forward()
+    if scatter:
+        r_vertex.x.scatter_forward()
     return r_vertex
 
 
 def make_cell_radius_callable(mesh_1d: dmesh.Mesh, radius_per_cell: np.ndarray, *, default_radius: float):
+    """
+    Callable radius(x): used by fenicsx_ii.Circle quadrature.
+    """
     from dolfinx import geometry
 
     tdim = mesh_1d.topology.dim
@@ -217,29 +248,60 @@ def build_pressure_forms(
         default_radius: float | None = None,
         cell_radius: fem.Function | None = None,
         vertex_radius: fem.Function | None = None,
+        log: Callable[[str], None] | None = None,  # ✅ ADDED
+        barrier: Callable[[str], None] | None = None,  # ✅ ADDED
 ) -> PressureForms:
+    """
+    Build weak forms for the coupled tissue/network pressure system.
+
+    If `log` and `barrier` are provided, we emit the same debug messages/tags
+    as your original script so your MPI debugging workflow stays intact.
+    """
+
+    def _log(msg: str) -> None:
+        if log is not None:
+            log(msg)
+
+    def _bar(tag: str) -> None:
+        if barrier is not None:
+            barrier(tag)
+
     if default_radius is None:
         default_radius = _default_radius_from_mapping(radius_by_tag)
 
+    _log("Creating function spaces V3/V1 and mixed space W...")
+    t0 = time.time()
     V3 = fem.functionspace(tissue.mesh, ("Lagrange", degree_3d))
     V1 = fem.functionspace(network.mesh, ("Lagrange", degree_1d))
     W = ufl.MixedFunctionSpace(V3, V1)
-    DG0 = fem.functionspace(network.mesh, ("DG", 0))
+    _log(f"Function spaces created in {time.time() - t0:.3f}s")
 
-    spaces = Spaces(tissue_pressure=V3, network_pressure=V1, mixed_pressure=W, cell_radius=DG0)
+    # DOF counts (same style as your script)
+    try:
+        imV3 = V3.dofmap.index_map
+        imV1 = V1.dofmap.index_map
+        _log(f"V3 dofs: local={imV3.size_local}, ghosts={imV3.num_ghosts}")
+        _log(f"V1 dofs: local={imV1.size_local}, ghosts={imV1.num_ghosts}")
+    except Exception as e:
+        _log(f"[warning] Could not print dofmap index_map info: {type(e).__name__}: {e}")
 
-    # Cell radius
+    _bar("after spaces")
+
+    spaces = Spaces(tissue_pressure=V3, network_pressure=V1, mixed_pressure=W)
+
+    # Radii
     if cell_radius is None:
         if network.subdomains is None or radius_by_tag is None:
-            raise ValueError("To build cell_radius automatically, provide network.subdomains and radius_by_tag.")
+            raise ValueError("Need network.subdomains and radius_by_tag to build cell_radius automatically.")
         cell_radius, radius_per_cell = build_cell_radius_field(
             network.mesh,
             network.subdomains,
             radius_by_tag,
             default_radius=float(default_radius),
+            untagged_tag=0,
         )
     else:
-        # Ensure ghosts are valid before reading.
+        # Derive radius_per_cell (cell-indexed)
         cell_radius.x.scatter_forward()
         tdim = network.mesh.topology.dim
         cell_map = network.mesh.topology.index_map(tdim)
@@ -249,7 +311,6 @@ def build_pressure_forms(
             dof = int(cell_radius.function_space.dofmap.cell_dofs(c)[0])
             radius_per_cell[c] = float(cell_radius.x.array[dof])
 
-    # Vertex radius (inlet/outlet only)
     if vertex_radius is None:
         vertex_radius = build_boundary_vertex_radius_field(
             V1,
@@ -260,28 +321,40 @@ def build_pressure_forms(
             default_radius=float(default_radius),
         )
 
-    # Circle quadrature
+    _bar("before Circle")
+
+    _log("Creating Circle objects...")
+    t0 = time.time()
     radius_fn = make_cell_radius_callable(network.mesh, radius_per_cell, default_radius=float(default_radius))
     circle_trial = Circle(network.mesh, radius=radius_fn, degree=circle_quadrature_degree)
     circle_test = Circle(network.mesh, radius=radius_fn, degree=circle_quadrature_degree)
+    _log(f"Circle objects created in {time.time() - t0:.3f}s")
+    _bar("after Circle")
 
-    # Measures
+    _log("Building UFL trial/test functions, Average(...) ...")
+    t0 = time.time()
+    p_t, P = ufl.TrialFunctions(W)
+    v_t, w = ufl.TestFunctions(W)
+    p_avg = Average(p_t, circle_trial, V1)
+    v_avg = Average(v_t, circle_test, V1)
+    _log(f"Average(...) created in {time.time() - t0:.3f}s")
+    _bar("after Average")
+
     dx_tissue = ufl.Measure("dx", domain=tissue.mesh)
     dx_network = ufl.Measure("dx", domain=network.mesh)
     ds_tissue = ufl.Measure("ds", domain=tissue.mesh)
     ds_network = ufl.Measure("ds", domain=network.mesh, subdomain_data=network.boundaries)
     ds_network_outlet = ds_network(network.outlet_marker)
-    measures = Measures(dx_tissue=dx_tissue, dx_network=dx_network, ds_tissue=ds_tissue, ds_network=ds_network,
-                        ds_network_outlet=ds_network_outlet)
 
-    # Trial/Test
-    p_t, P = ufl.TrialFunctions(W)
-    v_t, w = ufl.TestFunctions(W)
+    measures = Measures(
+        dx_tissue=dx_tissue,
+        dx_network=dx_network,
+        ds_tissue=ds_tissue,
+        ds_network=ds_network,
+        ds_network_outlet=ds_network_outlet,
+    )
 
-    p_avg = Average(p_t, circle_trial, V1)
-    v_avg = Average(v_t, circle_test, V1)
-
-    # Constants
+    _log("Creating Constants...")
     k_t = fem.Constant(tissue.mesh, default_scalar_type(params.k_t))
     mu_t = fem.Constant(tissue.mesh, default_scalar_type(params.mu))
     gamma_R = fem.Constant(tissue.mesh, default_scalar_type(params.gamma_R))
@@ -291,14 +364,17 @@ def build_pressure_forms(
     gamma = fem.Constant(network.mesh, default_scalar_type(params.gamma))
     gamma_a = fem.Constant(network.mesh, default_scalar_type(params.gamma_a))
     P_cvp_n = fem.Constant(network.mesh, default_scalar_type(params.P_cvp))
+    _log("Constants created.")
+    _bar("after Constants")
 
-    # Geometry expressions
     D_area_cell = ufl.pi * cell_radius ** 2
     D_perimeter_cell = 2.0 * ufl.pi * cell_radius
     k_v_cell = (cell_radius ** 2) / 8.0
     D_area_vertex = ufl.pi * vertex_radius ** 2
 
-    # Weak forms
+    _log("Building bilinear/linear forms a, L ...")
+    t0 = time.time()
+
     a00 = (k_t / mu_t) * ufl.inner(ufl.grad(p_t), ufl.grad(v_t)) * dx_tissue
     a00 += gamma_R * p_t * v_t * ds_tissue
     a00 += gamma * p_avg * v_avg * D_perimeter_cell * dx_network
@@ -319,14 +395,17 @@ def build_pressure_forms(
     L1 = (gamma_a / mu_n) * P_cvp_n * w * D_area_vertex * ds_network_outlet
     L = L0 + L1
 
-    # BCs
-    inlet_vertices = network.inlet_vertices
-    inlet_dofs = fem.locate_dofs_topological(V1, 0, inlet_vertices)
+    _log(f"Forms built in {time.time() - t0:.3f}s")
+    _bar("after forms")
+
+    _log("Locating inlet dofs...")
+    inlet_dofs = fem.locate_dofs_topological(V1, 0, network.inlet_vertices)
 
     inlet_val = fem.Function(V1)
     inlet_val.x.array[:] = default_scalar_type(params.P_in)
     bc_inlet = fem.dirichletbc(inlet_val, inlet_dofs)
     bcs = [bc_inlet]
+    _bar("after BCs")
 
     return PressureForms(
         spaces=spaces,

@@ -57,9 +57,9 @@ class Domain1D:
         return self.mesh.comm
 
     def boundary_vertices(self, marker: int) -> np.ndarray:
-        idx = self.boundaries.indices
-        val = self.boundaries.values
-        return idx[val == marker].astype(np.int32, copy=False)
+        values = self.boundaries.values
+        indices = self.boundaries.indices
+        return indices[values == marker].astype(np.int32, copy=False)
 
     @property
     def inlet_vertices(self) -> np.ndarray:
@@ -78,9 +78,16 @@ class Domain1D:
             graph_rank: int = 0,
             inlet_marker: int | None = None,
             outlet_marker: int | None = None,
+            color_strategy: Any | None = None,  # ✅ ADDED
             name: str = "Lambda",
     ) -> "Domain1D":
-        network = NetworkMesh(graph, N=points_per_edge, comm=comm, graph_rank=graph_rank)
+        network = NetworkMesh(
+            graph,
+            N=points_per_edge,
+            comm=comm,
+            graph_rank=graph_rank,
+            color_strategy=color_strategy,  # ✅ FORWARDED
+        )
 
         inlet = int(network.out_marker) if inlet_marker is None else int(inlet_marker)
         outlet = int(network.in_marker) if outlet_marker is None else int(outlet_marker)
