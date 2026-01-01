@@ -8,7 +8,7 @@ import dolfinx.fem as fem
 import numpy as np
 import ufl
 from dolfinx import default_scalar_type
-from fenicsx_ii import Average, Circle, LinearProblem, assemble_scalar
+from fenicsx_ii import Average, Circle, LinearProblem
 from mpi4py import MPI
 
 from .domain import Domain1D, Domain3D
@@ -72,19 +72,19 @@ class Parameters:
 
 class PressureProblem:
     def __init__(
-            self,
-            tissue: Domain3D,
-            network: Domain1D,
-            *,
-            params: Parameters = Parameters(),
-            assembly: AssemblyOptions = AssemblyOptions(),
-            solver: SolverOptions = SolverOptions(),
-            radius_by_tag: Mapping[int, float] | Any | None = None,
-            default_radius: float | None = None,
-            cell_radius: Any | None = None,
-            vertex_radius: Any | None = None,
-            log: Callable[[str], None] | None = None,
-            barrier: Callable[[str], None] | None = None,
+        self,
+        tissue: Domain3D,
+        network: Domain1D,
+        *,
+        params: Parameters = Parameters(),
+        assembly: AssemblyOptions = AssemblyOptions(),
+        solver: SolverOptions = SolverOptions(),
+        radius_by_tag: Mapping[int, float] | Any | None = None,
+        default_radius: float | None = None,
+        cell_radius: Any | None = None,
+        vertex_radius: Any | None = None,
+        log: Callable[[str], None] | None = None,
+        barrier: Callable[[str], None] | None = None,
     ) -> None:
         self._tissue = tissue
         self._network = network
@@ -99,37 +99,11 @@ class PressureProblem:
 
         self._log_cb = log
         self._barrier_cb = barrier
-
-        self._built = False
-
-        self._V3: Any | None = None
-        self._V1: Any | None = None
-        self._W: Any | None = None
-
-        self._dx_tissue: Any | None = None
-        self._dx_network: Any | None = None
-        self._ds_tissue: Any | None = None
-        self._ds_network_outlet: Any | None = None
-
-        self._cell_radius: Any | None = None
-        self._vertex_radius: Any | None = None
-        self._radius_per_cell: np.ndarray | None = None
-
-        self._circle_trial: Any | None = None
-        self._circle_test: Any | None = None
-
-        self._a: Any | None = None
-        self._L: Any | None = None
-        self._bcs: list[Any] | None = None
-
-        self._gamma: Any | None = None
-        self._gamma_a: Any | None = None
-        self._mu_network: Any | None = None
-        self._P_cvp_network: Any | None = None
-        self._D_perimeter_cell: Any | None = None
-        self._D_area_vertex: Any | None = None
-
         self._linear_problem: Any | None = None
+
+        # Keepalive bundle: holds Python-side objects that must stay alive
+        # as long as LinearProblem may assemble/solve.
+        self._keepalive: tuple[Any, ...] | None = None
 
     @property
     def comm(self) -> MPI.Comm:
@@ -144,7 +118,7 @@ class PressureProblem:
             self._barrier_cb(tag)
 
     def _build_if_needed(self) -> None:
-        if self._built:
+        if self._linear_problem is not None:
             return
 
         tissue = self._tissue
@@ -163,8 +137,6 @@ class PressureProblem:
         W = ufl.MixedFunctionSpace(V3, V1)
         self._log(f"Function spaces created in {time.time() - t0:.3f}s")
         self._bar("after spaces")
-
-        self._V3, self._V1, self._W = V3, V1, W
 
         # Radii
         cell_radius = self._cell_radius_user
@@ -200,10 +172,6 @@ class PressureProblem:
                 default_radius=default_radius,
             )
 
-        self._cell_radius = cell_radius
-        self._vertex_radius = vertex_radius
-        self._radius_per_cell = radius_per_cell
-
         self._bar("before Circle")
         self._log("Creating Circle objects...")
         t0 = time.time()
@@ -213,9 +181,7 @@ class PressureProblem:
         self._log(f"Circle objects created in {time.time() - t0:.3f}s")
         self._bar("after Circle")
 
-        self._circle_trial = circle_trial
-        self._circle_test = circle_test
-
+        # Trial/test + averages
         self._log("Building UFL trial/test functions and Average(...) ...")
         t0 = time.time()
         p_t, P = ufl.TrialFunctions(W)
@@ -225,18 +191,14 @@ class PressureProblem:
         self._log(f"Average(...) created in {time.time() - t0:.3f}s")
         self._bar("after Average")
 
+        # Measures
         dx_tissue = ufl.Measure("dx", domain=tissue.mesh)
         dx_network = ufl.Measure("dx", domain=network.mesh)
         ds_tissue = ufl.Measure("ds", domain=tissue.mesh)
         ds_network = ufl.Measure("ds", domain=network.mesh, subdomain_data=network.boundaries)
         ds_network_outlet = ds_network(network.outlet_marker)
 
-        self._dx_tissue = dx_tissue
-        self._dx_network = dx_network
-        self._ds_tissue = ds_tissue
-        self._ds_network_outlet = ds_network_outlet
-
-        self._log("Creating Constants...")
+        # Constants
         k_t = fem.Constant(tissue.mesh, default_scalar_type(params.k_t))
         mu_t = fem.Constant(tissue.mesh, default_scalar_type(params.mu))
         gamma_R = fem.Constant(tissue.mesh, default_scalar_type(params.gamma_R))
@@ -246,14 +208,14 @@ class PressureProblem:
         gamma = fem.Constant(network.mesh, default_scalar_type(params.gamma))
         gamma_a = fem.Constant(network.mesh, default_scalar_type(params.gamma_a))
         P_cvp_n = fem.Constant(network.mesh, default_scalar_type(params.P_cvp))
-        self._log("Constants created.")
-        self._bar("after Constants")
 
-        D_area_cell = ufl.pi * cell_radius ** 2
+        # Geometry factors
+        D_area_cell = ufl.pi * cell_radius**2
         D_perimeter_cell = 2.0 * ufl.pi * cell_radius
-        k_v_cell = (cell_radius ** 2) / 8.0
-        D_area_vertex = ufl.pi * vertex_radius ** 2
+        k_v_cell = (cell_radius**2) / 8.0
+        D_area_vertex = ufl.pi * vertex_radius**2
 
+        # Forms
         self._log("Building bilinear/linear forms a, L ...")
         t0 = time.time()
 
@@ -280,6 +242,7 @@ class PressureProblem:
         self._log(f"Forms built in {time.time() - t0:.3f}s")
         self._bar("after forms")
 
+        # BCs
         self._log("Locating inlet dofs...")
         inlet_dofs = fem.locate_dofs_topological(V1, 0, network.inlet_vertices)
         inlet_val = fem.Function(V1)
@@ -288,16 +251,21 @@ class PressureProblem:
         bcs = [bc_inlet]
         self._bar("after BCs")
 
-        self._a, self._L, self._bcs = a, L, bcs
+        # Build and cache the linear problem
+        self._log("Constructing LinearProblem(...) (may trigger JIT/assembly)")
+        t0 = time.time()
+        self._linear_problem = LinearProblem(
+            a,
+            L,
+            bcs=bcs,
+            petsc_options_prefix=self._solver.petsc_options_prefix,
+            petsc_options=dict(self._solver.petsc_options),
+        )
+        self._log(f"LinearProblem constructed in {time.time() - t0:.3f}s")
+        self._bar("after LinearProblem ctor")
 
-        self._gamma = gamma
-        self._gamma_a = gamma_a
-        self._mu_network = mu_n
-        self._P_cvp_network = P_cvp_n
-        self._D_perimeter_cell = D_perimeter_cell
-        self._D_area_vertex = D_area_vertex
-
-        self._built = True
+        # Keepalive prevents GC of objects that the JIT/assembly path may still depend on
+        self._keepalive = (a, L, bcs, inlet_val, cell_radius, vertex_radius, circle_trial, circle_test)
 
     def solve(self) -> PressureSolution:
         comm = self.comm
@@ -306,58 +274,13 @@ class PressureProblem:
 
         try:
             self._build_if_needed()
-
-            assert self._a is not None and self._L is not None and self._bcs is not None
-            assert self._V1 is not None
-            assert self._dx_network is not None and self._ds_network_outlet is not None
-            assert self._circle_trial is not None
-            assert self._gamma is not None and self._gamma_a is not None
-            assert self._mu_network is not None and self._P_cvp_network is not None
-            assert self._D_perimeter_cell is not None and self._D_area_vertex is not None
-
-            self._log("ABOUT TO CONSTRUCT LinearProblem(...) (this may trigger JIT/assembly)")
-            t0 = time.time()
-            self._linear_problem = LinearProblem(
-                self._a,
-                self._L,
-                bcs=self._bcs,
-                petsc_options_prefix=self._solver.petsc_options_prefix,
-                petsc_options=dict(self._solver.petsc_options),
-            )
-            self._log(f"LinearProblem constructed in {time.time() - t0:.3f}s")
-            self._bar("after LinearProblem ctor")
+            assert self._linear_problem is not None
 
             self._log("ABOUT TO CALL problem.solve()")
             t0 = time.time()
             p_tissue, p_network = self._linear_problem.solve()
             self._log(f"problem.solve() returned in {time.time() - t0:.3f}s")
             self._bar("after problem.solve")
-
-            # Postprocessing integrals
-            self._log("Assembling exchange integrals...")
-            t0 = time.time()
-
-            wall_exchange_form = (
-                    self._gamma
-                    * self._D_perimeter_cell
-                    * (p_network - Average(p_tissue, self._circle_trial, self._V1))
-                    * self._dx_network
-            )
-            terminal_exchange_form = (
-                    (self._gamma_a / self._mu_network)
-                    * self._D_area_vertex
-                    * (p_network - self._P_cvp_network)
-                    * self._ds_network_outlet
-            )
-
-            total_wall_exchange = float(assemble_scalar(wall_exchange_form, op=MPI.SUM))
-            total_terminal_exchange = float(assemble_scalar(terminal_exchange_form, op=MPI.SUM))
-
-            self._log(
-                f"exchange assembled in {time.time() - t0:.3f}s; "
-                f"Q_wall={total_wall_exchange} Q_term={total_terminal_exchange}"
-            )
-            self._bar("after assemble_scalar")
 
             return PressureSolution(tissue_pressure=p_tissue, network_pressure=p_network)
 
@@ -368,20 +291,7 @@ class PressureProblem:
     def close(self) -> None:
         close_if_possible(self._linear_problem)
         self._linear_problem = None
-
-        # Drop cached build artifacts
-        self._built = False
-        self._V3 = self._V1 = self._W = None
-        self._dx_tissue = self._dx_network = self._ds_tissue = self._ds_network_outlet = None
-        self._cell_radius = self._vertex_radius = None
-        self._radius_per_cell = None
-        self._circle_trial = self._circle_test = None
-        self._a = self._L = None
-        self._bcs = None
-        self._gamma = self._gamma_a = None
-        self._mu_network = self._P_cvp_network = None
-        self._D_perimeter_cell = self._D_area_vertex = None
-
+        self._keepalive = None
         collect()
 
     def __enter__(self) -> "PressureProblem":
