@@ -25,10 +25,6 @@ def _envpick(keys: List[str]) -> Dict[str, str]:
 
 
 def make_rank_logger(comm: MPI.Comm) -> Callable[[str], None]:
-    """
-    Matches the original script prefix style exactly:
-        [HH:MM:SS] [rank r/size] [pid PID] message
-    """
     rank = comm.rank
     size = comm.size
     pid = os.getpid()
@@ -40,10 +36,7 @@ def make_rank_logger(comm: MPI.Comm) -> Callable[[str], None]:
 
 
 def print_environment(comm: MPI.Comm, rprint: Callable[[str], None]) -> None:
-    """
-    Replicates the environment prints from your original script.
-    """
-    import dolfinx  # local import to keep module load order flexible
+    import dolfinx
 
     host = socket.gethostname()
 
@@ -60,9 +53,6 @@ def print_environment(comm: MPI.Comm, rprint: Callable[[str], None]) -> None:
 
 
 def setup_mpi_debug(comm: MPI.Comm) -> None:
-    """
-    Make stdout/stderr line-buffered and set MPI error handler (best effort).
-    """
     try:
         sys.stdout.reconfigure(line_buffering=True)  # type: ignore[attr-defined]
         sys.stderr.reconfigure(line_buffering=True)  # type: ignore[attr-defined]
@@ -76,11 +66,6 @@ def setup_mpi_debug(comm: MPI.Comm) -> None:
 
 
 def setup_faulthandler(*, rprint: Callable[[str], None] | None = None) -> None:
-    """
-    Optional hang debugging. Mirrors your example:
-    - DEBUG_FAULTHANDLER=1 enables
-    - DEBUG_DUMP_EVERY controls period (default 30s)
-    """
     if os.environ.get("DEBUG_FAULTHANDLER", "1") != "1":
         return
     try:
@@ -95,9 +80,6 @@ def setup_faulthandler(*, rprint: Callable[[str], None] | None = None) -> None:
 
 
 def barrier(comm: MPI.Comm, tag: str, rprint: Callable[[str], None] | None = None) -> None:
-    """
-    Debug barrier (default enabled like your original script: DEBUG_BARRIERS=1).
-    """
     if os.environ.get("DEBUG_BARRIERS", "1") != "1":
         return
     if rprint is not None:
@@ -108,9 +90,6 @@ def barrier(comm: MPI.Comm, tag: str, rprint: Callable[[str], None] | None = Non
 
 
 def abort_on_exception(comm: MPI.Comm, rprint: Callable[[str], None], exc: BaseException) -> None:
-    """
-    Always abort in MPI context to prevent rank desync / deadlocks.
-    """
     rprint(f"!!! EXCEPTION: {type(exc).__name__}: {exc}")
     traceback.print_exc()
     try:
