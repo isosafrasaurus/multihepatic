@@ -12,10 +12,10 @@ from .solutions import PressureSolution, PressureVelocitySolution
 
 @dataclass(frozen=True, slots=True)
 class OutputNames:
-    tissue_pressure: str = "p_t"  # matches your script
-    tissue_velocity: str = "v_tissue"  # if present
-    network: str = "network"  # matches your script
-    network_vtx: str = "P"  # matches your script (P.bp)
+    tissue_pressure: str = "p_t"
+    tissue_velocity: str = "v_tissue"
+    network: str = "network"
+    network_vtx: str = "P"
 
 
 @dataclass(frozen=True, slots=True)

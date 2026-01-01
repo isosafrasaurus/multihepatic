@@ -6,12 +6,12 @@ from typing import Any, Callable, Mapping
 from fenicsx_ii import Average, LinearProblem, assemble_scalar
 from mpi4py import MPI
 
-from ..config import AssemblyOptions, Parameters, SolverOptions
-from ..domain import Domain1D, Domain3D
-from ..forms import PressureForms, build_pressure_forms
-from ..memory import MemoryManager
-from ..parallel import abort_on_exception, make_rank_logger, setup_mpi_debug
-from ..solutions import PressureSolution
+from .config import AssemblyOptions, Parameters, SolverOptions
+from .domain import Domain1D, Domain3D
+from .forms import Forms, build_pressure_forms
+from .memory import MemoryManager
+from .parallel import abort_on_exception, make_rank_logger, setup_mpi_debug
+from .solutions import PressureSolution
 
 
 class PressureProblem:
@@ -48,7 +48,7 @@ class PressureProblem:
         self._log_cb = log
         self._barrier_cb = barrier
 
-        self._forms: PressureForms | None = None
+        self._forms: Forms | None = None
         self._linear_problem: Any | None = None
 
     @property

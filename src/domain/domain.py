@@ -12,7 +12,6 @@ from networks_fenicsx import NetworkMesh
 @dataclass(slots=True)
 class Domain3D:
     mesh: dmesh.Mesh
-    name: str = "Omega"
 
     def __post_init__(self) -> None:
         tdim = self.mesh.topology.dim
@@ -31,12 +30,11 @@ class Domain3D:
             max_corner: np.ndarray,
             target_h: float,
             cell_type: dmesh.CellType = dmesh.CellType.tetrahedron,
-            name: str = "Omega",
-    ) -> "Domain3D":
+    ) -> Domain3D:
         extent = max_corner - min_corner
         n = [max(2, int(np.ceil(extent[i] / target_h))) for i in range(3)]
         mesh = dmesh.create_box(comm, [min_corner.tolist(), max_corner.tolist()], n, cell_type=cell_type)
-        return cls(mesh=mesh, name=name)
+        return cls(mesh=mesh)
 
 
 @dataclass(slots=True)
@@ -46,7 +44,6 @@ class Domain1D:
     inlet_marker: int
     outlet_marker: int
     subdomains: dmesh.MeshTags | None = None
-    name: str = "Lambda"
 
     def __post_init__(self) -> None:
         self.mesh.topology.create_connectivity(0, 1)
@@ -78,15 +75,14 @@ class Domain1D:
             graph_rank: int = 0,
             inlet_marker: int | None = None,
             outlet_marker: int | None = None,
-            color_strategy: Any | None = None,  # ✅ ADDED
-            name: str = "Lambda",
+            color_strategy: Any | None = None,
     ) -> "Domain1D":
         network = NetworkMesh(
             graph,
             N=points_per_edge,
             comm=comm,
             graph_rank=graph_rank,
-            color_strategy=color_strategy,  # ✅ FORWARDED
+            color_strategy=color_strategy,
         )
 
         inlet = int(network.out_marker) if inlet_marker is None else int(inlet_marker)
@@ -98,5 +94,4 @@ class Domain1D:
             subdomains=getattr(network, "subdomains", None),
             inlet_marker=inlet,
             outlet_marker=outlet,
-            name=name,
         )

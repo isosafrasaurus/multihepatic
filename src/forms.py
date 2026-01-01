@@ -28,11 +28,11 @@ class Measures:
 class Spaces:
     tissue_pressure: fem.FunctionSpace
     network_pressure: fem.FunctionSpace
-    mixed_pressure: Any  # ufl.MixedFunctionSpace
+    mixed_pressure: ufl.MixedFunctionSpace
 
 
 @dataclass(frozen=True, slots=True)
-class PressureForms:
+class Forms:
     spaces: Spaces
     measures: Measures
 
@@ -40,7 +40,6 @@ class PressureForms:
     L: ufl.Form
     bcs: list[Any]
 
-    # Geometry/radii
     cell_radius: fem.Function
     vertex_radius: fem.Function
     radius_per_cell: np.ndarray
@@ -48,7 +47,6 @@ class PressureForms:
     circle_trial: Any
     circle_test: Any
 
-    # Constants/expressions needed for postprocessing
     gamma: fem.Constant
     gamma_a: fem.Constant
     mu_network: fem.Constant
@@ -57,7 +55,9 @@ class PressureForms:
     D_area_vertex: Any
 
 
-def _default_radius_from_mapping(radius_by_tag: Mapping[int, float] | np.ndarray | None) -> float:
+def _default_radius_from_mapping(
+        radius_by_tag: Mapping[int, float] | np.ndarray | None
+) -> float:
     if radius_by_tag is None:
         return 1.0
     if isinstance(radius_by_tag, np.ndarray):
@@ -90,15 +90,9 @@ def build_cell_radius_field(
         radius_by_tag: Mapping[int, float] | np.ndarray,
         *,
         default_radius: float,
-        untagged_tag: int | None = None,  # ✅ ADDED
+        untagged_tag: int | None = None,
         name: str = "radius_cell",
 ) -> tuple[fem.Function, np.ndarray]:
-    """
-    Build DG0 cellwise radius r_cell and a cell-indexed radius_per_cell array.
-
-    If untagged_tag is not None, any cell not present in subdomains.indices
-    uses that tag (matching your original script which used tag 0 by default).
-    """
     DG0 = fem.functionspace(mesh_1d, ("DG", 0))
     r_cell = fem.Function(DG0)
     r_cell.name = name
@@ -116,10 +110,8 @@ def build_cell_radius_field(
     if untagged_tag is not None:
         max_tag = max(max_tag, int(untagged_tag))
 
-    # Start with either a special untagged_tag or "default radius" fallback.
     if untagged_tag is None:
         # Use an out-of-range tag index mapped to default_radius via lookup fill.
-        # (We implement by directly filling radius_per_cell with default_radius first.)
         cell_tags = np.full((num_cells,), -1, dtype=np.int32)
     else:
         cell_tags = np.full((num_cells,), int(untagged_tag), dtype=np.int32)
@@ -135,7 +127,6 @@ def build_cell_radius_field(
     else:
         radius_per_cell = lookup[cell_tags]
 
-    # Owned dofs, then scatter.
     r_cell.x.array[:num_cells_local] = radius_per_cell[:num_cells_local].astype(r_cell.x.array.dtype, copy=False)
     r_cell.x.scatter_forward()
 
@@ -150,7 +141,7 @@ def build_boundary_vertex_radius_field(
         inlet_vertices: np.ndarray,
         outlet_vertices: np.ndarray,
         default_radius: float,
-        scatter: bool = True,  # ✅ ADDED
+        scatter: bool = True,
         name: str = "radius_vertex",
 ) -> fem.Function:
     """
@@ -209,10 +200,12 @@ def build_boundary_vertex_radius_field(
     return r_vertex
 
 
-def make_cell_radius_callable(mesh_1d: dmesh.Mesh, radius_per_cell: np.ndarray, *, default_radius: float):
-    """
-    Callable radius(x): used by fenicsx_ii.Circle quadrature.
-    """
+def make_cell_radius_callable(
+        mesh_1d: dmesh.Mesh,
+        radius_per_cell: np.ndarray,
+        *,
+        default_radius: float,
+):
     from dolfinx import geometry
 
     tdim = mesh_1d.topology.dim
@@ -248,16 +241,9 @@ def build_pressure_forms(
         default_radius: float | None = None,
         cell_radius: fem.Function | None = None,
         vertex_radius: fem.Function | None = None,
-        log: Callable[[str], None] | None = None,  # ✅ ADDED
-        barrier: Callable[[str], None] | None = None,  # ✅ ADDED
-) -> PressureForms:
-    """
-    Build weak forms for the coupled tissue/network pressure system.
-
-    If `log` and `barrier` are provided, we emit the same debug messages/tags
-    as your original script so your MPI debugging workflow stays intact.
-    """
-
+        log: Callable[[str], None] | None = None,
+        barrier: Callable[[str], None] | None = None,
+) -> Forms:
     def _log(msg: str) -> None:
         if log is not None:
             log(msg)
@@ -276,7 +262,7 @@ def build_pressure_forms(
     W = ufl.MixedFunctionSpace(V3, V1)
     _log(f"Function spaces created in {time.time() - t0:.3f}s")
 
-    # DOF counts (same style as your script)
+    # DOF counts
     try:
         imV3 = V3.dofmap.index_map
         imV1 = V1.dofmap.index_map
@@ -407,7 +393,7 @@ def build_pressure_forms(
     bcs = [bc_inlet]
     _bar("after BCs")
 
-    return PressureForms(
+    return Forms(
         spaces=spaces,
         measures=measures,
         a=a,
