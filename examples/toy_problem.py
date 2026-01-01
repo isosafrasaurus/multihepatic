@@ -20,7 +20,7 @@ from src import (
 )
 from src.domain import Domain1D, Domain3D
 from src.problem import PressureProblem
-from src.parallel import (
+from src.system import (
     make_rank_logger,
     print_environment,
     setup_mpi_debug,
@@ -109,7 +109,7 @@ def solve_coupled_test_graph(
 
         rprint("ABOUT TO CREATE NetworkMesh(...)")
         t0 = time.time()
-        network = Domain1D.from_networkx_graph(
+        network = Domain1D.from_network(
             G,
             points_per_edge=N_per_edge,
             comm=comm,
@@ -229,8 +229,6 @@ def solve_coupled_test_graph(
 
         if comm.rank == 0:
             print("LAM test solved!", flush=True)
-            print(f"Total vessel-wall exchange = {sol.total_wall_exchange:.6e}", flush=True)
-            print(f"Total terminal exchange    = {sol.total_terminal_exchange:.6e}", flush=True)
 
         if os.environ.get("SKIP_IO", "0") == "1":
             rprint("SKIP_IO=1 -> skipping all output writing.")
@@ -272,7 +270,7 @@ def solve_coupled_test_graph(
 
     except Exception as e:
         # Mirror the original “abort to avoid deadlock” behavior
-        from src.parallel import abort_on_exception
+        from src.system import abort_on_exception
         abort_on_exception(comm, rprint, e)
         raise  # unreachable after Abort, but keeps linters happy
 

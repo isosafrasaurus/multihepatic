@@ -1,24 +1,57 @@
 from __future__ import annotations
 
 import time
+from dataclasses import dataclass, field
 from typing import Any, Callable, Mapping
 
 from fenicsx_ii import Average, LinearProblem, assemble_scalar
 from mpi4py import MPI
 
-from .config import AssemblyOptions, Parameters, SolverOptions
 from .domain import Domain1D, Domain3D
-from .forms import Forms, build_pressure_forms
-from .memory import MemoryManager
-from .parallel import abort_on_exception, make_rank_logger, setup_mpi_debug
-from .solutions import PressureSolution
+from .forms import Parameters, Forms, build_pressure_forms
+from .system import abort_on_exception, make_rank_logger, setup_mpi_debug, close_if_possible, collect
+
+
+@dataclass(frozen=True, slots=True)
+class SolverOptions:
+    petsc_options_prefix: str = "pressure"
+    petsc_options: Mapping[str, Any] = field(
+        default_factory=lambda: {
+            "ksp_type": "preonly",
+            "pc_type": "lu",
+            "ksp_error_if_not_converged": True,
+        }
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class AssemblyOptions:
+    degree_3d: int = 1
+    degree_1d: int = 1
+    circle_quadrature_degree: int = 20
+
+
+@dataclass(slots=True)
+class PressureSolution:
+    tissue_pressure: Any
+    network_pressure: Any
+
+    def release(self) -> None:
+        self.tissue_pressure = None
+        self.network_pressure = None
+        collect()
+
+
+@dataclass(slots=True)
+class PressureVelocitySolution(PressureSolution):
+    tissue_velocity: Any | None = None
+
+    def release(self) -> None:
+        self.tissue_velocity = None
+        super().release()
 
 
 class PressureProblem:
-    """
-    Library solver: build forms + solve + postprocess exchange integrals.
-    """
-
     def __init__(
             self,
             tissue: Domain3D,
@@ -31,8 +64,8 @@ class PressureProblem:
             default_radius: float | None = None,
             cell_radius: Any | None = None,
             vertex_radius: Any | None = None,
-            log: Callable[[str], None] | None = None,  # ✅ ADDED
-            barrier: Callable[[str], None] | None = None,  # ✅ ADDED
+            log: Callable[[str], None] | None = None,
+            barrier: Callable[[str], None] | None = None,
     ) -> None:
         self._tissue = tissue
         self._network = network
@@ -67,7 +100,6 @@ class PressureProblem:
         comm = self.comm
         setup_mpi_debug(comm)
 
-        # Ensure we always have *some* logger for fatal exceptions.
         rprint = self._log_cb or make_rank_logger(comm)
 
         try:
@@ -83,8 +115,8 @@ class PressureProblem:
                     default_radius=self._default_radius,
                     cell_radius=self._cell_radius,
                     vertex_radius=self._vertex_radius,
-                    log=self._log_cb,  # ✅ forwarded so prints stay
-                    barrier=self._barrier_cb,  # ✅ forwarded so barrier tags stay
+                    log=self._log_cb,
+                    barrier=self._barrier_cb,
                 )
 
             forms = self._forms
@@ -107,7 +139,7 @@ class PressureProblem:
             self._log(f"problem.solve() returned in {time.time() - t0:.3f}s")
             self._bar("after problem.solve")
 
-            # Postprocessing integrals (same as original)
+            # Postprocessing integrals
             self._log("Assembling exchange integrals...")
             t0 = time.time()
 
@@ -135,16 +167,7 @@ class PressureProblem:
 
             return PressureSolution(
                 tissue_pressure=p_tissue,
-                network_pressure=p_network,
-                cell_radius=forms.cell_radius,
-                vertex_radius=forms.vertex_radius,
-                total_wall_exchange=total_wall_exchange,
-                total_terminal_exchange=total_terminal_exchange,
-                metadata={
-                    "inlet_marker": self._network.inlet_marker,
-                    "outlet_marker": self._network.outlet_marker,
-                    "default_radius": forms.default_radius,
-                },
+                network_pressure=p_network
             )
 
         except Exception as e:
@@ -152,10 +175,10 @@ class PressureProblem:
             raise
 
     def close(self) -> None:
-        MemoryManager.close_if_possible(self._linear_problem)
+        close_if_possible(self._linear_problem)
         self._linear_problem = None
         self._forms = None
-        MemoryManager.collect()
+        collect()
 
     def __enter__(self) -> "PressureProblem":
         return self

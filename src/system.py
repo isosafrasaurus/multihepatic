@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import faulthandler
+import gc
 import os
 import socket
 import sys
 import time
 import traceback
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Any
 
 from mpi4py import MPI
 
@@ -116,3 +117,35 @@ def abort_on_exception(comm: MPI.Comm, rprint: Callable[[str], None], exc: BaseE
         comm.Abort(1)
     except Exception:
         raise
+
+
+def close_if_possible(obj: Any) -> None:
+    if obj is None:
+        return
+    close = getattr(obj, "close", None)
+    if callable(close):
+        try:
+            close()
+        except Exception:
+            pass
+
+
+def destroy_if_possible(obj: Any) -> None:
+    if obj is None:
+        return
+    destroy = getattr(obj, "destroy", None)
+    if callable(destroy):
+        try:
+            destroy()
+        except Exception:
+            pass
+
+
+def collect() -> None:
+    gc.collect()
+    try:
+        from petsc4py import PETSc  # type: ignore
+
+        PETSc.garbage_cleanup()
+    except Exception:
+        pass

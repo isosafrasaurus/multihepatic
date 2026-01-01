@@ -7,7 +7,7 @@ from typing import Any
 import dolfinx.io as dolfinx_io
 
 from .domain import Domain1D, Domain3D
-from .solutions import PressureSolution, PressureVelocitySolution
+from .problem import PressureSolution, PressureVelocitySolution
 
 
 @dataclass(frozen=True, slots=True)
@@ -40,10 +40,6 @@ def write_solution(
 
     tissue_pressure = solution.tissue_pressure
     network_fields: list[Any] = [solution.network_pressure]
-    if solution.cell_radius is not None:
-        network_fields.append(solution.cell_radius)
-    if solution.vertex_radius is not None:
-        network_fields.append(solution.vertex_radius)
 
     tissue_velocity: Any | None = None
     if isinstance(solution, PressureVelocitySolution):

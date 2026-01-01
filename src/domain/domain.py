@@ -67,7 +67,7 @@ class Domain1D:
         return self.boundary_vertices(self.outlet_marker)
 
     @classmethod
-    def from_networkx_graph(
+    def from_network(
             cls,
             graph: Any,
             points_per_edge: int,
