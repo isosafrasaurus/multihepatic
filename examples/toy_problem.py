@@ -9,7 +9,7 @@ import numpy as np
 from mpi4py import MPI
 
 from src.core import Parameters, SolverOptions
-from src.domains.domains import Domain1D, Domain3D, create_box_mesh
+from src.domains.domains import Domain1D, Domain3D
 from src.io import OutputOptions, write_solution
 from src.problem import AssemblyOptions, PressureVelocityProblem
 
@@ -76,13 +76,12 @@ def solve_test_graph(
     )
 
     # Build tissue box with fixed dimensions [0,0,0] -> [0.040,0.040,0.030]
-    tissue_mesh = create_box_mesh(
+    tissue_domain = Domain3D.from_box(
         comm,
         min_corner=TISSUE_BOX_MIN,
         max_corner=TISSUE_BOX_MAX,
         target_h=tissue_h,
     )
-    tissue_domain = Domain3D(mesh=tissue_mesh)
 
     # radius_by_tag: tag index -> radius
     max_radius = max(r for _, _, r in TEST_GRAPH_EDGES)
