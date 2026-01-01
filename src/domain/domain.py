@@ -9,7 +9,7 @@ from mpi4py import MPI
 from networks_fenicsx import NetworkMesh
 
 
-@dataclass
+@dataclass(slots=True)
 class Domain3D:
     mesh: dmesh.Mesh
     name: str = "Omega"
@@ -32,19 +32,14 @@ class Domain3D:
             target_h: float,
             cell_type: dmesh.CellType = dmesh.CellType.tetrahedron,
             name: str = "Omega",
-    ) -> Domain3D:
+    ) -> "Domain3D":
         extent = max_corner - min_corner
-        num_cells = [max(2, int(np.ceil(extent[i] / target_h))) for i in range(3)]
-        mesh = dmesh.create_box(
-            comm,
-            [min_corner.tolist(), max_corner.tolist()],
-            num_cells,
-            cell_type=cell_type,
-        )
+        n = [max(2, int(np.ceil(extent[i] / target_h))) for i in range(3)]
+        mesh = dmesh.create_box(comm, [min_corner.tolist(), max_corner.tolist()], n, cell_type=cell_type)
         return cls(mesh=mesh, name=name)
 
 
-@dataclass
+@dataclass(slots=True)
 class Domain1D:
     mesh: dmesh.Mesh
     boundaries: dmesh.MeshTags
@@ -62,9 +57,9 @@ class Domain1D:
         return self.mesh.comm
 
     def boundary_vertices(self, marker: int) -> np.ndarray:
-        values = self.boundaries.values
-        indices = self.boundaries.indices
-        return indices[values == marker].astype(np.int32, copy=False)
+        idx = self.boundaries.indices
+        val = self.boundaries.values
+        return idx[val == marker].astype(np.int32, copy=False)
 
     @property
     def inlet_vertices(self) -> np.ndarray:
@@ -84,21 +79,16 @@ class Domain1D:
             inlet_marker: int | None = None,
             outlet_marker: int | None = None,
             name: str = "Lambda",
-    ) -> Domain1D:
-        network = NetworkMesh(
-            graph,
-            N=points_per_edge,
-            comm=comm,
-            graph_rank=graph_rank,
-        )
+    ) -> "Domain1D":
+        network = NetworkMesh(graph, N=points_per_edge, comm=comm, graph_rank=graph_rank)
 
         inlet = int(network.out_marker) if inlet_marker is None else int(inlet_marker)
         outlet = int(network.in_marker) if outlet_marker is None else int(outlet_marker)
 
         return cls(
             mesh=network.mesh,
-            subdomains=getattr(network, "subdomains", None),
             boundaries=network.boundaries,
+            subdomains=getattr(network, "subdomains", None),
             inlet_marker=inlet,
             outlet_marker=outlet,
             name=name,
