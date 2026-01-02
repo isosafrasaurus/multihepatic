@@ -3,7 +3,7 @@
   <component name="Black">
     <option name="sdkName" value="Remote Python 3.12.2 Docker (ghcr.io/isosafrasaurus/tacc-mvapich2.3-python3.12-graphnics:latest) (2)" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Remote 3.12 Docker (sha256:2bc3896f4063a17084510aa311cc16b10dc229eea9f3af808bc1cafe5e0d3e0c)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Remote 3.12 Docker (sha256:39b6e3de01edac0c480f6b7194c3be93a6bc83dc00473625b7df05d3fad719ce)" project-jdk-type="Python SDK" />
   <component name="PythonCompatibilityInspectionAdvertiser">
     <option name="version" value="3" />
   </component>
