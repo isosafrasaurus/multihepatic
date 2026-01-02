@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Docker Image" type="docker-deploy" factoryName="docker-image" server-name="Docker">
+  <configuration default="false" name="toy_problem.py (parallel)" type="docker-deploy" factoryName="docker-image" server-name="Docker">
     <deployment type="docker-image">
       <settings>
-        <option name="imageTag" value="429c3be45c8800c3b4adf9a154823a3855b3c218144d9241acffa5f0d226b038" />
+        <option name="imageTag" value="ghcr.io/isosafrasaurus/ubuntu24.04-dolfinx-networks:latest" />
         <option name="command" value="mpiexec -n 4 python $PROJECT_DIR$/../../dolfinx/examples/toy_problem.py" />
         <option name="containerName" value="ubuntu24.04-multihepatic-container" />
         <option name="envVars">
