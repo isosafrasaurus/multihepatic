@@ -6,7 +6,7 @@ from typing import Any
 
 import dolfinx.io as dolfinx_io
 import numpy as np
-from dolfinx import fem
+from dolfinx import default_scalar_type, fem
 from dolfinx import mesh as dmesh
 
 from .domain import Domain1D, Domain3D
@@ -28,6 +28,7 @@ class OutputOptions:
     write_meshtags: bool = True
     names: OutputNames = OutputNames()
 
+
 def _write_tissue_vtk_meshio(
     filepath: Path,
     tissue_mesh: Any,
@@ -35,10 +36,6 @@ def _write_tissue_vtk_meshio(
     time: float,
     point_data: dict[str, np.ndarray],
 ) -> None:
-    """
-    Write a single VTU (and a tiny PVD) with guaranteed vector PointData using meshio.
-    This avoids ParaView not recognizing DOLFINx vector components as a vector field.
-    """
     import meshio
 
     x = tissue_mesh.geometry.x
@@ -51,9 +48,6 @@ def _write_tissue_vtk_meshio(
     c_map = topology.index_map(tdim)
     num_cells = int(c_map.size_local)
 
-    # Get dofmap for cells -> vertices
-    # DOLFINx stores connectivities in adjacency lists:
-    # cells->vertices is (tdim, 0) connectivity
     topology.create_connectivity(tdim, 0)
     c2v = topology.connectivity(tdim, 0)
     cells = np.vstack([c2v.links(c) for c in range(num_cells)]).astype(np.int64)
@@ -93,14 +87,61 @@ def _write_tissue_vtk_meshio(
     pvd_path.write_text(pvd_xml)
 
 
+def write_tissue_bc_label_mesh(
+    outdir: Path,
+    tissue: Domain3D,
+    *,
+    time: float = 0.0,
+    basename: str = "tissue_bc_labels",
+) -> None:
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    mesh = tissue.mesh
+    tdim = mesh.topology.dim
+    fdim = tdim - 1
+
+    DG0 = fem.functionspace(mesh, ("DG", 0))
+    bc_type = fem.Function(DG0)
+    bc_type.name = "bc_type"
+    facet_marker = fem.Function(DG0)
+    facet_marker.name = "facet_marker"
+
+    bc_type.x.array[:] = default_scalar_type(0.0)
+    facet_marker.x.array[:] = default_scalar_type(0.0)
+
+    if tissue.boundaries is not None:
+        mesh.topology.create_connectivity(fdim, tdim)
+        f2c = mesh.topology.connectivity(fdim, tdim)
+
+        outlet = getattr(tissue, "outlet_marker", None)
+
+        for facet, tag in zip(tissue.boundaries.indices, tissue.boundaries.values):
+            tag_i = int(tag)
+            for cell in f2c.links(int(facet)):
+                dof = int(DG0.dofmap.cell_dofs(int(cell))[0])
+                facet_marker.x.array[dof] = default_scalar_type(tag_i)
+                if outlet is not None and tag_i == int(outlet):
+                    bc_type.x.array[dof] = default_scalar_type(1.0)
+
+    bc_type.x.scatter_forward()
+    facet_marker.x.scatter_forward()
+
+    with dolfinx_io.XDMFFile(mesh.comm, outdir / f"{basename}.xdmf", "w") as xdmf:
+        xdmf.write_mesh(mesh)
+        xdmf.write_function(bc_type, time)
+        xdmf.write_function(facet_marker, time)
+        if tissue.boundaries is not None:
+            # Some dolfinx versions require geometry passed explicitly
+            xdmf.write_meshtags(tissue.boundaries, mesh.geometry)  # type: ignore[arg-type]
+
 
 def write_solution(
-        outdir: Path,
-        tissue: Domain3D,
-        network: Domain1D,
-        solution: PressureSolution | PressureVelocitySolution,
-        *,
-        options: OutputOptions = OutputOptions(),
+    outdir: Path,
+    tissue: Domain3D,
+    network: Domain1D,
+    solution: PressureSolution | PressureVelocitySolution,
+    *,
+    options: OutputOptions = OutputOptions(),
 ) -> None:
     outdir.mkdir(parents=True, exist_ok=True)
     fmt = options.format.lower()
@@ -134,15 +175,11 @@ def write_solution(
             vtx.write(options.time)
 
     elif fmt == "vtk":
-        # --- Tissue: write a true vector PointData array for ParaView stream tracer ---
-        # Extract point-wise values from dolfinx Functions
         p = tissue_pressure
         p.x.scatter_forward()
 
         point_data: dict[str, np.ndarray] = {}
 
-        # Pressure is scalar nodal (CG), so p.x.array matches point dofs for CG1 meshes.
-        # To be robust across map order, we evaluate at geometry nodes by interpolation:
         Vp = p.function_space
         xp = Vp.element.interpolation_points
         p_expr = fem.Expression(p, xp)
@@ -174,12 +211,10 @@ def write_solution(
             point_data=point_data,
         )
 
-        # --- Network: keep existing dolfinx VTK writer ---
         with dolfinx_io.VTKFile(network.mesh.comm, outdir / f"{names.network}.pvd", "w") as vtk:
             vtk.write_mesh(network.mesh, options.time)
             for f in network_fields:
                 vtk.write_function(f, options.time)
-
 
     elif fmt == "xdmf":
         # Tissue: pressure + velocity in ONE .xdmf
@@ -212,3 +247,5 @@ def write_solution(
 
     else:
         raise ValueError(f"Unknown format={options.format!r}. Use 'xdmf', 'vtk', or 'vtx'.")
+
+    write_tissue_bc_label_mesh(outdir, tissue, time=options.time)

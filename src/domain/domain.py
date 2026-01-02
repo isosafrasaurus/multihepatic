@@ -33,7 +33,6 @@ def _merge_meshtags(
     *,
     override: bool,
 ) -> dmesh.MeshTags:
-    """Merge tags on a given entity dim. If override=True, new_values win on overlaps."""
     oi = np.asarray(old.indices, dtype=np.int32)
     ov = np.asarray(old.values, dtype=np.int32)
     ni = np.asarray(new_indices, dtype=np.int32).ravel()
@@ -42,7 +41,6 @@ def _merge_meshtags(
     if ni.size == 0:
         return old
 
-    # Concatenate so that "last occurrence wins" per index group.
     if override:
         idx_all = np.concatenate([oi, ni])
         val_all = np.concatenate([ov, nv])
@@ -55,7 +53,7 @@ def _merge_meshtags(
     idx_s = idx_all[order]
     val_s = val_all[order]
 
-    # Take the last value per unique index (so "later in concat" wins)
+    # Take the last value per unique index
     uniq_idx, first, counts = np.unique(idx_s, return_index=True, return_counts=True)
     last_pos = first + counts - 1
     uniq_val = val_s[last_pos]
@@ -102,12 +100,6 @@ class Domain3D:
         marker: int,
         override: bool = True,
     ) -> None:
-        """
-        Tag the given boundary facets with 'marker' in self.boundaries.
-
-        If self.boundaries already exists, merge tags. By default, new tags override
-        existing tags for the same facet indices.
-        """
         tdim = self.mesh.topology.dim
         fdim = tdim - 1
 
@@ -143,17 +135,6 @@ class Domain3D:
         marker: int = 1,
         override: bool = True,
     ) -> np.ndarray:
-        """
-        Convenience: define the sink/outlet boundary as an axis-aligned plane.
-
-        Examples:
-          - x = xmax:  mark_outlet_axis_plane("x", side="max")
-          - y = 0.0:   mark_outlet_axis_plane("y", value=0.0)
-          - z = zmin:  mark_outlet_axis_plane(2, side="min")
-
-        This tags the located boundary facets with 'marker' and stores them in
-        Domain3D.boundaries; Domain3D.outlet_marker is set to 'marker'.
-        """
         a = _axis_to_int(axis)
         if value is None:
             if side is None:
@@ -167,18 +148,36 @@ class Domain3D:
             else:
                 raise ValueError("side must be 'min' or 'max'.")
 
+        tol_was_auto = tol is None
         if tol is None:
             amin, amax = self.axis_bounds(a)
-            tol = 1e-8 * max(1.0, abs(amax - amin))
+            extent = abs(amax - amin)
+            tol = max(
+                1e-8 * max(1.0, extent),
+                1e-12 * max(1.0, abs(float(value))),
+            )
 
         tdim = self.mesh.topology.dim
         fdim = tdim - 1
 
-        def plane_marker(x: np.ndarray) -> np.ndarray:
-            # x has shape (gdim, num_points)
-            return np.isclose(x[a], float(value), atol=float(tol))
+        self.mesh.topology.create_connectivity(fdim, 0)
+        self.mesh.topology.create_connectivity(0, fdim)
 
-        facets = dmesh.locate_entities_boundary(self.mesh, fdim, plane_marker)
+        def _locate(with_tol: float) -> np.ndarray:
+            def plane_marker(x: np.ndarray) -> np.ndarray:
+                # x has shape (gdim, num_points)
+                return np.isclose(x[a], float(value), atol=float(with_tol), rtol=0.0)
+
+            return dmesh.locate_entities_boundary(self.mesh, fdim, plane_marker)
+
+        facets = _locate(float(tol))
+
+        if facets.size == 0 and tol_was_auto:
+            for factor in (10.0, 100.0, 1000.0, 10000.0):
+                facets = _locate(float(tol) * factor)
+                if facets.size:
+                    tol = float(tol) * factor
+                    break
 
         if facets.size == 0:
             raise ValueError(
@@ -197,7 +196,7 @@ class Domain3D:
         max_corner: np.ndarray,
         target_h: float,
         cell_type: dmesh.CellType = dmesh.CellType.tetrahedron,
-    ) -> Domain3D:
+    ) -> "Domain3D":
         extent = max_corner - min_corner
         n = [max(2, int(np.ceil(extent[i] / target_h))) for i in range(3)]
         mesh = dmesh.create_box(comm, [min_corner.tolist(), max_corner.tolist()], n, cell_type=cell_type)
