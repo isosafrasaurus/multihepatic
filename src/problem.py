@@ -37,7 +37,7 @@ class AssemblyOptions:
     degree_3d: int = 1
     degree_1d: int = 1
     circle_quadrature_degree: int = 20
-
+    degree_velocity: int = 1
 
 @dataclass(slots=True)
 class PressureSolution:
@@ -194,7 +194,23 @@ class PressureProblem:
         # Measures
         dx_tissue = ufl.Measure("dx", domain=tissue.mesh)
         dx_network = ufl.Measure("dx", domain=network.mesh)
-        ds_tissue = ufl.Measure("ds", domain=tissue.mesh)
+
+        # Tissue boundary:
+        #   - If tissue.boundaries + tissue.outlet_marker are provided:
+        #       Robin BCs only on ds(outlet_marker); elsewhere is natural no-flow (Neumann).
+        #   - Otherwise preserve previous behavior: Robin on the whole exterior boundary.
+        if tissue.boundaries is not None:
+            if tissue.outlet_marker is None:
+                raise ValueError(
+                    "Domain3D.boundaries is set but Domain3D.outlet_marker is None. "
+                    "Set tissue.outlet_marker (or use tissue.mark_outlet_axis_plane(...))."
+                )
+            ds_tissue = ufl.Measure("ds", domain=tissue.mesh, subdomain_data=tissue.boundaries)
+            ds_tissue_outlet = ds_tissue(tissue.outlet_marker)
+        else:
+            ds_tissue = ufl.Measure("ds", domain=tissue.mesh)
+            ds_tissue_outlet = ds_tissue
+
         ds_network = ufl.Measure("ds", domain=network.mesh, subdomain_data=network.boundaries)
         ds_network_outlet = ds_network(network.outlet_marker)
 
@@ -220,7 +236,7 @@ class PressureProblem:
         t0 = time.time()
 
         a00 = (k_t / mu_t) * ufl.inner(ufl.grad(p_t), ufl.grad(v_t)) * dx_tissue
-        a00 += gamma_R * p_t * v_t * ds_tissue
+        a00 += gamma_R * p_t * v_t * ds_tissue_outlet
         a00 += gamma * p_avg * v_avg * D_perimeter_cell * dx_network
 
         a01 = -gamma * P * v_avg * D_perimeter_cell * dx_network
@@ -234,7 +250,7 @@ class PressureProblem:
 
         a = a00 + a01 + a10 + a11
 
-        L0 = gamma_R * P_cvp_t * v_t * ds_tissue
+        L0 = gamma_R * P_cvp_t * v_t * ds_tissue_outlet
         L0 += (gamma_a / mu_n) * P_cvp_n * v_avg * D_area_vertex * ds_network_outlet
         L1 = (gamma_a / mu_n) * P_cvp_n * w * D_area_vertex * ds_network_outlet
         L = L0 + L1
@@ -299,3 +315,72 @@ class PressureProblem:
 
     def __exit__(self, exc_type, exc, tb) -> None:
         self.close()
+
+class PressureVelocityProblem(PressureProblem):
+    """
+    Extends PressureProblem by additionally computing the Darcy velocity in the tissue:
+
+        v_t = -(k_t/mu) * grad(p_t)
+
+    and returning it as a PressureVelocitySolution, where v_t is L2-projected
+    into a vertex-based (CG1 by default) vector function space.
+    """
+
+    def _interpolate_tissue_velocity_vertex(self, p_tissue: Any) -> Any:
+        tissue = self._tissue
+        params = self._params
+
+        gdim = tissue.mesh.geometry.dim
+        deg_v = int(getattr(self._assembly, "degree_velocity", 1))
+        if deg_v != 1:
+            # You *can* interpolate to higher-degree CG, but if you want "vertex-based",
+            # keep degree_velocity=1.
+            pass
+
+        # Vertex-based (CG1) vector space
+        Vv = fem.functionspace(tissue.mesh, ("Lagrange", 1, (gdim,)))
+        v_fun = fem.Function(Vv)
+        v_fun.name = "v_tissue"
+
+        k_over_mu = float(params.k_t) / float(params.mu)
+        v_expr_ufl = -k_over_mu * ufl.grad(p_tissue)
+
+        # Interpolate the UFL expression at the element interpolation points
+        # (for CG1 these correspond to vertices).
+        expr = fem.Expression(v_expr_ufl, Vv.element.interpolation_points)
+        v_fun.interpolate(expr)
+        v_fun.x.scatter_forward()
+
+        return v_fun
+
+    def solve(self) -> PressureVelocitySolution:
+        comm = self.comm
+        setup_mpi_debug(comm)
+        rprint = self._log_cb or make_rank_logger(comm)
+
+        try:
+            self._build_if_needed()
+            assert self._linear_problem is not None
+
+            self._log("ABOUT TO CALL problem.solve()")
+            t0 = time.time()
+            p_tissue, p_network = self._linear_problem.solve()
+            self._log(f"problem.solve() returned in {time.time() - t0:.3f}s")
+            self._bar("after problem.solve")
+
+            self._log("Projecting tissue Darcy velocity into vertex (CG) space...")
+            t0 = time.time()
+            v_tissue = self._interpolate_tissue_velocity_vertex(p_tissue)
+
+            self._log(f"Velocity projection finished in {time.time() - t0:.3f}s")
+            self._bar("after velocity projection")
+
+            return PressureVelocitySolution(
+                tissue_pressure=p_tissue,
+                network_pressure=p_network,
+                tissue_velocity=v_tissue,
+            )
+
+        except Exception as e:
+            abort_on_exception(comm, rprint, e)
+            raise

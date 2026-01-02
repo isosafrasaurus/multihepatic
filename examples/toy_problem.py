@@ -5,10 +5,10 @@ import time
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+import dolfinx.mesh as dmesh
+import networkx as nx
 import numpy as np
 from mpi4py import MPI
-import networkx as nx
-import dolfinx.mesh as dmesh
 
 from src import (
     Parameters,
@@ -19,7 +19,7 @@ from src import (
     write_solution,
 )
 from src.domain import Domain1D, Domain3D
-from src.problem import PressureProblem
+from src.problem import PressureVelocityProblem
 from src.system import (
     make_rank_logger,
     print_environment,
@@ -27,7 +27,6 @@ from src.system import (
     setup_faulthandler,
     barrier as mpi_barrier,
 )
-
 
 TEST_GRAPH_NODES: Dict[int, List[float]] = {
     0: [0.000, 0.020, 0.015],
@@ -71,15 +70,15 @@ def edge_color_mapping(G: nx.DiGraph) -> Dict[Tuple[int, int], int]:
 
 
 def solve_coupled_test_graph(
-    outdir: Path,
-    *,
-    params: Parameters = Parameters(),
-    N_per_edge: int = 12,
-    tissue_h: float = 0.002,
-    degree_3d: int = 1,
-    degree_1d: int = 1,
-    circle_quad_degree: int = 20,
-    output_format: str = "xdmf",
+        outdir: Path,
+        *,
+        params: Parameters = Parameters(),
+        N_per_edge: int = 12,
+        tissue_h: float = 0.002,
+        degree_3d: int = 1,
+        degree_1d: int = 1,
+        circle_quad_degree: int = 20,
+        output_format: str = "xdmf",
 ):
     comm = MPI.COMM_WORLD
     setup_mpi_debug(comm)
@@ -98,7 +97,7 @@ def solve_coupled_test_graph(
         rprint(f"outdir={outdir}")
         t0 = time.time()
         outdir.mkdir(parents=True, exist_ok=True)
-        rprint(f"outdir.mkdir done in {time.time()-t0:.3f}s")
+        rprint(f"outdir.mkdir done in {time.time() - t0:.3f}s")
         barrier("after mkdir")
 
         rprint("Building test graph...")
@@ -116,7 +115,7 @@ def solve_coupled_test_graph(
             graph_rank=0,
             color_strategy=None,
         )
-        rprint(f"NetworkMesh created in {time.time()-t0:.3f}s")
+        rprint(f"NetworkMesh created in {time.time() - t0:.3f}s")
         barrier("after NetworkMesh")
 
         lmbda = network.mesh
@@ -140,8 +139,8 @@ def solve_coupled_test_graph(
             )
 
         # Match the original marker print exactly:
-        inlet_marker = network.inlet_marker   # this is NetworkMesh.out_marker
-        outlet_marker = network.outlet_marker # this is NetworkMesh.in_marker
+        inlet_marker = network.inlet_marker  # this is NetworkMesh.out_marker
+        outlet_marker = network.outlet_marker  # this is NetworkMesh.in_marker
         rprint(
             f"Markers: in_marker={outlet_marker}, out_marker={inlet_marker} "
             f"=> inlet_marker={inlet_marker}, outlet_marker={outlet_marker}"
@@ -164,8 +163,9 @@ def solve_coupled_test_graph(
             target_h=tissue_h,
             cell_type=dmesh.CellType.tetrahedron,
         )
+        tissue.mark_outlet_axis_plane("x", side="max", marker=7)
         omega = tissue.mesh
-        rprint(f"Tissue mesh created in {time.time()-t0:.3f}s (tdim={omega.topology.dim}, gdim={omega.geometry.dim})")
+        rprint(f"Tissue mesh created in {time.time() - t0:.3f}s (tdim={omega.topology.dim}, gdim={omega.geometry.dim})")
         im3 = omega.topology.index_map(omega.topology.dim)
         rprint(f"omega cells: local={im3.size_local}, ghosts={im3.num_ghosts}")
         barrier("after tissue mesh")
@@ -189,7 +189,7 @@ def solve_coupled_test_graph(
         max_tag_global = comm.allreduce(max_tag_local, op=MPI.MAX)
         rprint(
             f"subdomain max_tag_local={max_tag_local}, max_tag_global={max_tag_global}, "
-            f"radius_by_color_max_index={len(radius_by_color)-1}"
+            f"radius_by_color_max_index={len(radius_by_color) - 1}"
         )
         if max_tag_global >= len(radius_by_color):
             rprint("!!! ERROR: subdomain tag exceeds radius_by_color size; would crash indexing.")
@@ -210,18 +210,24 @@ def solve_coupled_test_graph(
             },
         )
 
-        with PressureProblem(
-            tissue,
-            network,
-            params=params,
-            assembly=assembly,
-            solver=solver,
-            radius_by_tag=radius_by_color,
-            default_radius=float(max_r),
-            log=rprint,        # ✅ keeps all the internal prints
-            barrier=barrier,   # ✅ keeps all the barrier tags
+        with PressureVelocityProblem(
+                tissue,
+                network,
+                params=params,
+                assembly=assembly,
+                solver=solver,
+                radius_by_tag=radius_by_color,
+                default_radius=float(max_r),
+                log=rprint,
+                barrier=barrier,
         ) as prob:
             sol = prob.solve()
+
+        # Match original field names for output
+        sol.tissue_pressure.name = "p_t"
+        sol.network_pressure.name = "P"
+        if sol.tissue_velocity is not None:
+            sol.tissue_velocity.name = "v_tissue"
 
         # Match original field names for output
         sol.tissue_pressure.name = "p_t"
