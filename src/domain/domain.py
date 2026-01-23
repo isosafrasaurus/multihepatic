@@ -29,13 +29,13 @@ def _axis_to_int(axis: int | str) -> int:
 
 
 def _merge_meshtags(
-    mesh: dmesh.Mesh,
-    dim: int,
-    old: dmesh.MeshTags,
-    new_indices: np.ndarray,
-    new_values: np.ndarray,
-    *,
-    override: bool,
+        mesh: dmesh.Mesh,
+        dim: int,
+        old: dmesh.MeshTags,
+        new_indices: np.ndarray,
+        new_values: np.ndarray,
+        *,
+        override: bool,
 ) -> dmesh.MeshTags:
     """Merge tags on a given entity dim. If override=True, new_values win on overlaps."""
     oi = np.asarray(old.indices, dtype=np.int32)
@@ -100,11 +100,11 @@ class Domain3D:
         return gmin, gmax
 
     def add_boundary_facets(
-        self,
-        facets: np.ndarray,
-        *,
-        marker: int,
-        override: bool = True,
+            self,
+            facets: np.ndarray,
+            *,
+            marker: int,
+            override: bool = True,
     ) -> None:
         """Tag the given boundary facets with 'marker' in self.boundaries.
 
@@ -143,14 +143,14 @@ class Domain3D:
         self.outlet_marker = int(marker)
 
     def mark_outlet_axis_plane(
-        self,
-        axis: int | str,
-        *,
-        value: float | None = None,
-        side: str | None = None,
-        tol: float | None = None,
-        marker: int = 1,
-        override: bool = True,
+            self,
+            axis: int | str,
+            *,
+            value: float | None = None,
+            side: str | None = None,
+            tol: float | None = None,
+            marker: int = 1,
+            override: bool = True,
     ) -> np.ndarray:
         """Convenience: define the sink/outlet boundary as an axis-aligned plane.
 
@@ -185,11 +185,12 @@ class Domain3D:
             tol = max(
                 1e-8 * max(1.0, extent),
                 1e-12 * max(1.0, abs(float(value))),
-            )
+                )
 
         tdim = self.mesh.topology.dim
         fdim = tdim - 1
 
+        # Build connectivities used by locate_entities_boundary and later measures
         # Connectivity isn't strictly required for locate_entities_boundary, but
         # creating it improves robustness across versions and later postprocessing.
         self.mesh.topology.create_connectivity(fdim, 0)
@@ -204,7 +205,7 @@ class Domain3D:
 
         facets = _locate(float(tol))
 
-        # If tol was auto-picked, and nothing was found, relax a few times.
+        # If tol was auto-picked, and nothing was found LOCALLY, relax a few times.
         # This helps when the boundary plane isn't represented exactly in floating point.
         if facets.size == 0 and tol_was_auto:
             for factor in (10.0, 100.0, 1000.0, 10000.0):
@@ -213,29 +214,44 @@ class Domain3D:
                     tol = float(tol) * factor
                     break
 
-        if facets.size == 0:
+        # In parallel, it's normal that some ranks own zero facets on this plane.
+        # Only error if NO rank found any facets.
+        n_global = self.comm.allreduce(int(facets.size), op=MPI.SUM)
+        if n_global == 0:
             raise ValueError(
-                f"mark_outlet_axis_plane found no boundary facets for axis={axis!r}, "
+                f"mark_outlet_axis_plane found no boundary facets on any rank for axis={axis!r}, "
                 f"value={value}, tol={tol}. (Try increasing tol.)"
             )
 
-        self.add_boundary_facets(facets, marker=marker, override=override)
+        # Ensure boundaries MeshTags exists on ALL ranks (can be empty locally),
+        # so downstream code consistently uses ds(subdomain_data=...) everywhere.
+        if self.boundaries is None:
+            empty = np.zeros((0,), dtype=np.int32)
+            self.boundaries = dmesh.meshtags(self.mesh, fdim, empty, empty)
+            try:
+                self.boundaries.name = "boundaries"
+            except Exception:
+                pass
+
+        # Add local facets if we have any on this rank
+        if facets.size:
+            self.add_boundary_facets(facets, marker=marker, override=override)
+        else:
+            # Still record the outlet marker even on ranks with no local facets
+            self.outlet_marker = int(marker)
         return facets
 
-    # -------------------------------------------------------------------------
-    # XDMF/HDF5 mesh I/O constructors / helpers (see domain/mesh.py)
-    # -------------------------------------------------------------------------
     @classmethod
     def from_xdmf(
-        cls,
-        comm: MPI.Comm,
-        path: str | Path,
-        *,
-        mesh_name: str = "Grid",
-        ghost_mode: dmesh.GhostMode = dmesh.GhostMode.shared_facet,
-        boundaries_name: str | None = None,
-        boundaries_path: str | Path | None = None,
-        outlet_marker: int | None = None,
+            cls,
+            comm: MPI.Comm,
+            path: str | Path,
+            *,
+            mesh_name: str = "Grid",
+            ghost_mode: dmesh.GhostMode = dmesh.GhostMode.shared_facet,
+            boundaries_name: str | None = None,
+            boundaries_path: str | Path | None = None,
+            outlet_marker: int | None = None,
     ) -> "Domain3D":
         """Construct a Domain3D by reading a mesh from an XDMF (HDF5-backed) file.
 
@@ -253,6 +269,7 @@ class Domain3D:
             Optional MeshTags name (facet tags) to also read from the file.
             If provided, Domain3D.boundaries is set and you may set outlet_marker.
         boundaries_path:
+            Optional separate XDMF path to read boundaries tags from (defaults to `path`).
             Optional separate XDMF path to read boundaries tags from (defaults to `path`).
         outlet_marker:
             If provided and boundaries_name is provided, sets Domain3D.outlet_marker.
@@ -278,22 +295,22 @@ class Domain3D:
     # Backwards/UX alias
     @classmethod
     def from_meshfile(
-        cls,
-        comm: MPI.Comm,
-        path: str | Path,
-        **kwargs: Any,
+            cls,
+            comm: MPI.Comm,
+            path: str | Path,
+            **kwargs: Any,
     ) -> "Domain3D":
         """Alias for from_xdmf(...)."""
         return cls.from_xdmf(comm, path, **kwargs)
 
     def set_boundaries_from_xdmf(
-        self,
-        path: str | Path,
-        *,
-        name: str,
-        outlet_marker: int | None = None,
-        replace: bool = True,
-        override: bool = True,
+            self,
+            path: str | Path,
+            *,
+            name: str,
+            outlet_marker: int | None = None,
+            replace: bool = True,
+            override: bool = True,
     ) -> None:
         """Load facet MeshTags from an XDMF file into this Domain3D.
 
@@ -340,13 +357,13 @@ class Domain3D:
             self.outlet_marker = int(outlet_marker)
 
     def mark_outlet_from_xdmf(
-        self,
-        path: str | Path,
-        *,
-        tags_name: str,
-        marker: int,
-        replace_boundaries: bool = True,
-        override: bool = True,
+            self,
+            path: str | Path,
+            *,
+            tags_name: str,
+            marker: int,
+            replace_boundaries: bool = True,
+            override: bool = True,
     ) -> np.ndarray:
         """Mark the outlet/sink boundary using facet tags loaded from XDMF.
 
@@ -370,7 +387,7 @@ class Domain3D:
             assert self.boundaries is not None
             facets = np.asarray(self.boundaries.indices, dtype=np.int32)[
                 np.asarray(self.boundaries.values, dtype=np.int32) == marker_i
-            ]
+                ]
         else:
             facets = load_boundary_facets_from_xdmf(self.mesh, path, tags_name=tags_name, marker=marker_i)
             if facets.size == 0:
@@ -388,12 +405,12 @@ class Domain3D:
 
     @classmethod
     def from_box(
-        cls,
-        comm: MPI.Comm,
-        min_corner: np.ndarray,
-        max_corner: np.ndarray,
-        target_h: float,
-        cell_type: dmesh.CellType = dmesh.CellType.tetrahedron,
+            cls,
+            comm: MPI.Comm,
+            min_corner: np.ndarray,
+            max_corner: np.ndarray,
+            target_h: float,
+            cell_type: dmesh.CellType = dmesh.CellType.tetrahedron,
     ) -> "Domain3D":
         extent = max_corner - min_corner
         n = [max(2, int(np.ceil(extent[i] / target_h))) for i in range(3)]
@@ -432,14 +449,14 @@ class Domain1D:
 
     @classmethod
     def from_network(
-        cls,
-        graph: Any,
-        points_per_edge: int,
-        comm: MPI.Comm,
-        graph_rank: int = 0,
-        inlet_marker: int | None = None,
-        outlet_marker: int | None = None,
-        color_strategy: Any | None = None,
+            cls,
+            graph: Any,
+            points_per_edge: int,
+            comm: MPI.Comm,
+            graph_rank: int = 0,
+            inlet_marker: int | None = None,
+            outlet_marker: int | None = None,
+            color_strategy: Any | None = None,
     ) -> "Domain1D":
         network = NetworkMesh(
             graph,
