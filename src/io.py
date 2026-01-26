@@ -1,3 +1,4 @@
+# === io.py ===
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -7,7 +8,6 @@ from typing import Any
 import dolfinx.io as dolfinx_io
 import numpy as np
 from dolfinx import default_scalar_type, fem
-from dolfinx import mesh as dmesh
 
 from .domain import Domain1D, Domain3D
 from .problem import PressureSolution, PressureVelocitySolution
@@ -29,70 +29,38 @@ class OutputOptions:
     names: OutputNames = OutputNames()
 
 
-def _write_tissue_vtk_meshio(
-    filepath: Path,
-    tissue_mesh: Any,
-    *,
-    time: float,
-    point_data: dict[str, np.ndarray],
-) -> None:
-    import meshio
+def _vtk_write_functions(vtk: dolfinx_io.VTKFile, funcs: list[Any], t: float) -> None:
+    """
+    Write functions to a VTKFile in a way that is robust across dolfinx versions.
 
-    x = tissue_mesh.geometry.x
-    tdim = tissue_mesh.topology.dim
-    tissue_mesh.topology.create_connectivity(tdim, 0)
-    tissue_mesh.topology.create_connectivity(tdim, tdim)
+    Critical detail:
+      - Avoid calling write_mesh(...) first. In some dolfinx builds this produces an
+        extra PVD entry that references a dataset file that is never written
+        (e.g. p_t000000.pvtu), which then breaks ParaView.
+      - Prefer a single write_function([...], t) call so ParaView sees all arrays in
+        one dataset and the PVD references only files that actually exist.
+    """
+    if len(funcs) == 0:
+        return
 
-    # Extract cell connectivity for the topological dimension
-    topology = tissue_mesh.topology
-    c_map = topology.index_map(tdim)
-    num_cells = int(c_map.size_local)
-
-    topology.create_connectivity(tdim, 0)
-    c2v = topology.connectivity(tdim, 0)
-    cells = np.vstack([c2v.links(c) for c in range(num_cells)]).astype(np.int64)
-
-    # Map DOLFINx cell type -> meshio cell type name
-    ct = tissue_mesh.topology.cell_type
-    if ct == dmesh.CellType.tetrahedron:
-        cell_type = "tetra"
-    elif ct == dmesh.CellType.hexahedron:
-        cell_type = "hexahedron"
-    elif ct == dmesh.CellType.triangle:
-        cell_type = "triangle"
-    elif ct == dmesh.CellType.quadrilateral:
-        cell_type = "quad"
-    else:
-        raise ValueError(f"Unsupported cell type for meshio writer: {ct}")
-
-    mesh = meshio.Mesh(
-        points=x,
-        cells=[(cell_type, cells)],
-        point_data=point_data,
-    )
-
-    # Write VTU
-    vtu_path = filepath.with_suffix(".vtu")
-    meshio.write(vtu_path, mesh)
-
-    # Write minimal PVD that points to the VTU
-    pvd_path = filepath.with_suffix(".pvd")
-    pvd_xml = f"""<?xml version="1.0"?>
-<VTKFile type="Collection" version="0.1" byte_order="LittleEndian">
-  <Collection>
-    <DataSet timestep="{time}" group="" part="0" file="{vtu_path.name}"/>
-  </Collection>
-</VTKFile>
-"""
-    pvd_path.write_text(pvd_xml)
+    # Some versions are happier with a single Function than with a 1-long list.
+    try:
+        if len(funcs) == 1:
+            vtk.write_function(funcs[0], t)
+        else:
+            vtk.write_function(funcs, t)
+    except TypeError:
+        # Fallback: write individually (still no write_mesh)
+        for f in funcs:
+            vtk.write_function(f, t)
 
 
 def write_tissue_bc_label_mesh(
-    outdir: Path,
-    tissue: Domain3D,
-    *,
-    time: float = 0.0,
-    basename: str = "tissue_bc_labels",
+        outdir: Path,
+        tissue: Domain3D,
+        *,
+        time: float = 0.0,
+        basename: str = "tissue_bc_labels",
 ) -> None:
     outdir.mkdir(parents=True, exist_ok=True)
 
@@ -126,7 +94,7 @@ def write_tissue_bc_label_mesh(
     bc_type.x.scatter_forward()
     facet_marker.x.scatter_forward()
 
-    with dolfinx_io.XDMFFile(mesh.comm, outdir / f"{basename}.xdmf", "w") as xdmf:
+    with dolfinx_io.XDMFFile(mesh.comm, str(outdir / f"{basename}.xdmf"), "w") as xdmf:
         xdmf.write_mesh(mesh)
         xdmf.write_function(bc_type, time)
         xdmf.write_function(facet_marker, time)
@@ -136,12 +104,12 @@ def write_tissue_bc_label_mesh(
 
 
 def write_solution(
-    outdir: Path,
-    tissue: Domain3D,
-    network: Domain1D,
-    solution: PressureSolution | PressureVelocitySolution,
-    *,
-    options: OutputOptions = OutputOptions(),
+        outdir: Path,
+        tissue: Domain3D,
+        network: Domain1D,
+        solution: PressureSolution | PressureVelocitySolution,
+        *,
+        options: OutputOptions = OutputOptions(),
 ) -> None:
     outdir.mkdir(parents=True, exist_ok=True)
     fmt = options.format.lower()
@@ -161,64 +129,87 @@ def write_solution(
     if fmt == "vtx":
         # Write tissue pressure + velocity together so ParaView sees both arrays in one dataset
         with dolfinx_io.VTXWriter(
-            tissue.mesh.comm,
-            outdir / f"{names.tissue_pressure}.bp",
-            tissue_fields,
+                tissue.mesh.comm,
+                str(outdir / f"{names.tissue_pressure}.bp"),
+                tissue_fields,
         ) as vtx:
             vtx.write(options.time)
 
         with dolfinx_io.VTXWriter(
-            network.mesh.comm,
-            outdir / f"{names.network_vtx}.bp",
-            network_fields,
+                network.mesh.comm,
+                str(outdir / f"{names.network_vtx}.bp"),
+                network_fields,
         ) as vtx:
             vtx.write(options.time)
 
     elif fmt == "vtk":
-        p = tissue_pressure
-        p.x.scatter_forward()
+        # IMPORTANT (fix):
+        # Do NOT call vtk.write_mesh(...) first.
+        #
+        # Reason: depending on dolfinx version/build, write_mesh can create an
+        # additional PVD entry referencing e.g. p_t000000.pvtu that is not actually
+        # written, which makes ParaView fail with:
+        #   vtkXMLPUnstructuredGridReader: Error opening file .../p_t000000.pvtu
+        #
+        # Instead, write functions directly; dolfinx will include the mesh in the
+        # dataset it writes, and the PVD will reference only existing files.
 
-        point_data: dict[str, np.ndarray] = {}
-
-        Vp = p.function_space
-        xp = Vp.element.interpolation_points
-        p_expr = fem.Expression(p, xp)
-        p_at_pts = fem.Function(Vp)
-        p_at_pts.interpolate(p_expr)
-        p_at_pts.x.scatter_forward()
-
-        point_data[names.tissue_pressure] = np.asarray(p_at_pts.x.array, dtype=np.float64)
+        # Tissue fields
+        tissue_fields_out: list[Any] = []
+        try:
+            tissue_pressure.name = names.tissue_pressure
+        except Exception:
+            pass
+        try:
+            tissue_pressure.x.scatter_forward()
+        except Exception:
+            pass
+        tissue_fields_out.append(tissue_pressure)
 
         if tissue_velocity is not None:
-            tissue_velocity.x.scatter_forward()
+            try:
+                tissue_velocity.name = names.tissue_velocity
+            except Exception:
+                pass
+            try:
+                tissue_velocity.x.scatter_forward()
+            except Exception:
+                pass
+            tissue_fields_out.append(tissue_velocity)
 
-            Vv = tissue_velocity.function_space
-            xv = Vv.element.interpolation_points
-            v_expr = fem.Expression(tissue_velocity, xv)
-            v_at_pts = fem.Function(Vv)
-            v_at_pts.interpolate(v_expr)
-            v_at_pts.x.scatter_forward()
+        tissue_pvd = outdir / f"{names.tissue_pressure}.pvd"
+        with dolfinx_io.VTKFile(tissue.mesh.comm, str(tissue_pvd), "w") as vtk:
+            _vtk_write_functions(vtk, tissue_fields_out, options.time)
 
-            # v_at_pts.x.array is flattened; reshape to (num_points, gdim)
-            gdim = tissue.mesh.geometry.dim
-            v_arr = np.asarray(v_at_pts.x.array, dtype=np.float64).reshape((-1, gdim))
-            point_data[names.tissue_velocity] = v_arr
+        # Make sure all ranks have finished writing before moving on
+        try:
+            tissue.mesh.comm.Barrier()
+        except Exception:
+            pass
 
-        _write_tissue_vtk_meshio(
-            outdir / f"{names.tissue_pressure}",  # will create .vtu + .pvd
-            tissue.mesh,
-            time=options.time,
-            point_data=point_data,
-        )
+        # Network fields
+        for f in network_fields:
+            try:
+                f.name = names.network_vtx
+            except Exception:
+                pass
+            try:
+                f.x.scatter_forward()
+            except Exception:
+                pass
 
-        with dolfinx_io.VTKFile(network.mesh.comm, outdir / f"{names.network}.pvd", "w") as vtk:
-            vtk.write_mesh(network.mesh, options.time)
-            for f in network_fields:
-                vtk.write_function(f, options.time)
+        network_pvd = outdir / f"{names.network}.pvd"
+        with dolfinx_io.VTKFile(network.mesh.comm, str(network_pvd), "w") as vtk:
+            _vtk_write_functions(vtk, network_fields, options.time)
+
+        try:
+            network.mesh.comm.Barrier()
+        except Exception:
+            pass
 
     elif fmt == "xdmf":
         # Tissue: pressure + velocity in ONE .xdmf
-        with dolfinx_io.XDMFFile(tissue.mesh.comm, outdir / f"{names.tissue_pressure}.xdmf", "w") as xdmf:
+        with dolfinx_io.XDMFFile(tissue.mesh.comm, str(outdir / f"{names.tissue_pressure}.xdmf"), "w") as xdmf:
             xdmf.write_mesh(tissue.mesh)
             for f in tissue_fields:
                 xdmf.write_function(f, options.time)
@@ -230,14 +221,15 @@ def write_solution(
                 except Exception:
                     pass
 
-        with dolfinx_io.XDMFFile(network.mesh.comm, outdir / f"{names.network}.xdmf", "w") as xdmf:
+        with dolfinx_io.XDMFFile(network.mesh.comm, str(outdir / f"{names.network}.xdmf"), "w") as xdmf:
             xdmf.write_mesh(network.mesh)
             for f in network_fields:
                 xdmf.write_function(f, options.time)
 
             if options.write_meshtags:
                 try:
-                    xdmf.write_meshtags(network.subdomains, network.mesh.geometry)  # type: ignore[arg-type]
+                    if network.subdomains is not None:
+                        xdmf.write_meshtags(network.subdomains, network.mesh.geometry)  # type: ignore[arg-type]
                 except Exception:
                     pass
                 try:
@@ -248,4 +240,5 @@ def write_solution(
     else:
         raise ValueError(f"Unknown format={options.format!r}. Use 'xdmf', 'vtk', or 'vtx'.")
 
+    # Keep this as-is: it writes a small XDMF helper mesh for debugging BC regions
     write_tissue_bc_label_mesh(outdir, tissue, time=options.time)

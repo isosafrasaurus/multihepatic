@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 import dolfinx.mesh as dmesh
 import numpy as np
 from mpi4py import MPI
 from networks_fenicsx import NetworkMesh
+import networkx as nx
 
 # XDMF/HDF5 mesh I/O helpers (see domain/mesh.py)
 from .mesh import read_mesh_xdmf, read_meshtags_xdmf, load_boundary_facets_from_xdmf
@@ -65,6 +66,390 @@ def _merge_meshtags(
     uniq_val = val_s[last_pos]
 
     return dmesh.meshtags(mesh, dim, uniq_idx, uniq_val)
+
+
+def _is_section_header(line: str) -> bool:
+    """Return True if a line likely starts a new VTK legacy section."""
+    s = line.strip()
+    if not s:
+        return False
+    # Common legacy POLYDATA section headers
+    return s.startswith(
+        (
+            "POINTS",
+            "LINES",
+            "POLYGONS",
+            "VERTICES",
+            "TRIANGLE_STRIPS",
+            "POINT_DATA",
+            "CELL_DATA",
+            "FIELD",
+            "SCALARS",
+            "LOOKUP_TABLE",
+        )
+    )
+
+
+def _read_n_tokens(lines: list[str], i0: int, n: int) -> tuple[list[str], int]:
+    """Read at least n whitespace-separated tokens starting from lines[i0]."""
+    toks: list[str] = []
+    i = i0
+    while len(toks) < n and i < len(lines):
+        s = lines[i].strip()
+        if s:
+            toks.extend(s.split())
+        i += 1
+    return toks, i
+
+
+def _read_vtk_legacy_polydata_ascii(path: str | Path) -> tuple[
+    np.ndarray, list[np.ndarray], dict[str, np.ndarray], dict[str, np.ndarray]
+]:
+    """
+    Minimal reader for *ASCII legacy* VTK POLYDATA files containing:
+      - POINTS
+      - LINES (either classic legacy format or the OFFSETS/CONNECTIVITY style)
+      - POINT_DATA and/or CELL_DATA with either FIELD or SCALARS arrays
+
+    Returns:
+      points: (npoints, 3) float64
+      lines:  list of 1D int arrays (each array is a polyline's point indices)
+      point_data: dict[name] -> ndarray
+      cell_data:  dict[name] -> ndarray
+    """
+    p = Path(path).expanduser().resolve()
+    if not p.exists():
+        raise FileNotFoundError(str(p))
+
+    lines_txt = p.read_text().splitlines()
+    nlines_txt = len(lines_txt)
+
+    points: np.ndarray | None = None
+    polylines: list[np.ndarray] = []
+    point_data: dict[str, np.ndarray] = {}
+    cell_data: dict[str, np.ndarray] = {}
+
+    i = 0
+    while i < nlines_txt:
+        line = lines_txt[i].strip()
+        if not line:
+            i += 1
+            continue
+
+        # ---- POINTS ----
+        if line.startswith("POINTS"):
+            parts = line.split()
+            if len(parts) < 3:
+                raise ValueError(f"Malformed POINTS line: {line!r}")
+            npts = int(parts[1])
+            # dtype token in parts[2] is ignored (float/double)
+            i += 1
+            toks, i = _read_n_tokens(lines_txt, i, 3 * npts)
+            if len(toks) < 3 * npts:
+                raise ValueError(f"POINTS section ended early (need {3*npts} floats).")
+            arr = np.asarray(toks[: 3 * npts], dtype=np.float64)
+            points = arr.reshape((npts, 3))
+            continue
+
+        # ---- LINES ----
+        if line.startswith("LINES"):
+            parts = line.split()
+            if len(parts) < 3:
+                raise ValueError(f"Malformed LINES line: {line!r}")
+            n_cells = int(parts[1])
+            total_ints = int(parts[2])
+            i += 1
+            # Skip blank lines
+            while i < nlines_txt and not lines_txt[i].strip():
+                i += 1
+            if i >= nlines_txt:
+                raise ValueError("LINES section ended unexpectedly.")
+
+            nxt = lines_txt[i].strip()
+            # VTK 5.1 legacy "OFFSETS ... / CONNECTIVITY ..." style
+            if nxt.startswith("OFFSETS"):
+                # OFFSETS <dtype>
+                i += 1
+                offsets_toks: list[str] = []
+                while i < nlines_txt:
+                    s = lines_txt[i].strip()
+                    if not s:
+                        i += 1
+                        continue
+                    if s.startswith("CONNECTIVITY"):
+                        break
+                    offsets_toks.extend(s.split())
+                    i += 1
+                if i >= nlines_txt or not lines_txt[i].strip().startswith("CONNECTIVITY"):
+                    raise ValueError("LINES section missing CONNECTIVITY header.")
+                # CONNECTIVITY <dtype>
+                i += 1
+                conn_toks: list[str] = []
+                while i < nlines_txt:
+                    s = lines_txt[i].strip()
+                    if not s:
+                        i += 1
+                        continue
+                    if _is_section_header(s) and not s[0].isdigit() and not s[0] == "-":
+                        # Next section
+                        break
+                    # Heuristic: stop when we hit a known section header (POINT_DATA/CELL_DATA/etc.)
+                    if s.startswith(("POINT_DATA", "CELL_DATA", "POLYGONS", "VERTICES", "TRIANGLE_STRIPS", "LINES", "POINTS")):
+                        break
+                    conn_toks.extend(s.split())
+                    i += 1
+
+                offsets = np.asarray(offsets_toks, dtype=np.int64)
+                conn = np.asarray(conn_toks, dtype=np.int64)
+
+                # OFFSETS is typically length n_cells+1; be forgiving if last is omitted
+                if offsets.size == n_cells:
+                    offsets = np.concatenate([offsets, [conn.size]])
+                if offsets.size < 2:
+                    raise ValueError("OFFSETS array too short.")
+
+                # Trust offsets rather than the header count if they disagree
+                n_cells_actual = int(offsets.size - 1)
+                if n_cells_actual != n_cells:
+                    n_cells = n_cells_actual
+
+                if offsets[0] != 0:
+                    offsets = offsets - offsets[0]
+                if offsets[-1] > conn.size:
+                    raise ValueError("OFFSETS indicates more connectivity entries than present.")
+
+                for c in range(n_cells):
+                    a = int(offsets[c])
+                    b = int(offsets[c + 1])
+                    pts_idx = conn[a:b]
+                    if pts_idx.size >= 2:
+                        polylines.append(pts_idx.astype(np.int64, copy=False))
+                continue
+
+            # Classic legacy LINES format:
+            #   total_ints integers follow, grouped as:
+            #     k i0 i1 ... i{k-1}
+            # repeated n_cells times.
+            toks, i = _read_n_tokens(lines_txt, i, total_ints)
+            if len(toks) < total_ints:
+                raise ValueError(f"LINES section ended early (need {total_ints} ints).")
+            ints = list(map(int, toks[:total_ints]))
+            pos = 0
+            for _ in range(n_cells):
+                if pos >= len(ints):
+                    break
+                k = int(ints[pos]); pos += 1
+                pts_idx = np.asarray(ints[pos:pos + k], dtype=np.int64)
+                pos += k
+                if pts_idx.size >= 2:
+                    polylines.append(pts_idx)
+            continue
+
+        # ---- POINT_DATA / CELL_DATA ----
+        if line.startswith("POINT_DATA") or line.startswith("CELL_DATA"):
+            is_point = line.startswith("POINT_DATA")
+            parts = line.split()
+            if len(parts) < 2:
+                raise ValueError(f"Malformed {parts[0]} line: {line!r}")
+            n = int(parts[1])
+            i += 1
+            # Skip blanks
+            while i < nlines_txt and not lines_txt[i].strip():
+                i += 1
+            if i >= nlines_txt:
+                break
+
+            def store(name: str, arr: np.ndarray) -> None:
+                (point_data if is_point else cell_data)[name] = arr
+
+            # FIELD style
+            if lines_txt[i].strip().startswith("FIELD"):
+                parts2 = lines_txt[i].split()
+                if len(parts2) < 3:
+                    raise ValueError(f"Malformed FIELD line: {lines_txt[i]!r}")
+                n_arrays = int(parts2[2])
+                i += 1
+                for _ in range(n_arrays):
+                    header = lines_txt[i].split()
+                    if len(header) < 4:
+                        raise ValueError(f"Malformed FIELD array header: {lines_txt[i]!r}")
+                    name = header[0]
+                    ncomp = int(header[1])
+                    ntuple = int(header[2])
+                    # dtype header[3] ignored (float/double/int)
+                    i += 1
+                    nvals = ncomp * ntuple
+                    toks_vals, i = _read_n_tokens(lines_txt, i, nvals)
+                    if len(toks_vals) < nvals:
+                        raise ValueError(f"FIELD array {name!r} ended early.")
+                    vals = np.asarray(toks_vals[:nvals], dtype=np.float64)
+                    if ncomp == 1:
+                        store(name, vals.reshape((ntuple,)))
+                    else:
+                        store(name, vals.reshape((ntuple, ncomp)))
+                continue
+
+            # SCALARS style
+            if lines_txt[i].strip().startswith("SCALARS"):
+                # SCALARS name type [numComp]
+                scal = lines_txt[i].split()
+                if len(scal) < 3:
+                    raise ValueError(f"Malformed SCALARS line: {lines_txt[i]!r}")
+                name = scal[1]
+                ncomp = int(scal[3]) if len(scal) >= 4 else 1
+                i += 1
+                # Optional LOOKUP_TABLE line
+                if i < nlines_txt and lines_txt[i].strip().startswith("LOOKUP_TABLE"):
+                    i += 1
+                nvals = n * ncomp
+                toks_vals, i = _read_n_tokens(lines_txt, i, nvals)
+                if len(toks_vals) < nvals:
+                    raise ValueError(f"SCALARS array {name!r} ended early.")
+                vals = np.asarray(toks_vals[:nvals], dtype=np.float64)
+                if ncomp == 1:
+                    store(name, vals.reshape((n,)))
+                else:
+                    store(name, vals.reshape((n, ncomp)))
+                continue
+
+            # If we reach here, we don't support the next data layout; skip.
+            continue
+
+        i += 1
+
+    if points is None:
+        raise ValueError(f"{path!r} does not contain a POINTS section.")
+    if len(polylines) == 0:
+        raise ValueError(f"{path!r} does not contain any LINES connectivity.")
+    return points, polylines, point_data, cell_data
+
+
+def _build_graph_from_polydata(
+        points: np.ndarray,
+        polylines: list[np.ndarray],
+        *,
+        point_radius: np.ndarray | None,
+        cell_radius: np.ndarray | None,
+        default_radius: float,
+        reverse_edges: bool,
+) -> nx.DiGraph:
+    """
+    Build a DiGraph where nodes are VTK point indices and edges follow polyline connectivity.
+
+    Radius assignment:
+      - If point_radius is provided (len == npoints): per-segment radius = mean(endpoint radii)
+      - Else if cell_radius is provided (len == npolyline-cells): radius = cell_radius[cell_id]
+      - Else: radius = default_radius
+    """
+    npts = int(points.shape[0])
+    G = nx.DiGraph()
+    for v in range(npts):
+        # networks_fenicsx expects 'pos' and contiguous integer node IDs.
+        G.add_node(int(v), pos=points[v].astype(np.float64, copy=False).tolist())
+
+    pr = None
+    if point_radius is not None:
+        pr = np.asarray(point_radius, dtype=np.float64).reshape((npts,))
+
+    cr = None
+    if cell_radius is not None:
+        cr = np.asarray(cell_radius, dtype=np.float64).reshape((-1,))
+
+    for cell_id, conn in enumerate(polylines):
+        if conn.size < 2:
+            continue
+        seq = conn[::-1] if reverse_edges else conn
+        # Walk consecutive point pairs
+        for a, b in zip(seq[:-1], seq[1:]):
+            u = int(a); v = int(b)
+            if u == v:
+                continue
+            if pr is not None:
+                r = 0.5 * (float(pr[u]) + float(pr[v]))
+            elif cr is not None and cell_id < cr.size:
+                r = float(cr[cell_id])
+            else:
+                r = float(default_radius)
+
+            if G.has_edge(u, v):
+                # Keep something deterministic if duplicates exist: average them.
+                old = float(G.edges[u, v].get("radius", r))
+                G.edges[u, v]["radius"] = 0.5 * (old + r)
+            else:
+                G.add_edge(u, v, radius=float(r))
+    return G
+
+
+def _color_edges_like_networks_fenicsx(
+        graph: nx.DiGraph,
+        strategy: str | Callable[..., Any] | None,
+) -> dict[tuple[int, int], int]:
+    """
+    Replicates networks_fenicsx.mesh.color_graph(...):
+      - strategy is None  -> unique color per directed edge in graph.edges order
+      - strategy not None -> greedy coloring on the line graph of graph.to_undirected()
+    """
+    if strategy is not None:
+        undirected_edge_graph = nx.line_graph(graph.to_undirected())
+        edge_coloring = nx.coloring.greedy_color(undirected_edge_graph, strategy=strategy)
+    else:
+        edge_coloring = {edge: i for i, edge in enumerate(graph.edges)}
+    return edge_coloring
+
+
+def _radius_by_tag_from_graph(
+        graph: nx.DiGraph,
+        *,
+        color_strategy: str | Callable[..., Any] | None,
+        default_radius: float,
+        strict_if_grouped: bool = True,
+        rtol: float = 0.0,
+        atol: float = 0.0,
+) -> np.ndarray:
+    """
+    Build a lookup array radius_by_tag where tag == subdomain marker produced by NetworkMesh.
+
+    IMPORTANT:
+      - If color_strategy is None, each edge gets its own tag, so radii can vary per edge.
+      - If color_strategy groups multiple edges into the same tag, then a single radius must
+        represent the whole group. With strict_if_grouped=True we error if radii differ.
+    """
+    edge_coloring = _color_edges_like_networks_fenicsx(graph, color_strategy)
+    if len(edge_coloring) == 0:
+        return np.zeros((0,), dtype=np.float64)
+
+    num_tags = int(max(edge_coloring.values())) + 1
+    buckets: list[list[float]] = [[] for _ in range(num_tags)]
+
+    for (u, v) in graph.edges:
+        key = (int(u), int(v))
+        tag = edge_coloring.get(key, None)
+        if tag is None:
+            # Be robust if the coloring dict ended up with reversed undirected keys
+            tag = edge_coloring.get((int(v), int(u)), None)
+        if tag is None:
+            raise RuntimeError(f"Could not find a color/tag for edge {key}.")
+        r = float(graph.edges[u, v].get("radius", default_radius))
+        buckets[int(tag)].append(r)
+
+    out = np.full((num_tags,), float(default_radius), dtype=np.float64)
+    for tag, vals in enumerate(buckets):
+        if len(vals) == 0:
+            continue
+        r0 = float(vals[0])
+        if strict_if_grouped and len(vals) > 1:
+            # If grouping is enabled, require a single consistent radius per tag.
+            vmin = float(np.min(vals))
+            vmax = float(np.max(vals))
+            if not np.isclose(vmin, vmax, rtol=float(rtol), atol=float(atol)):
+                raise ValueError(
+                    "color_strategy grouped multiple edges into the same subdomain tag, "
+                    "but their radii differ. Use color_strategy=None (unique tag per edge), "
+                    "or pass an explicit cell_radius to PressureProblem instead.\n"
+                    f"tag={tag}, radius_range=[{vmin}, {vmax}]"
+                )
+        out[tag] = r0
+    return out
 
 
 @dataclass(slots=True)
@@ -425,6 +810,7 @@ class Domain1D:
     inlet_marker: int
     outlet_marker: int
     subdomains: dmesh.MeshTags | None = None
+    radius_by_tag: Mapping[int, float] | np.ndarray | None = None
 
     def __post_init__(self) -> None:
         self.mesh.topology.create_connectivity(0, 1)
@@ -475,4 +861,100 @@ class Domain1D:
             subdomains=getattr(network, "subdomains", None),
             inlet_marker=inlet,
             outlet_marker=outlet,
+        )
+
+    @classmethod
+    def from_vtk_polydata(
+            cls,
+            comm: MPI.Comm,
+            path: str | Path,
+            *,
+            points_per_edge: int = 1,
+            graph_rank: int = 0,
+            color_strategy: Any | None = None,
+            radius_name: str = "Radius",
+            default_radius: float = 1.0,
+            reverse_edges: bool = False,
+            inlet_marker: int | None = None,
+            outlet_marker: int | None = None,
+            strict_if_grouped: bool = True,
+    ) -> "Domain1D":
+        """
+        Construct a 1D network domain from an ASCII legacy VTK POLYDATA file.
+
+        This reads PolyData semantics (POINTS + LINES) and creates a networkx.DiGraph,
+        then converts that graph using networks_fenicsx.NetworkMesh.
+
+        Radius handling:
+          - If a point-data array named `radius_name` exists (len == npoints),
+            per-segment radius is computed as the mean of endpoint radii.
+          - Else if a cell-data array named `radius_name` exists (len == nline-cells),
+            that radius is assigned to all segments in that line cell.
+          - Else default_radius is used.
+
+        The resulting `Domain1D.radius_by_tag` is a numpy array compatible with
+        PressureProblem(..., radius_by_tag=domain.radius_by_tag, ...), provided you
+        keep color_strategy=None (unique tag per edge) when radii vary by edge.
+        """
+        p = Path(path).expanduser().resolve()
+
+        graph: nx.DiGraph | None = None
+        radius_by_tag: np.ndarray | None = None
+
+        if comm.rank == graph_rank:
+            pts, polylines, pdat, cdat = _read_vtk_legacy_polydata_ascii(p)
+            npts = int(pts.shape[0])
+
+            pr = pdat.get(radius_name, None)
+            if pr is not None:
+                pr = np.asarray(pr, dtype=np.float64).reshape((-1,))
+                if pr.size != npts:
+                    # Not a point-radius array, ignore as point-radius
+                    pr = None
+
+            cr = cdat.get(radius_name, None)
+            if cr is not None:
+                cr = np.asarray(cr, dtype=np.float64).reshape((-1,))
+                # If it doesn't match number of polyline "cells", we'll still allow it
+                # but it will only be used up to min(len(polylines), len(cr)).
+
+            graph = _build_graph_from_polydata(
+                pts,
+                polylines,
+                point_radius=pr,
+                cell_radius=cr,
+                default_radius=float(default_radius),
+                reverse_edges=bool(reverse_edges),
+            )
+
+            # Build the radius lookup in the *same* tag space that NetworkMesh will produce.
+            radius_by_tag = _radius_by_tag_from_graph(
+                graph,
+                color_strategy=color_strategy,
+                default_radius=float(default_radius),
+                strict_if_grouped=bool(strict_if_grouped),
+            )
+
+        # Broadcast the radius lookup so every rank can build the same DG0 radius field later
+        radius_by_tag = comm.bcast(radius_by_tag, root=graph_rank)
+
+        # Build distributed NetworkMesh (graph only needs to exist on graph_rank)
+        network = NetworkMesh(
+            graph,
+            N=int(points_per_edge),
+            comm=comm,
+            graph_rank=int(graph_rank),
+            color_strategy=color_strategy,
+        )
+
+        inlet = int(network.out_marker) if inlet_marker is None else int(inlet_marker)
+        outlet = int(network.in_marker) if outlet_marker is None else int(outlet_marker)
+
+        return cls(
+            mesh=network.mesh,
+            boundaries=network.boundaries,
+            subdomains=getattr(network, "subdomains", None),
+            inlet_marker=inlet,
+            outlet_marker=outlet,
+            radius_by_tag=radius_by_tag,
         )
