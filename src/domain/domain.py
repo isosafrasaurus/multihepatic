@@ -29,6 +29,27 @@ def _axis_to_int(axis: int | str) -> int:
     raise ValueError(f"axis must be 0/1/2 or 'x'/'y'/'z'; got {axis!r}")
 
 
+def _apply_affine_to_points(affine_4x4: np.ndarray, points: np.ndarray) -> np.ndarray:
+    """
+    Apply a 4x4 affine to an (N,3) point array, returning (N,3).
+
+    This is used to optionally transform mesh coordinates into the NIfTI "world"
+    coordinate frame before mapping into voxel indices.
+    """
+    A = np.asarray(affine_4x4, dtype=np.float64)
+    if A.shape != (4, 4):
+        raise ValueError(f"Expected affine shape (4,4), got {A.shape}.")
+
+    P = np.asarray(points, dtype=np.float64)
+    if P.ndim != 2 or P.shape[1] != 3:
+        raise ValueError(f"Expected points shape (N,3), got {P.shape}.")
+
+    ones = np.ones((P.shape[0], 1), dtype=np.float64)
+    Ph = np.concatenate([P, ones], axis=1)  # (N,4)
+    Q = (A @ Ph.T).T
+    return Q[:, :3].astype(np.float64, copy=False)
+
+
 def _merge_meshtags(
         mesh: dmesh.Mesh,
         dim: int,

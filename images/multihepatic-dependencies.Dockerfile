@@ -3,8 +3,8 @@ FROM ghcr.io/fenics/dolfinx/dolfinx:v0.10.0
 USER root
 
 ARG USERNAME=dolfinx
-ARG USER_UID=1001
-ARG USER_GID=1001
+ARG USER_UID=1000
+ARG USER_GID=1000
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git && \
