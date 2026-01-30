@@ -1,3 +1,4 @@
+# multihepatic/src/radius.py
 from __future__ import annotations
 
 from typing import Mapping
@@ -34,8 +35,10 @@ def build_cell_radius_field(
         default_radius: float,
         untagged_tag: int | None = None,
         name: str = "radius_cell",
+        DG0: fem.FunctionSpace | None = None,
 ) -> tuple[fem.Function, np.ndarray]:
-    DG0 = fem.functionspace(mesh_1d, ("DG", 0))
+    if DG0 is None:
+        DG0 = fem.functionspace(mesh_1d, ("DG", 0))
     r_cell = fem.Function(DG0)
     r_cell.name = name
 

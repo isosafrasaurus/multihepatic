@@ -1,3 +1,4 @@
+# multihepatic/src/system.py
 from __future__ import annotations
 
 import faulthandler
@@ -7,7 +8,7 @@ import socket
 import sys
 import time
 import traceback
-from typing import Callable, Dict, List, Any
+from typing import Callable, Dict, List, Any, Set, Optional
 
 from mpi4py import MPI
 
@@ -120,6 +121,86 @@ def destroy_if_possible(obj: Any) -> None:
             pass
 
 
+def deep_close_destroy(
+    obj: Any,
+    *,
+    max_depth: int = 4,
+    _seen: Optional[Set[int]] = None,
+) -> None:
+    """
+    Best-effort recursive cleanup for complex Python objects that may hold on to
+    PETSc / DOLFINx resources (and thus MPI communicators).
+
+    We try:
+      - close_if_possible(obj)
+      - destroy_if_possible(obj)
+    and then recurse into common containers and dataclasses.
+
+    This is intentionally defensive: any exception is swallowed so cleanup can
+    proceed without masking the original error path.
+    """
+    if obj is None:
+        return
+    if max_depth < 0:
+        return
+
+    if _seen is None:
+        _seen = set()
+    oid = id(obj)
+    if oid in _seen:
+        return
+    _seen.add(oid)
+
+    try:
+        close_if_possible(obj)
+    except Exception:
+        pass
+    try:
+        destroy_if_possible(obj)
+    except Exception:
+        pass
+
+    if max_depth == 0:
+        return
+
+    # Recurse into containers
+    try:
+        if isinstance(obj, dict):
+            for v in obj.values():
+                deep_close_destroy(v, max_depth=max_depth - 1, _seen=_seen)
+            return
+        if isinstance(obj, (list, tuple, set, frozenset)):
+            for v in obj:
+                deep_close_destroy(v, max_depth=max_depth - 1, _seen=_seen)
+            return
+    except Exception:
+        pass
+
+    # Recurse into objects with __dict__
+    try:
+        d = vars(obj)
+        if isinstance(d, dict):
+            for v in d.values():
+                deep_close_destroy(v, max_depth=max_depth - 1, _seen=_seen)
+            return
+    except Exception:
+        pass
+
+    # Recurse into dataclasses if present
+    try:
+        import dataclasses
+
+        if dataclasses.is_dataclass(obj):
+            for f in dataclasses.fields(obj):
+                try:
+                    v = getattr(obj, f.name)
+                except Exception:
+                    continue
+                deep_close_destroy(v, max_depth=max_depth - 1, _seen=_seen)
+    except Exception:
+        pass
+
+
 def collect() -> None:
     gc.collect()
     try:
@@ -128,3 +209,15 @@ def collect() -> None:
         PETSc.garbage_cleanup()
     except Exception:
         pass
+
+
+def aggressive_cleanup(*objs: Any) -> None:
+    """
+    One-call "please free resources now" helper for long-running scripts.
+    """
+    for o in objs:
+        try:
+            deep_close_destroy(o, max_depth=4)
+        except Exception:
+            pass
+    collect()

@@ -1,3 +1,4 @@
+# multihepatic/src/problem.py
 from __future__ import annotations
 
 import time
@@ -17,7 +18,7 @@ from .radius import (
     build_cell_radius_field,
     make_cell_radius_callable,
 )
-from .system import abort_on_exception, make_rank_logger, setup_mpi_debug, close_if_possible, collect
+from .system import abort_on_exception, make_rank_logger, setup_mpi_debug, deep_close_destroy, aggressive_cleanup, collect
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,6 +39,7 @@ class AssemblyOptions:
     degree_1d: int = 1
     circle_quadrature_degree: int = 20
     degree_velocity: int = 1
+
 
 @dataclass(slots=True)
 class PressureSolution:
@@ -132,8 +134,11 @@ class PressureProblem:
 
         self._log("Creating function spaces V3/V1 and mixed space W...")
         t0 = time.time()
-        V3 = fem.functionspace(tissue.mesh, ("Lagrange", degree_3d))
-        V1 = fem.functionspace(network.mesh, ("Lagrange", degree_1d))
+
+        # Cache/reuse spaces to avoid repeated neighborhood communicator creation
+        V3 = tissue.get_functionspace(("Lagrange", degree_3d))
+        V1 = network.get_functionspace(("Lagrange", degree_1d))
+
         W = ufl.MixedFunctionSpace(V3, V1)
         self._log(f"Function spaces created in {time.time() - t0:.3f}s")
         self._bar("after spaces")
@@ -145,12 +150,14 @@ class PressureProblem:
         if cell_radius is None:
             if network.subdomains is None or self._radius_by_tag is None:
                 raise ValueError("Need network.subdomains and radius_by_tag to build cell_radius automatically.")
+            DG0_net = network.get_functionspace(("DG", 0))
             cell_radius, radius_per_cell = build_cell_radius_field(
                 network.mesh,
                 network.subdomains,
                 self._radius_by_tag,
                 default_radius=default_radius,
                 untagged_tag=0,
+                DG0=DG0_net,
             )
         else:
             cell_radius.x.scatter_forward()
@@ -305,16 +312,41 @@ class PressureProblem:
             raise
 
     def close(self) -> None:
-        close_if_possible(self._linear_problem)
+        # In long-running scripts / parameter sweeps, communicator IDs can be exhausted
+        # if PETSc/DOLFINx objects are not destroyed promptly. Be aggressive here.
+        lp = self._linear_problem
+        ka = self._keepalive
+
         self._linear_problem = None
         self._keepalive = None
-        collect()
+
+        try:
+            if lp is not None:
+                deep_close_destroy(lp, max_depth=4)
+        except Exception:
+            pass
+
+        try:
+            if ka is not None:
+                deep_close_destroy(ka, max_depth=3)
+        except Exception:
+            pass
+
+        aggressive_cleanup()
 
     def __enter__(self) -> "PressureProblem":
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:
         self.close()
+
+    def __del__(self) -> None:
+        # Best-effort cleanup in case user forgets to close().
+        try:
+            self.close()
+        except Exception:
+            pass
+
 
 class PressureVelocityProblem(PressureProblem):
     """
@@ -338,7 +370,8 @@ class PressureVelocityProblem(PressureProblem):
             pass
 
         # Vertex-based (CG1) vector space
-        Vv = fem.functionspace(tissue.mesh, ("Lagrange", 1, (gdim,)))
+        # Cache/reuse to avoid repeated communicator creation in repeated solves
+        Vv = tissue.get_functionspace(("Lagrange", 1, (gdim,)))
         v_fun = fem.Function(Vv)
         v_fun.name = "v_tissue"
 

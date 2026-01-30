@@ -1,10 +1,12 @@
+# multihepatic/src/domain/domain.py
 from __future__ import annotations
 
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Mapping
 
 import dolfinx.mesh as dmesh
+import dolfinx.fem as fem
 import numpy as np
 from mpi4py import MPI
 from networks_fenicsx import NetworkMesh
@@ -12,6 +14,8 @@ import networkx as nx
 
 # XDMF/HDF5 mesh I/O helpers (see domain/mesh.py)
 from .mesh import read_mesh_xdmf, read_meshtags_xdmf, load_boundary_facets_from_xdmf
+
+from ..system import deep_close_destroy, collect
 
 
 def _axis_to_int(axis: int | str) -> int:
@@ -482,6 +486,8 @@ class Domain3D:
     boundaries: dmesh.MeshTags | None = None
     outlet_marker: int | None = None
 
+    _cache: dict[Any, Any] = field(default_factory=dict, init=False, repr=False)
+
     def __post_init__(self) -> None:
         tdim = self.mesh.topology.dim
         if tdim >= 1:
@@ -490,6 +496,52 @@ class Domain3D:
     @property
     def comm(self) -> MPI.Comm:
         return self.mesh.comm
+
+    def get_functionspace(self, element: Any) -> Any:
+        """
+        Cache FunctionSpace objects on this Domain.
+
+        Creating many FunctionSpaces over time can exhaust MPI communicator IDs
+        (especially with MPICH) because IndexMaps build neighborhood communicators.
+        Reusing spaces avoids that churn in long-running processes.
+        """
+        key = ("fs", element)
+        V = self._cache.get(key, None)
+        if V is None:
+            V = fem.functionspace(self.mesh, element)
+            self._cache[key] = V
+        return V
+
+    def clear_cache(self) -> None:
+        if self._cache:
+            try:
+                deep_close_destroy(self._cache, max_depth=3)
+            except Exception:
+                pass
+            self._cache.clear()
+            collect()
+
+    def release(self) -> None:
+        """
+        Explicitly drop references to heavy objects so MPI communicators can be freed.
+        After calling release(), the Domain is no longer usable.
+        """
+        try:
+            self.clear_cache()
+        except Exception:
+            pass
+        self.boundaries = None
+        self.outlet_marker = None
+        # Drop mesh last; this is what actually owns the duplicated MPI communicator.
+        self.mesh = None  # type: ignore[assignment]
+        collect()
+
+    def __del__(self) -> None:
+        # Best-effort cleanup; avoid raising during interpreter shutdown.
+        try:
+            self.clear_cache()
+        except Exception:
+            pass
 
     def axis_bounds(self, axis: int | str) -> tuple[float, float]:
         """Global (MPI) min/max coordinate along axis."""
@@ -659,27 +711,7 @@ class Domain3D:
             boundaries_path: str | Path | None = None,
             outlet_marker: int | None = None,
     ) -> "Domain3D":
-        """Construct a Domain3D by reading a mesh from an XDMF (HDF5-backed) file.
-
-        Parameters
-        ----------
-        comm:
-            MPI communicator to read/partition the mesh on.
-        path:
-            Path to the .xdmf mesh file (or an .h5/.hdf5 file if the matching .xdmf exists).
-        mesh_name:
-            XDMF Grid name (commonly "Grid").
-        ghost_mode:
-            Ghosting mode for parallel runs.
-        boundaries_name:
-            Optional MeshTags name (facet tags) to also read from the file.
-            If provided, Domain3D.boundaries is set and you may set outlet_marker.
-        boundaries_path:
-            Optional separate XDMF path to read boundaries tags from (defaults to `path`).
-            Optional separate XDMF path to read boundaries tags from (defaults to `path`).
-        outlet_marker:
-            If provided and boundaries_name is provided, sets Domain3D.outlet_marker.
-        """
+        """Construct a Domain3D by reading a mesh from an XDMF (HDF5-backed) file."""
         mesh = read_mesh_xdmf(comm, path, mesh_name=mesh_name, ghost_mode=ghost_mode)
         dom = cls(mesh=mesh)
 
@@ -698,7 +730,6 @@ class Domain3D:
 
         return dom
 
-    # Backwards/UX alias
     @classmethod
     def from_meshfile(
             cls,
@@ -718,24 +749,7 @@ class Domain3D:
             replace: bool = True,
             override: bool = True,
     ) -> None:
-        """Load facet MeshTags from an XDMF file into this Domain3D.
-
-        This is a mesh-based alternative to mark_outlet_axis_plane(...). It assumes that
-        the MeshTags in `path` correspond to this exact mesh (same entity numbering).
-
-        Parameters
-        ----------
-        path:
-            XDMF containing facet MeshTags for this mesh.
-        name:
-            MeshTags name in the XDMF file.
-        outlet_marker:
-            If provided, set Domain3D.outlet_marker to this value.
-        replace:
-            If True, replace existing boundaries tags; otherwise merge with existing tags.
-        override:
-            If merging, whether the newly read tags override existing ones on overlaps.
-        """
+        """Load facet MeshTags from an XDMF file into this Domain3D."""
         mesh = self.mesh
         tdim = mesh.topology.dim
         fdim = tdim - 1
@@ -771,21 +785,7 @@ class Domain3D:
             replace_boundaries: bool = True,
             override: bool = True,
     ) -> np.ndarray:
-        """Mark the outlet/sink boundary using facet tags loaded from XDMF.
-
-        This is a mesh-based alternative to mark_outlet_axis_plane(...).
-
-        Two modes:
-          - replace_boundaries=True (default): read *all* facet tags from XDMF into
-            self.boundaries and set self.outlet_marker=marker.
-          - replace_boundaries=False: only read the facets with the given marker and
-            merge them into existing boundaries via add_boundary_facets(...).
-
-        Returns
-        -------
-        np.ndarray
-            The facet indices tagged as the outlet marker on this rank.
-        """
+        """Mark the outlet/sink boundary using facet tags loaded from XDMF."""
         marker_i = int(marker)
 
         if replace_boundaries:
@@ -833,6 +833,8 @@ class Domain1D:
     subdomains: dmesh.MeshTags | None = None
     radius_by_tag: Mapping[int, float] | np.ndarray | None = None
 
+    _cache: dict[Any, Any] = field(default_factory=dict, init=False, repr=False)
+
     def __post_init__(self) -> None:
         self.mesh.topology.create_connectivity(0, 1)
         self.mesh.topology.create_connectivity(1, 0)
@@ -840,6 +842,44 @@ class Domain1D:
     @property
     def comm(self) -> MPI.Comm:
         return self.mesh.comm
+
+    def get_functionspace(self, element: Any) -> Any:
+        key = ("fs", element)
+        V = self._cache.get(key, None)
+        if V is None:
+            V = fem.functionspace(self.mesh, element)
+            self._cache[key] = V
+        return V
+
+    def clear_cache(self) -> None:
+        if self._cache:
+            try:
+                deep_close_destroy(self._cache, max_depth=3)
+            except Exception:
+                pass
+            self._cache.clear()
+            collect()
+
+    def release(self) -> None:
+        """
+        Explicitly drop references to heavy objects so MPI communicators can be freed.
+        After calling release(), the Domain is no longer usable.
+        """
+        try:
+            self.clear_cache()
+        except Exception:
+            pass
+        self.subdomains = None
+        self.radius_by_tag = None
+        self.boundaries = None  # type: ignore[assignment]
+        self.mesh = None  # type: ignore[assignment]
+        collect()
+
+    def __del__(self) -> None:
+        try:
+            self.clear_cache()
+        except Exception:
+            pass
 
     def boundary_vertices(self, marker: int) -> np.ndarray:
         values = self.boundaries.values
@@ -902,20 +942,6 @@ class Domain1D:
     ) -> "Domain1D":
         """
         Construct a 1D network domain from an ASCII legacy VTK POLYDATA file.
-
-        This reads PolyData semantics (POINTS + LINES) and creates a networkx.DiGraph,
-        then converts that graph using networks_fenicsx.NetworkMesh.
-
-        Radius handling:
-          - If a point-data array named `radius_name` exists (len == npoints),
-            per-segment radius is computed as the mean of endpoint radii.
-          - Else if a cell-data array named `radius_name` exists (len == nline-cells),
-            that radius is assigned to all segments in that line cell.
-          - Else default_radius is used.
-
-        The resulting `Domain1D.radius_by_tag` is a numpy array compatible with
-        PressureProblem(..., radius_by_tag=domain.radius_by_tag, ...), provided you
-        keep color_strategy=None (unique tag per edge) when radii vary by edge.
         """
         p = Path(path).expanduser().resolve()
 
@@ -936,8 +962,6 @@ class Domain1D:
             cr = cdat.get(radius_name, None)
             if cr is not None:
                 cr = np.asarray(cr, dtype=np.float64).reshape((-1,))
-                # If it doesn't match number of polyline "cells", we'll still allow it
-                # but it will only be used up to min(len(polylines), len(cr)).
 
             graph = _build_graph_from_polydata(
                 pts,
@@ -948,7 +972,6 @@ class Domain1D:
                 reverse_edges=bool(reverse_edges),
             )
 
-            # Build the radius lookup in the *same* tag space that NetworkMesh will produce.
             radius_by_tag = _radius_by_tag_from_graph(
                 graph,
                 color_strategy=color_strategy,
@@ -956,10 +979,8 @@ class Domain1D:
                 strict_if_grouped=bool(strict_if_grouped),
             )
 
-        # Broadcast the radius lookup so every rank can build the same DG0 radius field later
         radius_by_tag = comm.bcast(radius_by_tag, root=graph_rank)
 
-        # Build distributed NetworkMesh (graph only needs to exist on graph_rank)
         network = NetworkMesh(
             graph,
             N=int(points_per_edge),

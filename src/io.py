@@ -1,4 +1,4 @@
-# === io.py ===
+# multihepatic/src/io.py
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -11,6 +11,7 @@ from dolfinx import default_scalar_type, fem
 
 from .domain import Domain1D, Domain3D
 from .problem import PressureSolution, PressureVelocitySolution
+from .system import collect
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,11 +69,27 @@ def write_tissue_bc_label_mesh(
     tdim = mesh.topology.dim
     fdim = tdim - 1
 
-    DG0 = fem.functionspace(mesh, ("DG", 0))
-    bc_type = fem.Function(DG0)
-    bc_type.name = "bc_type"
-    facet_marker = fem.Function(DG0)
-    facet_marker.name = "facet_marker"
+    # Reuse DG0 space (and optionally the functions) to avoid repeated communicator churn
+    DG0 = tissue.get_functionspace(("DG", 0))
+
+    cache = getattr(tissue, "_cache", None)
+    bc_type = None
+    facet_marker = None
+    if isinstance(cache, dict):
+        bc_type = cache.get(("fn", "tissue_bc_bc_type"), None)
+        facet_marker = cache.get(("fn", "tissue_bc_facet_marker"), None)
+
+    if bc_type is None or getattr(bc_type, "function_space", None) != DG0:
+        bc_type = fem.Function(DG0)
+        bc_type.name = "bc_type"
+        if isinstance(cache, dict):
+            cache[("fn", "tissue_bc_bc_type")] = bc_type
+
+    if facet_marker is None or getattr(facet_marker, "function_space", None) != DG0:
+        facet_marker = fem.Function(DG0)
+        facet_marker.name = "facet_marker"
+        if isinstance(cache, dict):
+            cache[("fn", "tissue_bc_facet_marker")] = facet_marker
 
     bc_type.x.array[:] = default_scalar_type(0.0)
     facet_marker.x.array[:] = default_scalar_type(0.0)
@@ -101,6 +118,7 @@ def write_tissue_bc_label_mesh(
         if tissue.boundaries is not None:
             # Some dolfinx versions require geometry passed explicitly
             xdmf.write_meshtags(tissue.boundaries, mesh.geometry)  # type: ignore[arg-type]
+    collect()
 
 
 def write_solution(
@@ -242,3 +260,6 @@ def write_solution(
 
     # Keep this as-is: it writes a small XDMF helper mesh for debugging BC regions
     write_tissue_bc_label_mesh(outdir, tissue, time=options.time)
+
+    # In long-running scripts (many outputs), push GC/PETSc cleanup aggressively
+    collect()
